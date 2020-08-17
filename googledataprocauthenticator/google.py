@@ -1,4 +1,4 @@
-﻿from .customauth import Authenticator
+﻿from sparkmagic.auth.customauth import Authenticator
 import json
 import os
 import re
