@@ -31,7 +31,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license='Apache 2.0',
     install_requires=[
-        "sparkmagic>=0.15.0"
+        "sparkmagic>=0.15.0",
         'nose',
         'mock',
         'hdijupyterutils>=0.6',
