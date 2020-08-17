@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 """
 setuptools.setup(
-    name="google-dataproc-authenticator",
+    name="dataprocmagic",
     python_requires='>=2.7.0',
     version="0.1.0",
     author="Alexis Macaskill",
