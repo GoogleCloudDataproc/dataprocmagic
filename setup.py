@@ -28,17 +28,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/GoogleCloudDataproc/dataprocmagic.git",
-    packages=['googledataprocauthenticator'],
+    py_modules=["google"],
     license='Apache 2.0',
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'],
     install_requires=[
         "sparkmagic>=0.15.0",
         'nose',
