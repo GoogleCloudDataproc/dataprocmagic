@@ -14,10 +14,10 @@
 
 import setuptools
 
-"""
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
-"""
+
 setuptools.setup(
     name="dataprocmagic",
     python_requires='>=2.7.0',
@@ -25,10 +25,9 @@ setuptools.setup(
     author="Alexis Macaskill",
     author_email="amacaskill@google.com",
     description="Google Dataproc authenticator for Sparkmagic",
-    #long_description=long_description,
-    #long_description_content_type="text/markdown",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/GoogleCloudDataproc/dataprocmagic.git",
-    setup_requires=['wheel'],
     packages=['googledataprocauthenticator'],
     license='Apache 2.0',
     classifiers=[
