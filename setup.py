@@ -45,7 +45,7 @@ setuptools.setup(
         'nose',
         'mock',
         'hdijupyterutils>=0.6',
-        'google.cloud.dataproc.v1beta2',
+        'google-cloud-dataproc',
         'google-auth',
         'urllib3'
     ]
