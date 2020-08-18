@@ -222,13 +222,6 @@ def make_credentials():
         client_secret='client_secret',
     )
 
-def make_credentials_my():
-    return credentials.Credentials(
-        token='ya29.a0AfH6SMBBGL-LxqR9QzFdbpsiFL32lytN04PoOCn0XyqviXq5yDRc8_78gXZ1JhOHS12UktMUp9dcHi7NhHskob7AfoOel2Kcx6XpsHo7g6mlR7NxMk_5onxsK8-g8fHDiezMXeQ6lmgFrnMX4nrfk3d_bXqnSW3OA0KXqjBhZey9',
-        token_uri='https://www.googleapis.com/oauth2/v4/token',
-        client_id='32555940559.apps.googleusercontent.com',
-        client_secret='ZmssLNjJy2998hD4CTg2ejr2',
-    )
 creds = make_credentials()
 def test_default_credentials_configured_credentials_is_not_none():
     with patch('google.auth.default', return_value=(creds, 'project'), \
@@ -342,9 +335,6 @@ def test_generate_component_gateway_url_raises_google_api_error():
         side_effect=GoogleAPICallError('error message')):
         google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
 
-def test_cluste_pool():
-    url = google_auth_class.get_component_gateway_url('google.com:hadoop-cloud-dev', 'us-central1', 'amacaskill-livy', make_credentials_my())
-    assert_equals('httlp;...', url)
 
 @raises(BadUserConfigurationException)
 def test_no_credenntials_raises_bad_user_configuration_error():
