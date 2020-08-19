@@ -11,7 +11,6 @@ import google.auth.transport.requests
 from google.auth import _cloud_sdk  
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
-from hdijupyterutils.ipythondisplay import IpythonDisplay
 from google.oauth2.credentials import Credentials
 
 
@@ -136,24 +135,6 @@ def get_credentials_for_account(account, scopes_list):
             "user credentials to use for Application Default Credentials.")
         raise new_exc
 
-
-def get_cluster_pool(project_id, region, client):
-    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
-    cluster_pool = set()
-    for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
-        #check component gateway is enabled
-        if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
-            action_list = list()
-            for action in cluster.config.initialization_actions:
-                #check if action is livy init action with a region with regex pattern [a-z0-9-]+
-                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
-                    [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
-                if is_livy_action:
-                    action_list.append(action.executable_file)
-                    cluster_pool.add(cluster.cluster_name)
-    return cluster_pool
-
-
 def get_component_gateway_url(project_id, region, cluster_name, credentials):
     """Gets the component gateway url for a cluster name, project id, and region
 
@@ -178,23 +159,10 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                         }
                     )
     try:
-        print(get_cluster_pool(project_id, region, client))
-        # if they didn't enter cluster name then we get a cluster from cluster pool 
-        cluster_pool = None
-        if cluster_name is '':
-            #pop random cluster from cluster pool 
-            cluster_pool = get_cluster_pool(project_id, region, client)
-            cluster_name = cluster_pool.copy().pop()
         response = client.get_cluster(project_id, region, cluster_name)
         url = ((response.config.endpoint_config).http_ports).popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) + 'gateway/default/livy/v1'
-        ipython_display = IpythonDisplay()
-        
-        if cluster_pool is not None:
-            ipython_display.writeln("Used {} cluster from cluster_pool: {}".format(cluster_name, cluster_pool))
-        else:
-            ipython_display.writeln("Used {} cluster".format(cluster_name))
         return endpoint_address
     except:
         raise
