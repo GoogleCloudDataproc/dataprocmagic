@@ -1,7 +1,22 @@
+"""
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+""" 
 from sparkmagic.auth.customauth import Authenticator
 import json
 import os
-import re
+import six
 import urllib3.util
 import subprocess
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
@@ -9,7 +24,7 @@ from sparkmagic.utils.constants import WIDGET_WIDTH
 from google.cloud import dataproc_v1beta2
 import google.auth.transport.requests 
 from google.auth import _cloud_sdk  
-from google.auth.exceptions import DefaultCredentialsError, RefreshError
+from google.auth.exceptions import UserAccessTokenError
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from google.oauth2.credentials import Credentials
 
@@ -51,7 +66,6 @@ def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
         accounts_dict['default-credentials'] = 'default-credentials'
     return accounts_dict
 
-
 def list_credentialed_accounts():
     """Load all of user's credentialed accounts with ``gcloud auth list`` command.
 
@@ -59,8 +73,7 @@ def list_credentialed_accounts():
         Sequence[str]: each key is a str of one of the users credentialed accounts
 
     Raises:
-        sparkmagic.livyclientlib.BadUserConfigurationException: if account is not set or user
-        needs to run gcloud auth login or if gcloud is not installed.
+        sparkmagic.livyclientlib.BadUserConfigurationException: if gcloud cannot be invoked
     """
     accounts_json = ""
     if os.name == "nt":
@@ -82,18 +95,9 @@ def list_credentialed_accounts():
             except:
                 pass
         return credentialed_accounts, active_account
-    except (OSError) as caught_exc:
-        new_exc = BadUserConfigurationException(
-            "Gcloud is not installed. Install the Google Cloud SDK.")
-        raise new_exc
-    except (subprocess.CalledProcessError, IOError) as caught_exc:
-        new_exc = BadUserConfigurationException(
-            "Failed to obtain access token. Run `gcloud auth login` in your command line "\
-            "to authorize gcloud to access the Cloud Platform with Google user credentials to "\
-            "authenticate. Run `gcloud auth application-default login` acquire new user "\
-            "credentials to use for Application Default Credentials."
-        )
-        raise new_exc
+    except (subprocess.CalledProcessError, OSError, IOError) as caught_exc:
+        new_exc = BadUserConfigurationException("Gcloud cannot be invoked.")
+        six.raise_from(new_exc, caught_exc)
 
 def get_credentials_for_account(account, scopes_list):
     """Load all of user's credentialed accounts with ``gcloud auth describe ACCOUNT`` command.
@@ -107,8 +111,7 @@ def get_credentials_for_account(account, scopes_list):
 
     Raises:
         ValueError: If `gcloud auth describe ACCOUNT --format json` returns json not in the expected format.
-        sparkmagic.livyclientlib.BadUserConfigurationException: if account is not set or user needs to run 
-        gcloud auth login or if gcloud is not installed. 
+        google.auth.exceptions.UserAccessTokenError: if credentials could not be found for the given account. 
     """
     if os.name == "nt":
         command = _CLOUD_SDK_WINDOWS_COMMAND
@@ -120,20 +123,9 @@ def get_credentials_for_account(account, scopes_list):
         account_json = subprocess.check_output(command, stderr=subprocess.STDOUT)
         account_describe = load_json_input(account_json)
         return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
-    except ValueError: 
-        raise
-    except (OSError) as caught_exc:
-        new_exc = BadUserConfigurationException(
-            "Gcloud is not installed. Install the Google Cloud SDK." 
-        )
-        raise new_exc
-    except (subprocess.CalledProcessError, IOError) as caught_exc:
-        new_exc = BadUserConfigurationException(
-            "Failed to obtain access token. Run `gcloud auth login` in your command line "\
-            "to authorize gcloud to access the Cloud Platform with Google user credentials "\
-            "to authenticate. Run `gcloud auth application-default login` to acquire new "\
-            "user credentials to use for Application Default Credentials.")
-        raise new_exc
+    except (subprocess.CalledProcessError, OSError, IOError, ValueError) as caught_exc:
+        new_exc = UserAccessTokenError("Could not obtain access token for {}".format(account))
+        six.raise_from(new_exc, caught_exc)
 
 def get_component_gateway_url(project_id, region, cluster_name, credentials):
     """Gets the component gateway url for a cluster name, project id, and region
