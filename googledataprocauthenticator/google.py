@@ -145,8 +145,9 @@ def get_cluster_pool(project_id, region, client):
         if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
             action_list = list()
             for action in cluster.config.initialization_actions:
-                #check if init action is the livy action with a region that matches the regex pattern [a-z0-9-]+
-                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", bucket) is not None                    
+                #check if action is livy init action with a region with regex pattern [a-z0-9-]+
+                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
+                    [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
                 if is_livy_action:
                     action_list.append(action.executable_file)
                     cluster_pool.add(cluster.cluster_name)
