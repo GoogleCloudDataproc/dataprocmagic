@@ -145,7 +145,9 @@ def get_cluster_pool(project_id, region, client):
         if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
             action_list = list()
             for action in cluster.config.initialization_actions:
-                if "livy" in action.executable_file:
+                #check if init action is the livy action with a region that matches the regex pattern [a-z0-9-]+
+                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", bucket) is not None                    
+                if is_livy_action:
                     action_list.append(action.executable_file)
                     cluster_pool.add(cluster.cluster_name)
     return cluster_pool
@@ -183,13 +185,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
             cluster_pool = get_cluster_pool(project_id, region, client)
             cluster_name = cluster_pool.copy().pop()
         response = client.get_cluster(project_id, region, cluster_name)
-        """
-        regex stuff
-        init_action = response.config.initialization_actions
-        value = init_action.pop()
-        ans2 = re.search('(?<=actions-)[a-z0-9-]+', value.executable_file)
-        print(get_cluster_pool(project_id, ans2.group(), 'status.state = ACTIVE', credentials))
-        """
         url = ((response.config.endpoint_config).http_ports).popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) + 'gateway/default/livy/v1'
