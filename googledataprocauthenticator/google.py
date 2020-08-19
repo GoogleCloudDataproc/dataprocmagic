@@ -14,7 +14,6 @@
 from sparkmagic.auth.customauth import Authenticator
 import json
 import os
-import six
 import urllib3.util
 import subprocess
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
@@ -95,8 +94,7 @@ def list_credentialed_accounts():
         return credentialed_accounts, active_account
     except (subprocess.CalledProcessError, OSError, IOError) as caught_exc:
         new_exc = BadUserConfigurationException("Gcloud cannot be invoked.")
-        six.raise_from(new_exc, caught_exc)
-
+        raise new_exc from caught_exc
 def get_credentials_for_account(account, scopes_list):
     """Load all of user's credentialed accounts with ``gcloud auth describe ACCOUNT`` command.
 
@@ -123,7 +121,7 @@ def get_credentials_for_account(account, scopes_list):
         return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
     except (subprocess.CalledProcessError, OSError, IOError, ValueError) as caught_exc:
         new_exc = UserAccessTokenError("Could not obtain access token for {}".format(account))
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
 
 def get_component_gateway_url(project_id, region, cluster_name, credentials):
     """Gets the component gateway url for a cluster name, project id, and region
