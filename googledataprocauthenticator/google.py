@@ -175,7 +175,6 @@ class GoogleAuth(Authenticator):
         self.scopes = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email']
         self.active_credentials = None
         self.default_credentials_configured = application_default_credentials_configured()
-        
         account_dict = list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)
         if parsed_attributes is not None:
             if parsed_attributes.account in account_dict:
