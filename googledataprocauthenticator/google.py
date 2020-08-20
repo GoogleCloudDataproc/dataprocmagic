@@ -148,7 +148,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         response = client.get_cluster(project_id, region, cluster_name)
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
-        endpoint_address = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) + 'gateway/default/livy/v1'
+        endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/" + "gateway/default/livy/v1"
         return endpoint_address
     except:
         raise
