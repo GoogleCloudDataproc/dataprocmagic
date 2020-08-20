@@ -172,9 +172,14 @@ class GoogleAuth(Authenticator):
         self.active_credentials = None
         self.default_credentials_configured = application_default_credentials_configured()
         account_dict = list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)
+
         if parsed_attributes is not None:
             if parsed_attributes.account in account_dict:
                 self.active_credentials = parsed_attributes.account
+                if self.active_credentials == 'default-credentials' and self.default_credentials_configured:
+                    self.credentials, self.project = google.auth.default(scopes=self.scopes)
+                else:
+                    self.credentials = get_credentials_for_account(self.active_credentials, self.scopes)
             else: 
                 new_exc = BadUserConfigurationException(
                 f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in "\
@@ -183,18 +188,10 @@ class GoogleAuth(Authenticator):
                 "user credentials to use for Application Default Credentials. Run `gcloud auth list` to see "\
                 "your credentialed accounts.")
                 raise new_exc
-            if self.active_credentials == 'default-credentials' and self.default_credentials_configured:
-                self.credentials, self.project = google.auth.default(scopes=self.scopes)
-            #fix account_dict
-            elif self.active_credentials in account_dict:
-                self.credentials = get_credentials_for_account(self.active_credentials, self.scopes)
-            else:
-                self.credentials, self.project = None, None
         else:
             if self.default_credentials_configured:
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
                 self.active_credentials = 'default-credentials'
-            #fix this to be active_credentials is in credentialed accounts 
             elif active_user_account is not None:
                 self.credentials = get_credentials_for_account(active_user_account, self.scopes)
                 self.active_credentials = active_user_account
