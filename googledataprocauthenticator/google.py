@@ -120,7 +120,7 @@ def get_credentials_for_account(account, scopes_list):
         account_describe = load_json_input(account_json)
         return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
     except (subprocess.CalledProcessError, OSError, IOError, ValueError) as caught_exc:
-        new_exc = UserAccessTokenError("Could not obtain access token for {}".format(account))
+        new_exc = UserAccessTokenError(f"Could not obtain access token for {account}")
         raise new_exc from caught_exc
 
 def get_component_gateway_url(project_id, region, cluster_name, credentials):
@@ -143,7 +143,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     """
     client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
                        client_options={
-                            'api_endpoint': '{}-dataproc.googleapis.com:443'.format(region)
+                            "api_endpoint": f"{region}-dataproc.googleapis.com:443"
                         }
                     )
     try:
@@ -182,11 +182,11 @@ class GoogleAuth(Authenticator):
                 self.active_credentials = parsed_attributes.account
             else: 
                 new_exc = BadUserConfigurationException(
-                "{} is not a credentialed account. Run `gcloud auth login` in your command line "\
+                f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in your command line "\
                 "to authorize gcloud to access the Cloud Platform with Google user credentials to authenticate. "\
                 "Run `gcloud auth application-default login` acquire new user credentials "\
                 "to use for Application Default Credentials. Run `gcloud auth list` to see "\
-                "your credentialed accounts.".format(parsed_attributes.account))
+                "your credentialed accounts.")
                 raise new_exc
             if self.active_credentials == 'default-credentials' and self.default_credentials_configured:
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
@@ -269,7 +269,7 @@ class GoogleAuth(Authenticator):
     def __call__(self, request):
         if not self.credentials.valid:
             self.credentials.refresh(self.callable_request)
-        request.headers['Authorization'] = 'Bearer {}'.format(self.credentials.token)
+        request.headers['Authorization'] = f'Bearer {self.credentials.token}'
         return request
 
     def __hash__(self):
