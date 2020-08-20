@@ -32,14 +32,6 @@ _CLOUD_SDK_WINDOWS_COMMAND = "gcloud.cmd"
 # The command to get all credentialed accounts 
 _CLOUD_SDK_USER_CREDENTIALED_ACCOUNTS_COMMAND = ("auth", "list", "--format", "json")
 
-def load_json_input(result):
-    """Load json data from the file."""
-    jsondata = None
-    try:
-        jsondata = json.loads(result)
-    except:
-        raise
-    return jsondata
 
 def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
     """Reformats all of user's credentialed accounts to populate google_credentials_widget
@@ -55,7 +47,6 @@ def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
         same str credentialed account
     """
     accounts = credentialed_accounts
-    
     accounts_dict = {}
     for account in accounts:
         accounts_dict[account] = account
@@ -79,8 +70,9 @@ def list_credentialed_accounts():
         command = _CLOUD_SDK_POSIX_COMMAND
     try:
         command = (command,) + _CLOUD_SDK_USER_CREDENTIALED_ACCOUNTS_COMMAND
+        # run `gcloud auth list` command 
         accounts_json = subprocess.check_output(command, stderr=subprocess.STDOUT)
-        all_accounts = load_json_input(accounts_json)
+        all_accounts = json.loads(accounts_json)
         credentialed_accounts = set()
         active_account = None
         for account in all_accounts:
@@ -89,12 +81,15 @@ def list_credentialed_accounts():
                 if account['status'] == 'ACTIVE':
                     active_account = account['account']
                 credentialed_accounts.add(account['account'])
-            except:
+            # when`gcloud auth print-access-token --account=account` fails we don't add it to
+            # credentialed_accounts dict that populates account dropdown widget
+            except UserAccessTokenError:
                 pass
         return credentialed_accounts, active_account
     except (subprocess.CalledProcessError, OSError, IOError) as caught_exc:
         new_exc = BadUserConfigurationException("Gcloud cannot be invoked.")
         raise new_exc from caught_exc
+
 def get_credentials_for_account(account, scopes_list):
     """Load all of user's credentialed accounts with ``gcloud auth describe ACCOUNT`` command.
 
@@ -117,9 +112,12 @@ def get_credentials_for_account(account, scopes_list):
         describe_account_command = ("auth", "describe", account, '--format', 'json')
         command = (command,) + describe_account_command
         account_json = subprocess.check_output(command, stderr=subprocess.STDOUT)
-        account_describe = load_json_input(account_json)
+        account_describe = json.loads(account_json)
         return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
-    except (subprocess.CalledProcessError, OSError, IOError, ValueError) as caught_exc:
+    # subprocess.CalledProcessError, OSError, IOError are from subprocess
+    # ValueError is from Credentials.from_authorized_user_info
+    # JSONDecodeError is from json.loads.
+    except (subprocess.CalledProcessError, OSError, IOError, ValueError, json.JSONDecodeError) as caught_exc:
         new_exc = UserAccessTokenError(f"Could not obtain access token for {account}")
         raise new_exc from caught_exc
 
@@ -148,7 +146,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                     )
     try:
         response = client.get_cluster(project_id, region, cluster_name)
-        url = ((response.config.endpoint_config).http_ports).popitem()[1]
+        url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri) + 'gateway/default/livy/v1'
         return endpoint_address
