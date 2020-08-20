@@ -6,13 +6,13 @@ from mock import patch, PropertyMock, MagicMock, sentinel, Mock
 from nose.tools import raises, assert_equals, with_setup, assert_is_not_none, assert_false, assert_true, assert_raises
 import requests
 from requests_kerberos.kerberos_ import HTTPKerberosAuth, REQUIRED, OPTIONAL
+import sparkmagic
 from sparkmagic.auth.basic import Basic
 from sparkmagic.auth.kerberos import Kerberos
 import sparkmagic.auth.google as google_auth_class
 import google.auth
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import GoogleAPICallError, RetryError
-import sparkmagic
 from sparkmagic.auth.google import GoogleAuth
 from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.endpoint import Endpoint
@@ -204,7 +204,6 @@ def test_will_retry_error_no():
 
 @with_setup(_setup, _teardown)
 def test_google_auth():
-    endpoint = Endpoint("http://url.com", google_auth_instance)
     client = ReliableHttpClient(endpoint, {}, retry_policy)
     assert_is_not_none(client._auth)
     assert isinstance(client._auth, GoogleAuth)
@@ -212,7 +211,7 @@ def test_google_auth():
     assert hasattr(client._auth, 'widgets')
     
 MOCK_GOOGLE = Mock(spec=GoogleAuth)
-MOCK_CREDENTIALS = Mock(spec = credentials.Credentials)
+MOCK_CREDENTIALS = Mock(spec=credentials.Credentials)
 def make_credentials():
     return credentials.Credentials(
         token=None,
@@ -236,7 +235,7 @@ def test_default_credentials_not_configured_credentials_is_none():
 
 def test_default_credentials_not_configured_account_pairs_contains_no_default():
     """Tests default-credentials is not in google credentials dropdown if if default credentials
-    are not configured""" 
+    are not configured"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
     autospec=True):
         assert_false('default-credentials' in GoogleAuth().google_credentials_widget.options)
@@ -248,14 +247,14 @@ def test_default_credentials_configured_account_pairs_contains_default():
     autospec=True):
         assert_true('default-credentials' in GoogleAuth().google_credentials_widget.options)
 
-auth_list = '[{"account": "account@google.com","status": "ACTIVE"}]'
+AUTH_LIST = '[{"account": "account@google.com","status": "ACTIVE"}]'
 creds_set = set()
 creds_set.add('account@google.com')
 mock_credentialed_accounts = (creds_set, 'account@google.com')
 
 
 def test_active_account_returns_valid_active_account():
-    with patch('subprocess.check_output', return_value=auth_list), \
+    with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
         _, active_account = sparkmagic.auth.google.list_credentialed_accounts()
@@ -263,7 +262,7 @@ def test_active_account_returns_valid_active_account():
         assert_equals(active_account, 'account@google.com')
 
 def test_dropdown_options_with_default_credentials_configured():
-    with patch('subprocess.check_output', return_value=auth_list), \
+    with patch('subprocess.check_output', return_value=AUTH_LIST), \
         patch('google.auth.default', return_value=(MOCK_CREDENTIALS, 'project')), \
         patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
         assert_equals(GoogleAuth().google_credentials_widget.options, {'account@google.com':'account@google.com', \
@@ -294,7 +293,7 @@ expiry = datetime.datetime(2007, 12, 6, 16, 29, 43, 79043)
 def test_initialize_credentials_with_auth_dropdown_default_credentials_to_default_credentials():
     """If Google Authenticator is initialized with default-credentials, if the account dropdown is not
     changed to a different account, credentials should not be reinitialized when the endpoint is added."""
-    with patch('subprocess.check_output', return_value=auth_list), \
+    with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', return_value=(not_refreshed_credentials(), 'project')) as d, \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
@@ -352,7 +351,7 @@ def test_no_credenntials_raises_bad_user_configuration_error():
 AUTH_DESCRIBE_USER = '{"client_id": "client_id", \
      "client_secret": "secret", "refresh_token": "refresh","type": "authorized_user"}'
 def test_initialize_credentials_with_default_credentials_configured():
-    with patch('subprocess.check_output', return_value=auth_list), \
+    with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', return_value=(not_refreshed_credentials(), 'project')), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
@@ -370,7 +369,7 @@ AUTH_DESCRIBE_USER = '{"client_id": "client_id", \
 def test_initialize_credentials_with_no_default_credentials_configured():
     with patch('subprocess.check_output', return_value=AUTH_DESCRIBE_USER), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=auth_list), \
+    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=AUTH_LIST), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
@@ -382,7 +381,7 @@ def test_initialize_credentials_with_no_default_credentials_configured():
 
 #add default credentials dropdown change
 def test_call_default_credentials_no_dropdown_change(): 
-    with patch('subprocess.check_output', return_value=auth_list), \
+    with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', return_value=(not_refreshed_credentials(), 'project')), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
@@ -392,7 +391,7 @@ def test_call_default_credentials_no_dropdown_change():
         request = requests.Request(url="http://www.example.org")
         google_auth.__call__(request)
         assert_true('Authorization' in request.headers)
-        assert_equals(request.headers['Authorization'],'Bearer {}'.format(google_auth.credentials.token))
+        assert_equals(request.headers['Authorization'], 'Bearer {}'.format(google_auth.credentials.token))
 
 #add user credentials dropdown change
 def test_call_user_credentials_no_dropdown_change(): 

@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from sparkmagic.auth.customauth import Authenticator
 import json
 import os
-import urllib3.util
 import subprocess
+import urllib3.util
+from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
+from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 from google.cloud import dataproc_v1beta2
 import google.auth.transport.requests 
 from google.auth import _cloud_sdk  
 from google.auth.exceptions import UserAccessTokenError
-from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from google.oauth2.credentials import Credentials
 
 
@@ -155,13 +155,11 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
 
 def application_default_credentials_configured(): 
     """Checks if google application-default credentials are configured"""
-    callable_request = google.auth.transport.requests.Request()
     try:
-        credentials, project = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform','https://www.googleapis.com/auth/userinfo.email'])
+        credentials, project = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'])
     except:
-        pass
         return False
-    return not(credentials is None)
+    return credentials is not None
 
 
 class GoogleAuth(Authenticator):
@@ -179,10 +177,10 @@ class GoogleAuth(Authenticator):
                 self.active_credentials = parsed_attributes.account
             else: 
                 new_exc = BadUserConfigurationException(
-                f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in your command line "\
-                "to authorize gcloud to access the Cloud Platform with Google user credentials to authenticate. "\
-                "Run `gcloud auth application-default login` acquire new user credentials "\
-                "to use for Application Default Credentials. Run `gcloud auth list` to see "\
+                f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in "\
+                "your command line to authorize gcloud to access the Cloud Platform with Google user "\
+                "credentials to authenticate. Run `gcloud auth application-default login` acquire new "\
+                "user credentials to use for Application Default Credentials. Run `gcloud auth list` to see "\
                 "your credentialed accounts.")
                 raise new_exc
             if self.active_credentials == 'default-credentials' and self.default_credentials_configured:
@@ -239,12 +237,12 @@ class GoogleAuth(Authenticator):
 
     def initialize_credentials_with_auth_account_selection(self, account):
         """Initializes self.credentials with the accound selected from the auth dropdown widget"""
-        if (account != self.active_credentials):
-            if (account == 'default-credentials'):
+        if account != self.active_credentials:
+            if account == 'default-credentials':
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
             else:
                 self.credentials = get_credentials_for_account(account, self.scopes)
-        
+
     def update_with_widget_values(self):
         no_credentials_exception = BadUserConfigurationException(
             "Failed to obtain access token. Run `gcloud auth login` in your command line "\
@@ -253,13 +251,13 @@ class GoogleAuth(Authenticator):
             "credentials to use for Application Default Credentials.")
             #could also just check if widget is disabled. throw this error upon returninig from get widgets
             #because currently it always sets a default
-        if (self.credentials is not None):
-            try: 
+        if self.credentials is not None:
+            try:
                 self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                     self.cluster_name_widget.value, self.credentials)
-            except: 
+            except:
                 raise
-        else: 
+        else:
             raise no_credentials_exception
         self.initialize_credentials_with_auth_account_selection(self.google_credentials_widget.value)
 
