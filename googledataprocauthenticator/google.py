@@ -86,7 +86,7 @@ def list_credentialed_accounts():
             except UserAccessTokenError:
                 pass
         return credentialed_accounts, active_account
-    except (subprocess.CalledProcessError, OSError, IOError) as caught_exc:
+    except Exception as caught_exc:
         new_exc = BadUserConfigurationException("Gcloud cannot be invoked.")
         raise new_exc from caught_exc
 
@@ -114,10 +114,7 @@ def get_credentials_for_account(account, scopes_list):
         account_json = subprocess.check_output(command, stderr=subprocess.STDOUT)
         account_describe = json.loads(account_json)
         return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
-    # subprocess.CalledProcessError, OSError, IOError are from subprocess
-    # ValueError is from Credentials.from_authorized_user_info
-    # JSONDecodeError is from json.loads.
-    except (subprocess.CalledProcessError, OSError, IOError, ValueError, json.JSONDecodeError) as caught_exc:
+    except Exception as caught_exc:
         new_exc = UserAccessTokenError(f"Could not obtain access token for {account}")
         raise new_exc from caught_exc
 
