@@ -320,7 +320,6 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
         google.auth.default.assert_called_once_with(scopes=google_auth.scopes)
     
-
 @raises(RetryError)
 def test_generate_component_gateway_url_raises_retry_error():
     with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
@@ -332,7 +331,6 @@ def test_generate_component_gateway_url_raises_google_api_error():
     with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
         side_effect=GoogleAPICallError('error message')):
         google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
-
 
 @raises(BadUserConfigurationException)
 def test_no_credenntials_raises_bad_user_configuration_error():
