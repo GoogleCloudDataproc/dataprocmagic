@@ -244,10 +244,8 @@ class GoogleAuth(Authenticator):
         if (account != self.active_credentials):
             if (account == 'default-credentials'):
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
-                #self.credentials.refresh(self.callable_request)
             else:
                 self.credentials = get_credentials_for_account(account, self.scopes)
-                #self.credentials.refresh(self.callable_request)
         
     def update_with_widget_values(self):
         no_credentials_exception = BadUserConfigurationException(
