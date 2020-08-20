@@ -248,7 +248,6 @@ def test_default_credentials_configured_account_pairs_contains_default():
     autospec=True):
         assert_true('default-credentials' in GoogleAuth().google_credentials_widget.options)
 
-#MOCK_CREDENTIALS = Mock(spec = credentials.Credentials)
 auth_list = '[{"account": "account@google.com","status": "ACTIVE"}]'
 creds_set = set()
 creds_set.add('account@google.com')
@@ -408,4 +407,4 @@ def test_call_user_credentials_no_dropdown_change():
         request = requests.Request(url="http://www.example.org")
         google_auth.__call__(request)
         assert_true('Authorization' in request.headers)
-        assert_equals(request.headers['Authorization'],'Bearer {}'.format(google_auth.credentials.token))
+        assert_equals(request.headers['Authorization'], 'Bearer {}'.format(google_auth.credentials.token))
