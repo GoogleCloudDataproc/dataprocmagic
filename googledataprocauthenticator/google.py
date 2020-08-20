@@ -246,8 +246,6 @@ class GoogleAuth(Authenticator):
             "to authorize gcloud to access the Cloud Platform with Google user credentials to "\
             "authenticate. Run `gcloud auth application-default login` acquire new user "\
             "credentials to use for Application Default Credentials.")
-            #could also just check if widget is disabled. throw this error upon returninig from get widgets
-            #because currently it always sets a default
         if self.credentials is not None:
             try:
                 self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
