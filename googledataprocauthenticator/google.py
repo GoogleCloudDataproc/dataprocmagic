@@ -21,7 +21,7 @@ from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 from google.cloud import dataproc_v1beta2
 import google.auth.transport.requests 
-from google.auth import _cloud_sdk  
+from google.auth import _cloud_sdk
 from google.auth.exceptions import UserAccessTokenError
 from google.oauth2.credentials import Credentials
 
@@ -31,7 +31,6 @@ _CLOUD_SDK_POSIX_COMMAND = "gcloud"
 _CLOUD_SDK_WINDOWS_COMMAND = "gcloud.cmd"
 # The command to get all credentialed accounts 
 _CLOUD_SDK_USER_CREDENTIALED_ACCOUNTS_COMMAND = ("auth", "list", "--format", "json")
-
 
 def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
     """Reformats all of user's credentialed accounts to populate google_credentials_widget
@@ -177,7 +176,7 @@ class GoogleAuth(Authenticator):
                     self.credentials, self.project = google.auth.default(scopes=self.scopes)
                 else:
                     self.credentials = get_credentials_for_account(self.active_credentials, self.scopes)
-            else: 
+            else:
                 new_exc = BadUserConfigurationException(
                 f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in "\
                 "your command line to authorize gcloud to access the Cloud Platform with Google user "\
@@ -198,6 +197,14 @@ class GoogleAuth(Authenticator):
         self.widgets = self.get_widgets(WIDGET_WIDTH)
 
     def get_widgets(self, widget_width):
+        """Creates and returns an address widget
+
+        Args:
+            widget_width (str): The width of all widgets to be created.
+
+        Returns:
+            Sequence[hdijupyterutils.ipywidgetfactory.IpyWidgetFactory]: list of widgets
+        """
         ipywidget_factory = IpyWidgetFactory()
 
         self.project_widget = ipywidget_factory.get_text(
