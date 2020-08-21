@@ -11,33 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import datetime
-from mock import patch, PropertyMock, MagicMock, sentinel, Mock
-from nose.tools import raises, assert_equals, with_setup, assert_is_not_none, assert_false, assert_true, assert_raises
+from mock import patch, Mock
+from nose.tools import raises, assert_equals, assert_is_not_none, assert_false, assert_true, assert_raises
 import requests
-from requests_kerberos.kerberos_ import HTTPKerberosAuth, REQUIRED, OPTIONAL
 import sparkmagic
-from sparkmagic.auth.basic import Basic
-from sparkmagic.auth.kerberos import Kerberos
 import sparkmagic.auth.google as google_auth_class
 import google.auth
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 from sparkmagic.auth.google import GoogleAuth
-from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.livyclientlib.exceptions import HttpClientException
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
 from sparkmagic.livyclientlib.reliablehttpclient import ReliableHttpClient
-import sparkmagic.utils.configuration as conf
-import sparkmagic.utils.constants as constants
-from unittest.mock import create_autospec, call
+from unittest.mock import call
 from google.oauth2 import credentials
 from google.cloud import dataproc_v1beta2
-import os
-import subprocess
 import google
 
 
