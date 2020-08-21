@@ -1,5 +1,16 @@
-# Copyright (c) 2015  aggftw@gmail.com
-# Distributed under the terms of the Modified BSD License.
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import json
 import datetime
 from mock import patch, PropertyMock, MagicMock, sentinel, Mock
@@ -29,189 +40,21 @@ import os
 import subprocess
 import google
 
-retry_policy = None
-sequential_values = []
+
 google_auth_instance = GoogleAuth()
-endpoint = Endpoint("http://url.com", google_auth_instance)
 
-def _setup():
-    global retry_policy
-    retry_policy = LinearRetryPolicy(0.01, 5)
-
-def _teardown():
-    pass
-
-def return_sequential():
-    global sequential_values
-    val = sequential_values[0]
-    sequential_values = sequential_values[1:]
-    return val
-
-
-@with_setup(_setup, _teardown)
-def test_get():
-    with patch('requests.Session.get') as patched_get:
-        type(patched_get.return_value).status_code = 200
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.get("r", [200])
-
-        assert_equals(200, result.status_code)
-
-
-@raises(HttpClientException)
-@with_setup(_setup, _teardown)
-def test_get_throws():
-    with patch('requests.Session.get') as patched_get:
-        type(patched_get.return_value).status_code = 500
-
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        client.get("r", [200])
-
-
-@with_setup(_setup, _teardown)
-def test_get_will_retry():
-    global sequential_values, retry_policy
-    retry_policy = MagicMock()
-    retry_policy.should_retry.return_value = True
-    retry_policy.seconds_to_sleep.return_value = 0.01
-
-    with patch('requests.Session.get') as patched_get:
-        # When we call assert_equals in this unit test, the side_effect is executed.
-        # So, the last status_code should be repeated.
-        sequential_values = [500, 200, 200]
-        pm = PropertyMock()
-        pm.side_effect = return_sequential
-        type(patched_get.return_value).status_code = pm
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.get("r", [200])
-
-        assert_equals(200, result.status_code)
-        retry_policy.should_retry.assert_called_once_with(500, False, 0)
-        retry_policy.seconds_to_sleep.assert_called_once_with(0)
-
-
-@with_setup(_setup, _teardown)
-def test_post():
-    with patch('requests.Session.post') as patched_post:
-        type(patched_post.return_value).status_code = 200
-
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.post("r", [200], {})
-
-        assert_equals(200, result.status_code)
-
-
-@raises(HttpClientException)
-@with_setup(_setup, _teardown)
-def test_post_throws():
-    with patch('requests.Session.post') as patched_post:
-        type(patched_post.return_value).status_code = 500
-
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        client.post("r", [200], {})
-
-
-@with_setup(_setup, _teardown)
-def test_post_will_retry():
-    global sequential_values, retry_policy
-    retry_policy = MagicMock()
-    retry_policy.should_retry.return_value = True
-    retry_policy.seconds_to_sleep.return_value = 0.01
-
-    with patch('requests.Session.post') as patched_post:
-        # When we call assert_equals in this unit test, the side_effect is executed.
-        # So, the last status_code should be repeated.
-        sequential_values = [500, 200, 200]
-        pm = PropertyMock()
-        pm.side_effect = return_sequential
-        type(patched_post.return_value).status_code = pm
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.post("r", [200], {})
-
-        assert_equals(200, result.status_code)
-        retry_policy.should_retry.assert_called_once_with(500, False, 0)
-        retry_policy.seconds_to_sleep.assert_called_once_with(0)
-
-
-@with_setup(_setup, _teardown)
-def test_delete():
-    with patch('requests.Session.delete') as patched_delete:
-        type(patched_delete.return_value).status_code = 200
-
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.delete("r", [200])
-
-        assert_equals(200, result.status_code)
-
-@raises(HttpClientException)
-@with_setup(_setup, _teardown)
-def test_delete_throws():
-    with patch('requests.Session.delete') as patched_delete:
-        type(patched_delete.return_value).status_code = 500
-
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        client.delete("r", [200])
-
-
-@with_setup(_setup, _teardown)
-def test_delete_will_retry():
-    global sequential_values, retry_policy
-    retry_policy = MagicMock()
-    retry_policy.should_retry.return_value = True
-    retry_policy.seconds_to_sleep.return_value = 0.01
-
-    with patch('requests.Session.delete') as patched_delete:
-        # When we call assert_equals in this unit test, the side_effect is executed.
-        # So, the last status_code should be repeated.
-        sequential_values = [500, 200, 200]
-        pm = PropertyMock()
-        pm.side_effect = return_sequential
-        type(patched_delete.return_value).status_code = pm
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        result = client.delete("r", [200])
-
-        assert_equals(200, result.status_code)
-        retry_policy.should_retry.assert_called_once_with(500, False, 0)
-        retry_policy.seconds_to_sleep.assert_called_once_with(0)
-
-
-@with_setup(_setup, _teardown)
-def test_will_retry_error_no():
-    global sequential_values, retry_policy
-    retry_policy = MagicMock()
-    retry_policy.should_retry.return_value = False
-    retry_policy.seconds_to_sleep.return_value = 0.01
-
-    with patch('requests.Session.get') as patched_get:
-        patched_get.side_effect = requests.exceptions.ConnectionError()
-        client = ReliableHttpClient(endpoint, {}, retry_policy)
-
-        try:
-            client.get("r", [200])
-            assert False
-        except HttpClientException:
-            retry_policy.should_retry.assert_called_once_with(None, True, 0)
-
-
-@with_setup(_setup, _teardown)
 def test_google_auth():
+    retry_policy = LinearRetryPolicy(0.01, 5)
+    endpoint = Endpoint("http://url.com", google_auth_instance)
     client = ReliableHttpClient(endpoint, {}, retry_policy)
     assert_is_not_none(client._auth)
     assert isinstance(client._auth, GoogleAuth)
     assert hasattr(client._auth, 'url')
     assert hasattr(client._auth, 'widgets')
-    
+
 MOCK_GOOGLE = Mock(spec=GoogleAuth)
 MOCK_CREDENTIALS = Mock(spec=credentials.Credentials)
+
 def make_credentials():
     return credentials.Credentials(
         token=None,
@@ -222,15 +65,32 @@ def make_credentials():
     )
 
 creds = make_credentials()
+AUTH_LIST = '[{"account": "account@google.com","status": "ACTIVE"}]'
+mock_credentialed_accounts_no_accounts = (set(), None)
+mock_credentialed_accounts_valid_accounts = ({'account@google.com'}, 'account@google.com')
+
 def test_default_credentials_configured_credentials_is_not_none():
+    """Tests GoogleAuth.credentials gets initialized when default credentials are configured"""
     with patch('google.auth.default', return_value=(creds, 'project'), \
     autospec=True):
         assert_equals(GoogleAuth().credentials, creds)
         assert_is_not_none(GoogleAuth().credentials)
 
-def test_default_credentials_not_configured_credentials_is_none():
+def test_default_credentials_not_configured_and_no_active_account_credentials_is_none():
+    """Tests GoogleAuth.credentials gets initialized to None when default credentials are
+    not configured and the user has no credentialed accounts"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
-    autospec=True):
+    autospec=True), patch('sparkmagic.auth.google.list_credentialed_accounts',\
+    return_value=mock_credentialed_accounts_no_accounts):
+        assert_equals(GoogleAuth().credentials, None)
+
+def test_default_credentials_not_configured_credentials_and_active_account_is_not_none():
+    """Tests GoogleAuth.credentials gets initialized with active credentialed user account
+    when one is available"""
+    with patch('google.auth.default', side_effect=DefaultCredentialsError, \
+    autospec=True), patch('sparkmagic.auth.google.list_credentialed_accounts', \
+    return_value=mock_credentialed_accounts_no_accounts), patch('subprocess.check_output', \
+    return_value=AUTH_DESCRIBE_USER):
         assert_equals(GoogleAuth().credentials, None)
 
 def test_default_credentials_not_configured_account_pairs_contains_no_default():
@@ -247,12 +107,6 @@ def test_default_credentials_configured_account_pairs_contains_default():
     autospec=True):
         assert_true('default-credentials' in GoogleAuth().google_credentials_widget.options)
 
-AUTH_LIST = '[{"account": "account@google.com","status": "ACTIVE"}]'
-creds_set = set()
-creds_set.add('account@google.com')
-mock_credentialed_accounts = (creds_set, 'account@google.com')
-
-
 def test_active_account_returns_valid_active_account():
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
@@ -267,16 +121,6 @@ def test_dropdown_options_with_default_credentials_configured():
         patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
         assert_equals(GoogleAuth().google_credentials_widget.options, {'account@google.com':'account@google.com', \
             'default-credentials':'default-credentials'})
-
-
-def refreshed_credentials():
-    return credentials.Credentials(
-            token='token',
-            refresh_token='refresh',
-            token_uri='token_uri',
-            client_id='client_id',
-            client_secret='client_secret',
-        )
 
 def not_refreshed_credentials():
     return credentials.Credentials(
@@ -298,7 +142,7 @@ def test_initialize_credentials_with_auth_dropdown_default_credentials_to_defaul
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts):
+    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'default-credentials')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
@@ -313,13 +157,13 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts):
+    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         print(google_auth_class.list_credentialed_accounts)
         assert_equals(google_auth.active_credentials, 'account@google.com')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
         google.auth.default.assert_called_once_with(scopes=google_auth.scopes)
-    
+
 @raises(RetryError)
 def test_generate_component_gateway_url_raises_retry_error():
     with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
@@ -331,6 +175,27 @@ def test_generate_component_gateway_url_raises_google_api_error():
     with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
         side_effect=GoogleAPICallError('error message')):
         google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
+
+def make_credentials_my():
+    return credentials.Credentials(
+        token='ya29.a0AfH6SMA_XZN9uqR6ShnPdAHXgoNxXzblmw7rqfZYS_2cxB6Q5ylcF6t1atfUkrmZbJ2dcHehwDJShan83WkNLIkNOIhhuMi1zUSDgXnWfWqSHrqJoSoKv7r5KZLesNyPl5QSmeLx7uXuTXx66QaFhLkH4UOWga9ZdQfOSMp35xYx',
+        refresh_token='1//06DpNb1ABrvveCgYIARAAGAYSNwF-L9IrNeIMPi0fmyBNP_O_C3epXaaiqLKWmZ5pK9rs8oYHM__-8A4yaLQc_igCvH268v6q6C8',
+        token_uri='https://www.googleapis.com/oauth2/v4/token',
+        client_id='32555940559.apps.googleusercontent.com',
+        client_secret='ZmssLNjJy2998hD4CTg2ejr2',
+    )
+
+def make_cluster():
+    endpoint_config = dataproc_v1beta2.types.EndpointConfig(http_ports={"HDFS NameNode": \
+        "https://redacted-dot-us-central1.dataproc.googleusercontent.com/hdfs/dfshealth.html"})
+    cluster_config = dataproc_v1beta2.types.ClusterConfig(endpoint_config=endpoint_config)
+    cluster = dataproc_v1beta2.types.Cluster(project_id="project", cluster_name="cluster", config=cluster_config)
+    return cluster
+
+def test_generate_component_gateway_url_successful_get_cluster_request():
+    with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', return_value=make_cluster()):
+        url = google_auth_class.get_component_gateway_url("project", "region", "cluster", make_credentials())
+        assert_equals(url, "https://redacted-dot-us-central1.dataproc.googleusercontent.com/gateway/default/livy/v1")
 
 @raises(BadUserConfigurationException)
 def test_no_credenntials_raises_bad_user_configuration_error():
@@ -371,13 +236,12 @@ def test_initialize_credentials_with_no_default_credentials_configured():
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts):
+    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'account@google.com')
         assert_equals(google_auth.credentials.client_secret, 'secret')
         assert_equals(google_auth.credentials.token, None)
 
-#add default credentials dropdown change
 def test_call_default_credentials_no_dropdown_change(): 
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', return_value=(not_refreshed_credentials(), 'project')), \
@@ -391,14 +255,13 @@ def test_call_default_credentials_no_dropdown_change():
         assert_true('Authorization' in request.headers)
         assert_equals(request.headers['Authorization'], 'Bearer {}'.format(google_auth.credentials.token))
 
-#add user credentials dropdown change
 def test_call_user_credentials_no_dropdown_change(): 
     with patch('subprocess.check_output', return_value=AUTH_DESCRIBE_USER), \
     patch('google.auth.default', return_value=(DefaultCredentialsError, 'project')), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts):
+    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         google_auth.initialize_credentials_with_auth_account_selection('account@google.com')
         request = requests.Request(url="http://www.example.org")
