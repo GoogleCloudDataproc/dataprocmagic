@@ -153,7 +153,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
     try:
-        credentials, project = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'])
+        credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'])
     except:
         return False
     return credentials is not None
