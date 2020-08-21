@@ -245,6 +245,8 @@ class GoogleAuth(Authenticator):
                 self.credentials = get_credentials_for_account(account, self.scopes)
 
     def update_with_widget_values(self):
+        """Updates url to be the component gateway url of the cluster found with the project, 
+        region, and cluster textbox widget values"""
         no_credentials_exception = BadUserConfigurationException(
             "Failed to obtain access token. Run `gcloud auth login` in your command line "\
             "to authorize gcloud to access the Cloud Platform with Google user credentials to "\
