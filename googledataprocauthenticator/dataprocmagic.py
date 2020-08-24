@@ -32,8 +32,15 @@ class DataprocMagics(SparkMagicBase):
         self.endpoints = {}
         if widget is None:
             widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display)
-        
+        #wrap widget in manage_dataproc% widget
+
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
+
+    @line_magic
+    def manage_dataproc(self, line, local_ns=None):
+        """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
+        Then, create a session. You'll be able to select the session created from the %%spark magic."""
+        return self.__remotesparkmagics.manage_widget
 
     @line_magic
     def manage_spark(self, line, local_ns=None):
@@ -107,6 +114,7 @@ class DataprocMagics(SparkMagicBase):
 
             name = args.session
             language = args.language
+            #here we want to add endpoint
             endpoint = Endpoint(args.url, initialize_auth(args))
             skip = args.skip
             properties = conf.get_session_properties(language)
