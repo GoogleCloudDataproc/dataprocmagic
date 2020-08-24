@@ -17,14 +17,14 @@ import subprocess
 import re
 import urllib3.util
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
-from sparkmagic.auth.customauth import Authenticator
-from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
-from sparkmagic.utils.constants import WIDGET_WIDTH
 from google.cloud import dataproc_v1beta2
-import google.auth.transport.requests 
+import google.auth.transport.requests
 from google.auth import _cloud_sdk
 from google.auth.exceptions import UserAccessTokenError
 from google.oauth2.credentials import Credentials
+from sparkmagic.auth.customauth import Authenticator
+from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
+from sparkmagic.utils.constants import WIDGET_WIDTH
 
 
 # The name of the Cloud SDK shell script
