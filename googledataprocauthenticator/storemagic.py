@@ -65,6 +65,9 @@ class StoreMagic(AddEndpointWidget):
             self.refresh_method()
             raise
 
+# but this will not work because then whereever Sparkmagic uses these functions, I would have to do like 
+# AddEndpointWidget.run() = Storemagic.run. How would I override these functions without changing sparkmagic?  
+
 #would also have to override delete_endpoint to delete the endpoint.url key from stored_endpoints
 """
     def get_delete_session_endpoint_widget(self, url, endpoint):
