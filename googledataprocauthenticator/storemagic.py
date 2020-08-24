@@ -33,7 +33,7 @@ class RestoreMagic(MagicsControllerWidget):
         ipython = get_ipython()
         ipython.run_line_magic('load_ext', 'storemagic')
         ipython.run_line_magic('store', '-r')
-        return ipython.stored_endpoints
+        return ipython.user_ns
 
 
 class StoreMagic(AddEndpointWidget):
@@ -52,7 +52,7 @@ class StoreMagic(AddEndpointWidget):
         else:
             endpoint = Endpoint(self.auth.url, self.auth)
         self.endpoints[self.auth.url] = endpoint
-        ipython.stored_endpoints[self.auth.url] = endpoint
+        ipython.user_ns[self.auth.url] = endpoint
         ipython.run_line_magic('store', self.auth.url)
         self.ipython_display.writeln("Added endpoint {}".format(self.auth.url))
         try:
@@ -68,7 +68,7 @@ class StoreMagic(AddEndpointWidget):
 # but this will not work because then whereever Sparkmagic uses these functions, I would have to do like 
 # AddEndpointWidget.run() = Storemagic.run. How would I override these functions without changing sparkmagic?  
 
-#would also have to override delete_endpoint to delete the endpoint.url key from stored_endpoints
+#would also have to override delete_endpoint to delete the endpoint.url key from user_ns
 """
     def get_delete_session_endpoint_widget(self, url, endpoint):
         session_text = self.ipywidget_factory.get_text(description="Session to delete:", value="0", width="50px")
