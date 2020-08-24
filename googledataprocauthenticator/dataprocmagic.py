@@ -11,13 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#from sparkmagic.controllerwidget.abstractmenuwidget import MagicsControllerWidget
-#from sparkmagic.controllerwidget.addendpointwidget import AddEndpointWidget
-#from sparkmagic.livyclientlib.endpoint import Endpoint
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
-
-
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth
 from sparkmagic.livyclientlib.endpoint import Endpoint
@@ -29,11 +24,11 @@ import sparkmagic.utils.configuration as conf
 
 
 @magics_class
-class DataprocMagic(SparkMagicBase):
+class DataprocMagics(SparkMagicBase):
 
     def __init__(self, shell, data=None, widget=None):
         # You must call the parent constructor
-        super(DataprocMagic, self).__init__(shell, data)
+        super(DataprocMagics, self).__init__(shell, data)
         self.endpoints = {}
         if widget is None:
             widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display)
@@ -129,7 +124,7 @@ class DataprocMagic(SparkMagicBase):
 """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
-    ip.register_magics(RemoteSparkMagics)
+    ip.register_magics(DataprocMagics)
 
 
 # class RestoreMagic(MagicsControllerWidget):
