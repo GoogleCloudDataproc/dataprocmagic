@@ -202,7 +202,7 @@ def load_ipython_extension(ip):
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
     print('got here')
-    ip.run_line_magic('store', 'r')
+    ip.run_line_magic('store', '-r')
 
 
 
