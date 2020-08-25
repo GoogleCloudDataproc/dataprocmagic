@@ -157,6 +157,8 @@ class DataprocMagics(SparkMagicBase):
             print(endpoint)
             stored_endpoints = list()
             for key, value in self.endpoints.items():
+                print(key)
+                print(value)
                 stored_endpoints = stored_endpoints.append(value)
             #stored_endpoints = self.ipython.stored_endpoints.append(endpoint)
             print(stored_endpoints)
@@ -200,7 +202,7 @@ def load_ipython_extension(ip):
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
     print('got here')
-    ip.run_line_magic('store', '-r')
+    ip.run_line_magic('store', 'r')
 
 
 
