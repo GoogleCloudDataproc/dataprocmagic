@@ -154,14 +154,17 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            stored_endpoints = self.endpoints.copy().values
+            stored_endpoints = stored_endpoints.append(endpoint)
             print(stored_endpoints)
             #self.store_magic.store(stored_endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
             
             self.ipython.run_line_magic('store', stored_endpoints)
+            print(self.ipython.stored_endpoints[0])
             print(self.ipython.stored_endpoints)
+
+
             #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
