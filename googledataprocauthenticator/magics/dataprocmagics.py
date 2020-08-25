@@ -46,7 +46,6 @@ class DataprocMagics(SparkMagicBase):
 
         if self.ipython.user_ns['stored_endpoints'] is not None:
             stored_endpoints.extend(self.ipython.user_ns['stored_endpoints'])
-        #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
         self.sessions = []
@@ -229,14 +228,13 @@ class DataprocMagics(SparkMagicBase):
         return session_widgets
 
     def _print_local_info(self):
-        self.__remotesparkmagics._print_local_info()
-#         sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
-#         print("""Info for running Spark:
-#     Sessions:
-# {}
-#     Session configs:
-#         {}
-# """.format("\n".join(sessions_info), conf.session_configs()))
+        sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
+        print("""Info for running Spark:
+    Sessions:
+{}
+    Session configs:
+        {}
+""".format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
     ip.register_magics(StoreMagics)
