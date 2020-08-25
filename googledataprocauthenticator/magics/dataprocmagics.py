@@ -16,7 +16,6 @@ from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth
 from sparkmagic.livyclientlib.endpoint import Endpoint
-
 from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
 from sparkmagic.magics.sparkmagicsbase import SparkMagicBase
 from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
@@ -41,12 +40,13 @@ class DataprocMagics(SparkMagicBase):
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
         Then, create a session. You'll be able to select the session created from the %%spark magic."""
         return self.__remotesparkmagics.manage_widget
+    
 
-    @line_magic
-    def manage_spark(self, line, local_ns=None):
-        """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
-        Then, create a session. You'll be able to select the session created from the %%spark magic."""
-        return self.__remotesparkmagics.manage_widget
+    # @line_magic
+    # def manage_spark(self, line, local_ns=None):
+    #     """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
+    #     Then, create a session. You'll be able to select the session created from the %%spark magic."""
+    #     return self.__remotesparkmagics.manage_widget
     
     @magic_arguments()
     @argument("-g", "--credentials", dest='account', type=str, default=None, help="Credentials for Google authentication. [account@google.com, "
