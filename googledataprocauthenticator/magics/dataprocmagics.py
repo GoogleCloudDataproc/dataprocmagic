@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from IPython import get_ipython
+from IPython.extensions.storemagic import StoreMagics
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
@@ -24,7 +25,6 @@ from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerW
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
 
-
 @magics_class
 class DataprocMagics(SparkMagicBase):
 
@@ -32,7 +32,9 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
-        self.endpoints = self._reload_endpoints()
+        StoreMagics.store('r')
+        self.endpoints = {}
+        self._reload_endpoints()
         print(self.endpoints)
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None:
@@ -144,11 +146,13 @@ class DataprocMagics(SparkMagicBase):
             name = args.session
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
+            self.endpoints[args.url] = endpoint
+            StoreMagics.store(self.endpoints)
             #store endpoint
-            self.ipython.user_ns[self.auth.url] = endpoint
-            print(self.ipython.user_ns)
-            self.ipython.run_line_magic('store', self.auth.url)
-            print(self.ipython.user_ns)
+            #self.ipython.user_ns[self.auth.url] = endpoint
+            #print(self.ipython.user_ns)
+            #self.ipython.run_line_magic('store', self.auth.url)
+            #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
