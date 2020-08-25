@@ -32,9 +32,8 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
-        #stored_endpoints = {}
         stored_endpoints = list()
-        self._reload_endpoints()
+        #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
         for endpoint in stored_endpoints:
@@ -156,13 +155,13 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             stored_endpoints = self.endpoints.copy().values
-            
+            print(stored_endpoints)
             #self.store_magic.store(stored_endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
             
             self.ipython.run_line_magic('store', stored_endpoints)
-            #print(self.ipython.)
+            print(self.ipython.stored_endpoints)
             #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
@@ -188,8 +187,12 @@ class DataprocMagics(SparkMagicBase):
 # """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
+    """Loads endpoints that were saved with %store"""
+    ip.register_magics(StoreMagics)
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
+    print('got here')
+    ip.run_line_magic('store', '-r')
 
 
 
