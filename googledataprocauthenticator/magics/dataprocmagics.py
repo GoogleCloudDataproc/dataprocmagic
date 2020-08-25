@@ -32,9 +32,11 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
-        self.endpoints = {}
-        self.store_magic = StoreMagics(shell)
-        self.store_magic.store('r')
+        stored_endpoints = {}
+        self._reload_endpoints()
+        self.endpoints = stored_endpoints
+        #self.store_magic = StoreMagics(shell)
+        #self.store_magic.store('-r')
         
         #self._reload_endpoints()
         print(self.endpoints)
@@ -149,11 +151,12 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            self.store_magic.store(self.endpoints)
+            stored_endpoints = self.endpoints
+            #self.store_magic.store(stored_endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
             #print(self.ipython.user_ns)
-            #self.ipython.run_line_magic('store', self.auth.url)
+            self.ipython.run_line_magic('store', stored_endpoints)
             #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
@@ -167,7 +170,6 @@ class DataprocMagics(SparkMagicBase):
         ipython = get_ipython()
         ipython.run_line_magic('load_ext', 'storemagic')
         ipython.run_line_magic('store', '-r')
-        return ipython.user_ns
 
     def _print_local_info(self):
         self.__remotesparkmagics._print_local_info()
