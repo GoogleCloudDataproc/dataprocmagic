@@ -32,9 +32,11 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
-        StoreMagics.store('r')
         self.endpoints = {}
-        self._reload_endpoints()
+        self.store_magic = StoreMagics(shell)
+        self.store_magic.store('r')
+        
+        #self._reload_endpoints()
         print(self.endpoints)
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None:
@@ -147,7 +149,7 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            StoreMagics.store(self.endpoints)
+            self.store_magic.store(self.endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
             #print(self.ipython.user_ns)
