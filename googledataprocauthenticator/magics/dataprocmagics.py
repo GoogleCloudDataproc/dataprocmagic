@@ -38,7 +38,7 @@ class DataprocMagics(SparkMagicBase):
         stored_endpoints = list()
         print(stored_endpoints)
         
-        self.ipython.run_line_magic('store', '-r')
+        self.ipython.run_line_magic('store', '-r stored_endpoints')
         try: 
             print(self.ipython.user_ns['stored_endpoints'])
         except Exception as e: 
@@ -54,10 +54,13 @@ class DataprocMagics(SparkMagicBase):
             auth = initialize_auth(args)
             endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
             self.endpoints[endpoint.url] = endpoint
-            print(self.spark_controller.get_all_sessions_endpoint(endpoint))
-            #self.sessions.extend(self.spark_controller.get_all_sessions_endpoint(endpoint.url))
+            #get all sessions running on that endpoint
+            endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+            #add each session to session manager. 
+            for session in endpoint_sessions:
+                name = self.spark_controller.get_session_name_by_id_endpoint(session.id, endpoint)
+                self.spark_controller.session_manager.add_session(name, session)
         
-        #MagicsControllerWidget.children = 
      
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None and len(stored_endpoints) != 0:
