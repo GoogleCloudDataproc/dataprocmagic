@@ -36,7 +36,7 @@ class DataprocMagics(SparkMagicBase):
         # load endpoints from saved. 
         self.ipython = get_ipython()
         stored_endpoints = list()
-        self.ipython.run_line_magic('store', '-r')
+        #self.ipython.run_line_magic('store', '-r')
 
         #self._reload_endpoints()
         print(stored_endpoints)
