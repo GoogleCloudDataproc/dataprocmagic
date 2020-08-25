@@ -33,10 +33,10 @@ class DataprocMagics(SparkMagicBase):
     def __init__(self, shell, data=None, widget=None):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
-        # load endpoints from saved. 
+        # load endpoints from saved.
         self.ipython = get_ipython()
         stored_endpoints = list()
-        #self.ipython.run_line_magic('store', '-r')
+        self.ipython.run_line_magic('store', '-r')
 
         #self._reload_endpoints()
         print(stored_endpoints)
