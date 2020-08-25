@@ -49,11 +49,16 @@ class DataprocMagics(SparkMagicBase):
         #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
+        self.sessions = []
         for endpoint_tuple in stored_endpoints:
             args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
             auth = initialize_auth(args)
             endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
             self.endpoints[endpoint.url] = endpoint
+            print(self.spark_controller.get_all_sessions_endpoint(endpoint.url))
+            #self.sessions.extend(self.spark_controller.get_all_sessions_endpoint(endpoint.url))
+        
+        #MagicsControllerWidget.children = 
      
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None and len(stored_endpoints) != 0:
@@ -189,11 +194,6 @@ class DataprocMagics(SparkMagicBase):
             #should be none because we need to store it 
             self.ipython.run_line_magic('store', 'stored_endpoints')
             print(self.ipython.user_ns['stored_endpoints'])
-
-            #print(self.ipython.stored_endpoints)
-
-
-            #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
@@ -206,6 +206,27 @@ class DataprocMagics(SparkMagicBase):
         ipython = get_ipython()
         ipython.run_line_magic('reload_ext', 'storemagic')
         ipython.run_line_magic('store', '-r')
+
+    def get_existing_session_widgets(self, ):
+        session_widgets = []
+        session_widgets.append(self.ipywidget_factory.get_html(value="<br/>", width="600px"))
+
+        client_dict = self.spark_controller.get_managed_clients()
+        if len(client_dict) > 0:
+            # Header
+            header = self.get_session_widget("Name", "Id", "Kind", "State", False)
+            session_widgets.append(header)
+            session_widgets.append(self.ipywidget_factory.get_html(value="<hr/>", width="600px"))
+
+            # Sessions
+            for name, session in client_dict.items():
+                session_widgets.append(self.get_session_widget(name, session.id, session.kind, session.status))
+
+            session_widgets.append(self.ipywidget_factory.get_html(value="<br/>", width="600px"))
+        else:
+            session_widgets.append(self.ipywidget_factory.get_html(value="No sessions yet.", width="600px"))
+
+        return session_widgets
 
     def _print_local_info(self):
         self.__remotesparkmagics._print_local_info()
