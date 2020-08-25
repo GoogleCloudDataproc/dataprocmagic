@@ -154,7 +154,10 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            stored_endpoints = stored_endpoints.append(endpoint)
+            stored_endpoints = list()
+            for key, value in self.endpoints.items():
+                stored_endpoints = stored_endpoints.append(value)
+            #stored_endpoints = self.ipython.stored_endpoints.append(endpoint)
             print(stored_endpoints)
             #self.store_magic.store(stored_endpoints)
             #store endpoint
