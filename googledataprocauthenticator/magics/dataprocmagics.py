@@ -32,20 +32,20 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
-        stored_endpoints = {}
+        #stored_endpoints = {}
+        stored_endpoints = list()
         self._reload_endpoints()
-        self.endpoints = stored_endpoints
-        if len(stored_endpoints) == 0:
-            stored_endpoints = None
         print(stored_endpoints)
-        #self.store_magic = StoreMagics(shell)
-        #self.store_magic.store('-r')
-        
-        #self._reload_endpoints()
-        
+        self.endpoints = {}
+        for endpoint in stored_endpoints:
+            self.endpoints[endpoint.url] = endpoint
+     
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
-        if widget is None:
-            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, stored_endpoints)
+        if widget is None and len(stored_endpoints) != 0:
+            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        else:
+            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display)
+
         # then here we want to override session and endpoint tabs with Dataproc stuff. OR we can write an entirely different
         # entire widget class that uses self.spark_controller. 
         self.endpoints = {}
@@ -155,12 +155,14 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            stored_endpoints = self.endpoints.copy()
+            stored_endpoints = self.endpoints.copy().values
+            
             #self.store_magic.store(stored_endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
-            #print(self.ipython.user_ns)
+            
             self.ipython.run_line_magic('store', stored_endpoints)
+            #print(self.ipython.)
             #print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
