@@ -35,6 +35,8 @@ class DataprocMagics(SparkMagicBase):
         stored_endpoints = {}
         self._reload_endpoints()
         self.endpoints = stored_endpoints
+        if len(stored_endpoints) == 0:
+            self.endpoints = None
         #self.store_magic = StoreMagics(shell)
         #self.store_magic.store('-r')
         
@@ -151,7 +153,7 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            stored_endpoints = self.endpoints
+            stored_endpoints = self.endpoints.copy()
             #self.store_magic.store(stored_endpoints)
             #store endpoint
             #self.ipython.user_ns[self.auth.url] = endpoint
@@ -168,7 +170,7 @@ class DataprocMagics(SparkMagicBase):
     def _reload_endpoints():
         """Loads endpoints that were saved with %store"""
         ipython = get_ipython()
-        ipython.run_line_magic('load_ext', 'storemagic')
+        ipython.run_line_magic('reload_ext', 'storemagic')
         ipython.run_line_magic('store', '-r')
 
     def _print_local_info(self):
