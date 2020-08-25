@@ -164,7 +164,7 @@ class DataprocMagics(SparkMagicBase):
             for key, value in self.endpoints.items():
                 print(key)
                 print(value)
-                new_stored_endpoints = new_stored_endpoints.append(value)
+                new_stored_endpoints.append(value)
             print(new_stored_endpoints)
             self.ipython.user_ns['stored_endpoints'] = new_stored_endpoints
             
