@@ -20,6 +20,7 @@ from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
 from sparkmagic.magics.sparkmagicsbase import SparkMagicBase
 from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
 import sparkmagic.utils.configuration as conf
+from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
 
 
 @magics_class
@@ -49,6 +50,29 @@ class DataprocMagics(SparkMagicBase):
     #     return self.__remotesparkmagics.manage_widget
     
     @magic_arguments()
+    @argument("-c", "--context", type=str, default=CONTEXT_NAME_SPARK,
+              help="Context to use: '{}' for spark and '{}' for sql queries. "
+                   "Default is '{}'.".format(CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, CONTEXT_NAME_SPARK))
+    @argument("-s", "--session", type=str, default=None, help="The name of the Livy session to use.")
+    @argument("-o", "--output", type=str, default=None, help="If present, output when using SQL "
+                                                             "queries will be stored in this variable.")
+    @argument("-q", "--quiet", type=bool, default=False, nargs="?", const=True, help="Do not display visualizations"
+                                                                                     " on SQL queries")
+    @argument("-m", "--samplemethod", type=str, default=None, help="Sample method for SQL queries: either take or sample")
+    @argument("-n", "--maxrows", type=int, default=None, help="Maximum number of rows that will be pulled back "
+                                                                        "from the server for SQL queries")
+    @argument("-r", "--samplefraction", type=float, default=None, help="Sample fraction for sampling from SQL queries")
+    @argument("-u", "--url", type=str, default=None, help="URL for Livy endpoint")
+    @argument("-a", "--user", dest='user', type=str, default="", help="Username for HTTP access to Livy endpoint")
+    @argument("-p", "--password", type=str, default="", help="Password for HTTP access to Livy endpoint")
+    @argument("-t", "--auth", type=str, default=None, help="Auth type for HTTP access to Livy endpoint. [Kerberos, None, Basic]")
+    @argument("-l", "--language", type=str, default=None,
+              help="Language for Livy session; one of {}".format(', '.join([LANG_PYTHON, LANG_SCALA, LANG_R])))
+    @argument("command", type=str, default=[""], nargs="*", help="Commands to execute.")
+    @argument("-k", "--skip", type=bool, default=False, nargs="?", const=True, help="Skip adding session if it already exists")
+    @argument("-i", "--id", type=int, default=None, help="Session ID")
+    @argument("-e", "--coerce", type=str, default=None, help="Whether to automatically coerce the types (default, pass True if being explicit) "
+                                                                        "of the dataframe or not (pass False)")
     @argument("-g", "--credentials", dest='account', type=str, default=None, help="Credentials for Google authentication. [account@google.com, "
                                                                         "default-credentials]")
 
