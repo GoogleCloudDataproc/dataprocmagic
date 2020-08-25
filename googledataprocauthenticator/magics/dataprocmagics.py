@@ -55,7 +55,7 @@ class DataprocMagics(SparkMagicBase):
             auth = initialize_auth(args)
             endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
             self.endpoints[endpoint.url] = endpoint
-            print(self.spark_controller.get_all_sessions_endpoint(endpoint.url))
+            print(self.spark_controller.get_all_sessions_endpoint(endpoint))
             #self.sessions.extend(self.spark_controller.get_all_sessions_endpoint(endpoint.url))
         
         #MagicsControllerWidget.children = 
