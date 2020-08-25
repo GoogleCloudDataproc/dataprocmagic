@@ -56,9 +56,11 @@ class DataprocMagics(SparkMagicBase):
             self.endpoints[endpoint.url] = endpoint
             #get all sessions running on that endpoint
             endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-            #add each session to session manager. 
+            #add each session to session manager.
             for session in endpoint_sessions:
+                print(session)
                 name = self.spark_controller.get_session_name_by_id_endpoint(session.id, endpoint)
+                print(name)
                 self.spark_controller.session_manager.add_session(name, session)
         
      
