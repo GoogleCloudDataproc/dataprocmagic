@@ -50,7 +50,7 @@ class DataprocMagics(SparkMagicBase):
         print(stored_endpoints)
         self.endpoints = {}
         for endpoint_tuple in stored_endpoints:
-            args = Namespace(auth='Google', account=endpoint_tuple[1])
+            args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
             auth = initialize_auth(args)
             endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
             self.endpoints[endpoint.url] = endpoint
