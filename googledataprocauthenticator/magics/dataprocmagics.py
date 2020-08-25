@@ -25,6 +25,8 @@ from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerW
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
 
+ipython = get_ipython()
+
 @magics_class
 class DataprocMagics(SparkMagicBase):
 
@@ -32,7 +34,10 @@ class DataprocMagics(SparkMagicBase):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved. 
+        self.ipython = get_ipython()
         stored_endpoints = list()
+        self.ipython.run_line_magic('store', '-r')
+
         #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
@@ -160,12 +165,16 @@ class DataprocMagics(SparkMagicBase):
                 print(key)
                 print(value)
                 new_stored_endpoints = new_stored_endpoints.append(value)
-            
             print(new_stored_endpoints)
+            self.ipython.user_ns['stored_endpoints'] = new_stored_endpoints
+            
+            """
+            self.ipython.run_line_magic('store', 'stored_endpoints')
             if self.ipython.user_ns['stored_endpoints'] is not None:
                 self.ipython.user_ns['stored_endpoints'] = self.ipython.user_ns['stored_endpoints'].extend(new_stored_endpoints)
             else:
                 self.ipython.user_ns['stored_endpoints'] = new_stored_endpoints
+            """
             #should be none because we need to store it 
             self.ipython.run_line_magic('store', 'stored_endpoints')
             print(self.ipython.user_ns['stored_endpoints'])
@@ -198,12 +207,12 @@ class DataprocMagics(SparkMagicBase):
 # """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
-    """Loads endpoints that were saved with %store"""
     ip.register_magics(StoreMagics)
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
-    print('got here')
-    ip.run_line_magic('store', '-r')
+    #ipython = ip
+    #print('got here')
+    #ip.run_line_magic('store', '-r')
 
 
 
