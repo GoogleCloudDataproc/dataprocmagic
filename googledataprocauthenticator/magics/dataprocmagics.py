@@ -167,9 +167,11 @@ class DataprocMagics(SparkMagicBase):
             #self.ipython.user_ns[self.auth.url] = endpoint
             
             self.ipython.run_line_magic('store', 'stored_endpoints')
-            print(stored_endpoints)
-            #print(self.ipython.stored_endpoints[0])
-            print(self.ipython.stored_endpoints)
+            #print(stored_endpoints)
+            
+            print(self.ipython.user_ns['stored_endpoints'])
+
+            #print(self.ipython.stored_endpoints)
 
 
             #print(self.ipython.user_ns)
