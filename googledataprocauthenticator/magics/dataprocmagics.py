@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from IPython import get_ipython
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth
 from sparkmagic.livyclientlib.endpoint import Endpoint
+from sparkmagic.livyclientlib.exceptions import handle_expected_exceptions
 from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
 from sparkmagic.magics.sparkmagicsbase import SparkMagicBase
 from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
@@ -29,25 +31,30 @@ class DataprocMagics(SparkMagicBase):
     def __init__(self, shell, data=None, widget=None):
         # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
-        self.endpoints = {}
+        # load endpoints from saved. 
+        self.endpoints = self._reload_endpoints()
+        print(self.endpoints)
+        # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None:
-            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display)
-        #wrap widget in manage_dataproc% widget
-
+            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        # then here we want to override session and endpoint tabs with Dataproc stuff. OR we can write an entirely different
+        # entire widget class that uses self.spark_controller. 
+        self.ipython = get_ipython()
+        self.manage_dataproc_widget = widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
+        print(self.endpoints)
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
         Then, create a session. You'll be able to select the session created from the %%spark magic."""
-        return self.__remotesparkmagics.manage_widget
+        return self.manage_dataproc_widget
     
-
-    # @line_magic
-    # def manage_spark(self, line, local_ns=None):
-    #     """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
-    #     Then, create a session. You'll be able to select the session created from the %%spark magic."""
-    #     return self.__remotesparkmagics.manage_widget
+    @line_magic
+    def manage_spark(self, line, local_ns=None):
+        """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
+        Then, create a session. You'll be able to select the session created from the %%spark magic."""
+        return self.__remotesparkmagics.manage_widget
     
     @magic_arguments()
     @argument("-c", "--context", type=str, default=CONTEXT_NAME_SPARK,
@@ -78,7 +85,7 @@ class DataprocMagics(SparkMagicBase):
 
     @needs_local_scope
     @line_cell_magic
-    #@handle_expected_exceptions
+    @handle_expected_exceptions
     def spark(self, line, cell="", local_ns=None):
         """Magic to execute spark remotely.
 
@@ -125,7 +132,6 @@ class DataprocMagics(SparkMagicBase):
         args = parse_argstring_or_throw(self.spark, user_input)
 
         subcommand = args.command[0].lower()
-  
         if args.auth is None:
             args.auth = conf.get_auth_value(args.user, args.password)
         else:
@@ -135,28 +141,42 @@ class DataprocMagics(SparkMagicBase):
             if args.url is None:
                 self.ipython_display.send_error("Need to supply URL argument (e.g. -u https://example.com/livyendpoint)")
                 return
-
             name = args.session
             language = args.language
-            #here we want to add endpoint
             endpoint = Endpoint(args.url, initialize_auth(args))
+            #store endpoint
+            self.ipython.user_ns[self.auth.url] = endpoint
+            print(self.ipython.user_ns)
+            self.ipython.run_line_magic('store', self.auth.url)
+            print(self.ipython.user_ns)
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
-        else: 
+        else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
 
+    @staticmethod
+    def _reload_endpoints():
+        """Loads endpoints that were saved with %store"""
+        ipython = get_ipython()
+        ipython.run_line_magic('load_ext', 'storemagic')
+        ipython.run_line_magic('store', '-r')
+        return ipython.user_ns
+
     def _print_local_info(self):
-        sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
-        print("""Info for running Spark:
-    Sessions:
-{}
-    Session configs:
-        {}
-""".format("\n".join(sessions_info), conf.session_configs()))
+        self.__remotesparkmagics._print_local_info()
+#         sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
+#         print("""Info for running Spark:
+#     Sessions:
+# {}
+#     Session configs:
+#         {}
+# """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
+    ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
+
 
 
 # class RestoreMagic(MagicsControllerWidget):
