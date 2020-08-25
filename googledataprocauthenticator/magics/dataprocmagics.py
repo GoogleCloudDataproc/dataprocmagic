@@ -36,8 +36,15 @@ class DataprocMagics(SparkMagicBase):
         # load endpoints from saved.
         self.ipython = get_ipython()
         stored_endpoints = list()
+        print(stored_endpoints)
         self.ipython.run_line_magic('store', '-r')
+        try: 
+            print(self.ipython.user_ns['stored_endpoints'])
+        except Exception as e: 
+            print(e)
 
+        if self.ipython.user_ns['stored_endpoints'] is not None:
+            stored_endpoints.extend(self.ipython.user_ns['stored_endpoints'])
         #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
