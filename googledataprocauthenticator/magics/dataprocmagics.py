@@ -16,7 +16,7 @@ from IPython.extensions.storemagic import StoreMagics
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
-from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth
+from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth, Namespace
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.livyclientlib.exceptions import handle_expected_exceptions
 from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
@@ -37,6 +37,7 @@ class DataprocMagics(SparkMagicBase):
         self.ipython = get_ipython()
         stored_endpoints = list()
         print(stored_endpoints)
+        
         self.ipython.run_line_magic('store', '-r')
         try: 
             print(self.ipython.user_ns['stored_endpoints'])
@@ -48,7 +49,10 @@ class DataprocMagics(SparkMagicBase):
         #self._reload_endpoints()
         print(stored_endpoints)
         self.endpoints = {}
-        for endpoint in stored_endpoints:
+        for endpoint_tuple in stored_endpoints:
+            args = Namespace(auth='Google', account=endpoint_tuple[0])
+            auth = initialize_auth(args)
+            endpoint = Endpoint(url=endpoint_tuple[1], auth=auth)
             self.endpoints[endpoint.url] = endpoint
      
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
