@@ -36,17 +36,19 @@ class DataprocMagics(SparkMagicBase):
         self._reload_endpoints()
         self.endpoints = stored_endpoints
         if len(stored_endpoints) == 0:
-            self.endpoints = None
+            stored_endpoints = None
+        print(stored_endpoints)
         #self.store_magic = StoreMagics(shell)
         #self.store_magic.store('-r')
         
         #self._reload_endpoints()
-        print(self.endpoints)
+        
         # pass the endpoints to MagicsControllerWidget to be added as endpoints.
         if widget is None:
-            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, stored_endpoints)
         # then here we want to override session and endpoint tabs with Dataproc stuff. OR we can write an entirely different
         # entire widget class that uses self.spark_controller. 
+        self.endpoints = {}
         self.ipython = get_ipython()
         self.manage_dataproc_widget = widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
