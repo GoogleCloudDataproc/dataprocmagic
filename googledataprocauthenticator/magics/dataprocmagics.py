@@ -77,7 +77,6 @@ class DataprocMagics(SparkMagicBase):
             print(self.spark_controller.session_manager.get_sessions_list())
             for session in endpoint_sessions:
                 print(session)
-                print(dir(session))
                 name = session_id_to_name.get(session.id)
                 print(name)
                 self.spark_controller.session_manager.add_session(name, session)
@@ -202,6 +201,8 @@ class DataprocMagics(SparkMagicBase):
             session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
             print(self.spark_controller.session_manager.get_session(name).id)
             print(session_id_to_name)
+            self.ipython.user_ns['session_id_to_name'] = session_id_to_name
+
             self.ipython.run_line_magic('store', 'session_id_to_name')
             # add the sessions for this endpoint to the session manager 
             self._load_sessions_for_endpoint(endpoint_tuple)
