@@ -154,7 +154,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     except:
         raise
 
-
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
     try:
