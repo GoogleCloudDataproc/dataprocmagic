@@ -16,7 +16,6 @@
 Provides the %spark and %manage_dataproc magics."""
 
 from IPython import get_ipython
-from IPython.extensions.storemagic import StoreMagics
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
@@ -38,14 +37,16 @@ class DataprocMagics(SparkMagicBase):
         self.ipython = get_ipython()
         self.endpoints = {}
         self.ipython.run_line_magic('store', '-r stored_endpoints')
+        self.ipython.run_line_magic('store', '-r session_id_to_name')
         try:
             for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
                 self._load_sessions_for_endpoint(endpoint_tuple)
         except Exception:
-            # if we have never ran `store% stored_endpoints`, self.ipython.user_ns['stored_endpoints']
+            # if we have never stored an endpoint self.ipython.user_ns['stored_endpoints']
             # will throw exception
             self.ipython.user_ns['stored_endpoints'] = list()
-            self.ipython.run_line_magic('store', 'stored_endpoints')
+            self.ipython.user_ns['session_id_to_name'] = dict()
+            self.ipython.run_line_magic('store', 'stored_endpoints session_id_to_name')
             self.endpoints = None
 
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
@@ -65,20 +66,24 @@ class DataprocMagics(SparkMagicBase):
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
         self.endpoints[endpoint.url] = endpoint
-        #get all sessions running on that endpoint
-        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-        #add each session to session manager.
-        for session in endpoint_sessions:
-            print(session)
-            name = self.spark_controller.session_manager.get_session_name_by_id_endpoint(session.id, endpoint)
-            print(name)
-            self.spark_controller.session_manager.add_session(name, session)
+        try:
+            self.ipython.run_line_magic('store', '-r session_id_to_name')
+            session_id_to_name = self.ipython.user_ns['session_id_to_name']
+            #get all sessions running on that endpoint
+            endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+            #add each session to session manager.
+            for session in endpoint_sessions:
+                name = session_id_to_name.get(session.id)
+                self.spark_controller.session_manager.add_session(name, session)
+        except Exception:
+            self.ipython.user_ns['session_id_to_name'] = dict()
+            self.ipython.run_line_magic('store', 'session_id_to_name')
 
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
-        print(self.endpoints)
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
         Then, create a session."""
+        self.manage_dataproc_widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         return self.manage_dataproc_widget
     
     @line_magic
@@ -129,7 +134,9 @@ class DataprocMagics(SparkMagicBase):
            Subcommands
            -----------
            info
-               Display the available Livy sessions and other configurations for sessions.
+               Display the available Livy sessions and other configurations for sessions with None, Basic, or Kerberos auth.
+           sessions
+               Display the available Livy sessions and other configurations for sessions created with Google Authentication.
            add
                Add a Livy session given a session name (-s), language (-l), and endpoint credentials.
                The -k argument, if present, will skip adding this session if it already exists.
@@ -162,8 +169,7 @@ class DataprocMagics(SparkMagicBase):
         user_input = line
         args = parse_argstring_or_throw(self.spark, user_input)
         subcommand = args.command[0].lower()
-
-        if subcommand == "add" and args.auth == "Google":
+        if args.auth == "Google" and subcommand == "add":
             if args.url is None:
                 self.ipython_display.send_error("Need to supply URL argument (e.g. -u https://example.com/livyendpoint)")
                 return
@@ -171,13 +177,9 @@ class DataprocMagics(SparkMagicBase):
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
-            print(endpoint)
             # get current stored_endpoints
             stored_endpoints = self.ipython.user_ns['stored_endpoints']
             endpoint_tuple = (args.url, endpoint.auth.active_credentials)
-            # add the sessions for this endpoint to the session manager to so the session will be 
-            # printed when self._print_local_info() is called
-            self._load_sessions_for_endpoint(endpoint_tuple)
             stored_endpoints.append(endpoint_tuple)
             self.ipython.user_ns['stored_endpoints'] = stored_endpoints
             # stored updated stored_endpoints
@@ -185,9 +187,22 @@ class DataprocMagics(SparkMagicBase):
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
+            # session_id_to_name dict is necessary to restore session name across notebook sessions
+            # since the livy server does not store the name. 
+            session_id_to_name = self.ipython.user_ns['session_id_to_name']
+            # add session id -> name to session_id_to_name dict
+            session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
+            self.ipython.user_ns['session_id_to_name'] = session_id_to_name
+            self.ipython.run_line_magic('store', 'session_id_to_name')
+        elif subcommand == "sessions":
+                if args.url is not None and args.id is not None:
+                    endpoint = Endpoint(args.url, initialize_auth(args))
+                    info_sessions = self.spark_controller.get_all_sessions_endpoint_info(endpoint)
+                    self._print_endpoint_info(info_sessions, args.id)
+                else:
+                    self._print_local_info()
         else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
-
 
     def _print_local_info(self):
         sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
@@ -199,7 +214,6 @@ class DataprocMagics(SparkMagicBase):
 """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
-    ip.register_magics(StoreMagics)
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
    
