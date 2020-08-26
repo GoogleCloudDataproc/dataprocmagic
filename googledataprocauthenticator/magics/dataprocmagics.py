@@ -82,7 +82,6 @@ class DataprocMagics(SparkMagicBase):
                 self.spark_controller.session_manager.add_session(name, session)
             print(self.spark_controller.session_manager.get_sessions_list())
         except Exception as e:
-
             self.ipython.user_ns['session_id_to_name'] = dict()
             self.ipython.run_line_magic('store', 'session_id_to_name')
             raise
@@ -206,8 +205,9 @@ class DataprocMagics(SparkMagicBase):
             self.ipython.user_ns['session_id_to_name'] = session_id_to_name
 
             self.ipython.run_line_magic('store', 'session_id_to_name')
+
             # add the sessions for this endpoint to the session manager 
-            self._load_sessions_for_endpoint(endpoint_tuple)
+            #self._load_sessions_for_endpoint(endpoint_tuple)
             print(self.spark_controller.session_manager.get_sessions_list())
         else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
