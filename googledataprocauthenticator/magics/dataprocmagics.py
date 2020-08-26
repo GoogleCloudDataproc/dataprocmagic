@@ -134,7 +134,9 @@ class DataprocMagics(SparkMagicBase):
            Subcommands
            -----------
            info
-               Display the available Livy sessions and other configurations for sessions.
+               Display the available Livy sessions and other configurations for sessions with None, Basic, or Kerberos auth.
+           sessions
+               Display the available Livy sessions and other configurations for sessions created with Google Authentication.
            add
                Add a Livy session given a session name (-s), language (-l), and endpoint credentials.
                The -k argument, if present, will skip adding this session if it already exists.
@@ -167,33 +169,32 @@ class DataprocMagics(SparkMagicBase):
         user_input = line
         args = parse_argstring_or_throw(self.spark, user_input)
         subcommand = args.command[0].lower()
-        if args.auth == "Google":
-            if subcommand == "add":
-                if args.url is None:
-                    self.ipython_display.send_error("Need to supply URL argument (e.g. -u https://example.com/livyendpoint)")
-                    return
-                name = args.session
-                language = args.language
-                endpoint = Endpoint(args.url, initialize_auth(args))
-                self.endpoints[args.url] = endpoint
-                # get current stored_endpoints
-                stored_endpoints = self.ipython.user_ns['stored_endpoints']
-                endpoint_tuple = (args.url, endpoint.auth.active_credentials)
-                stored_endpoints.append(endpoint_tuple)
-                self.ipython.user_ns['stored_endpoints'] = stored_endpoints
-                # stored updated stored_endpoints
-                self.ipython.run_line_magic('store', 'stored_endpoints')
-                skip = args.skip
-                properties = conf.get_session_properties(language)
-                self.spark_controller.add_session(name, endpoint, skip, properties)
-                # session_id_to_name dict is necessary to restore session name across notebook sessions
-                # since the livy server does not store the name. 
-                session_id_to_name = self.ipython.user_ns['session_id_to_name']
-                # add session id -> name to session_id_to_name dict
-                session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
-                self.ipython.user_ns['session_id_to_name'] = session_id_to_name
-                self.ipython.run_line_magic('store', 'session_id_to_name')
-            if subcommand == "info":
+        if args.auth == "Google" and subcommand == "add":
+            if args.url is None:
+                self.ipython_display.send_error("Need to supply URL argument (e.g. -u https://example.com/livyendpoint)")
+                return
+            name = args.session
+            language = args.language
+            endpoint = Endpoint(args.url, initialize_auth(args))
+            self.endpoints[args.url] = endpoint
+            # get current stored_endpoints
+            stored_endpoints = self.ipython.user_ns['stored_endpoints']
+            endpoint_tuple = (args.url, endpoint.auth.active_credentials)
+            stored_endpoints.append(endpoint_tuple)
+            self.ipython.user_ns['stored_endpoints'] = stored_endpoints
+            # stored updated stored_endpoints
+            self.ipython.run_line_magic('store', 'stored_endpoints')
+            skip = args.skip
+            properties = conf.get_session_properties(language)
+            self.spark_controller.add_session(name, endpoint, skip, properties)
+            # session_id_to_name dict is necessary to restore session name across notebook sessions
+            # since the livy server does not store the name. 
+            session_id_to_name = self.ipython.user_ns['session_id_to_name']
+            # add session id -> name to session_id_to_name dict
+            session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
+            self.ipython.user_ns['session_id_to_name'] = session_id_to_name
+            self.ipython.run_line_magic('store', 'session_id_to_name')
+        elif subcommand == "sessions":
                 if args.url is not None and args.id is not None:
                     endpoint = Endpoint(args.url, initialize_auth(args))
                     info_sessions = self.spark_controller.get_all_sessions_endpoint_info(endpoint)
