@@ -73,7 +73,7 @@ class DataprocMagics(SparkMagicBase):
         print(self.spark_controller.session_manager.get_sessions_list())
         for session in endpoint_sessions:
             print(session)
-            name = self.session_id_to_name.get(session.id)
+            name = session_id_to_name.get(session.id)
             print(name)
             self.spark_controller.session_manager.add_session(name, session)
         print(self.spark_controller.session_manager.get_sessions_list())
