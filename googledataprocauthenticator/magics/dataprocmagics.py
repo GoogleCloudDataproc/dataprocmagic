@@ -91,7 +91,7 @@ class DataprocMagics(SparkMagicBase):
         print(self.endpoints)
         print(self.spark_controller.session_manager.get_sessions_list())
         #self.ipython.run_line_magic('store', '-r session_id_to_name')
-        manage_dataproc_widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        self.manage_dataproc_widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
 
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
         Then, create a session."""
@@ -195,6 +195,7 @@ class DataprocMagics(SparkMagicBase):
             self.ipython.user_ns['stored_endpoints'] = stored_endpoints
             # stored updated stored_endpoints
             self.ipython.run_line_magic('store', 'stored_endpoints')
+            self.endpoints[endpoint.url] = endpoint
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
