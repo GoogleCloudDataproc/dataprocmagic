@@ -216,4 +216,3 @@ class DataprocMagics(SparkMagicBase):
 def load_ipython_extension(ip):
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
-   
