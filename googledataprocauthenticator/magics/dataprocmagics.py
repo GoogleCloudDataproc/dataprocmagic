@@ -36,19 +36,40 @@ class DataprocMagics(SparkMagicBase):
         # load endpoints from saved.
         self.ipython = get_ipython()
         stored_endpoints = list()
+        self.endpoints = {}
         print(stored_endpoints)
         
         self.ipython.run_line_magic('store', '-r stored_endpoints')
+        # need try because if stored_endpoints is not stored, then it will error.
         try: 
-            print(self.ipython.user_ns['stored_endpoints'])
-        except Exception as e: 
-            print(e)
+            for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
+                args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
+                auth = initialize_auth(args)
+                endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
+                self.endpoints[endpoint.url] = endpoint
+                #get all sessions running on that endpoint
+                endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+                #add each session to session manager.
+                for session in endpoint_sessions:
+                    print(session)
+                    name = self.spark_controller.session_manager.get_session_name_by_id_endpoint(session.id, endpoint)
+                    print(name)
+                    self.spark_controller.session_manager.add_session(name, session)
 
-        if self.ipython.user_ns['stored_endpoints'] is not None:
-            stored_endpoints.extend(self.ipython.user_ns['stored_endpoints'])
+        except Exception as e:
+            #if it errors then that means we have never stored_endpoints before. 
+            #we set it to the 
+            self.ipython.user_ns['stored_endpoints'] = stored_endpoints
+            self.ipython.run_line_magic('store', 'stored_endpoints')
+            
+            self.endpoints = None
+            print(e)
+       
+
+        """
         print(stored_endpoints)
-        self.endpoints = {}
-        self.sessions = []
+        
+        #self.sessions = []
         for endpoint_tuple in stored_endpoints:
             args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
             auth = initialize_auth(args)
@@ -63,14 +84,11 @@ class DataprocMagics(SparkMagicBase):
                 print(name)
                 self.spark_controller.session_manager.add_session(name, session)
         
-     
-        # pass the endpoints to MagicsControllerWidget to be added as endpoints.
-        if widget is None and len(stored_endpoints) != 0:
-            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
-        else:
-            widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display)
-        self.endpoints = {}
-        self.ipython = get_ipython()
+        """
+
+        widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        if self.endpoints is None:
+            self.endpoints = {}
         self.manage_dataproc_widget = widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
@@ -163,10 +181,13 @@ class DataprocMagics(SparkMagicBase):
         args = parse_argstring_or_throw(self.spark, user_input)
 
         subcommand = args.command[0].lower()
+
+        #should be able to take this out. 
         if args.auth is None:
             args.auth = conf.get_auth_value(args.user, args.password)
         else:
             args.auth = args.auth
+        # to hhere 
 
         if subcommand == "add":
             if args.url is None:
@@ -177,16 +198,24 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             print(endpoint)
-            new_stored_endpoints = list()
-            for key, value in self.endpoints.items():
-                print(key)
-                print(value)
-                new_stored_endpoints.append((value.url, value.auth.active_credentials))
-            print(new_stored_endpoints)
-            self.ipython.user_ns['stored_endpoints'] = new_stored_endpoints
+            #get current stored_endpoints
+            stored_endpoints = self.ipython.user_ns['stored_endpoints']
+            # append new (url,account) tuple
+            stored_endpoints.append(args.url, endpoint.auth.active_credentials)
+            """
+            stored_endpoints = list()
+
+            for url, endpoint in self.endpoints.items():
+                print(url)
+                print(endpoint)
+                stored_endpoints.append((url, endpoint.auth.active_credentials))
             
-            #should be none because we need to store it 
-            self.ipython.run_line_magic('store', 'stored_endpoints')
+            print(stored_endpoints)
+            """
+            #update with stored_endpoints
+            self.ipython.user_ns['stored_endpoints'] = stored_endpoints
+            #call update store so that stored endpoints will get updated stored_endpoints
+            self.ipython.run_line_magic('store', '-r stored_endpoints')
             print(self.ipython.user_ns['stored_endpoints'])
             skip = args.skip
             properties = conf.get_session_properties(language)
