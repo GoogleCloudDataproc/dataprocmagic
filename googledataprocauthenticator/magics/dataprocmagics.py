@@ -46,7 +46,8 @@ class DataprocMagics(SparkMagicBase):
             # if we have never ran `store% stored_endpoints`, self.ipython.user_ns['stored_endpoints']
             # will throw exception
             self.ipython.user_ns['stored_endpoints'] = list()
-            self.ipython.run_line_magic('store', 'stored_endpoints')
+            self.ipython.user_ns['session_id_to_name'] = dict()
+            self.ipython.run_line_magic('store', 'stored_endpoints session_id_to_name')
             self.endpoints = None
 
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
@@ -78,7 +79,7 @@ class DataprocMagics(SparkMagicBase):
                 print(name)
                 self.spark_controller.session_manager.add_session(name, session)
             print(self.spark_controller.session_manager.get_sessions_list())
-        except Exception: 
+        except Exception:
             self.ipython.user_ns['session_id_to_name'] = dict()
             self.ipython.run_line_magic('store', 'session_id_to_name')
 
@@ -196,7 +197,7 @@ class DataprocMagics(SparkMagicBase):
             session_id_to_name[name] = self.spark_controller.session_manager.get_session(name).id
             self.ipython.run_line_magic('store', 'session_id_to_name')
             # add the sessions for this endpoint to the session manager 
-            self._load_sessions_for_endpoint(endpoint_tuple, session_id_to_name)
+            self._load_sessions_for_endpoint(endpoint_tuple)
             print(self.spark_controller.session_manager.get_sessions_list())
         else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
