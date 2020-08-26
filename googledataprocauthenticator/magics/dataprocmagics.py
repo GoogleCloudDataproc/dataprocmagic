@@ -81,9 +81,11 @@ class DataprocMagics(SparkMagicBase):
                 print(name)
                 self.spark_controller.session_manager.add_session(name, session)
             print(self.spark_controller.session_manager.get_sessions_list())
-        except Exception:
+        except Exception as e:
+
             self.ipython.user_ns['session_id_to_name'] = dict()
             self.ipython.run_line_magic('store', 'session_id_to_name')
+            raise
 
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
