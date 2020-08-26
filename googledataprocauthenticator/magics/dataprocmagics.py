@@ -35,9 +35,9 @@ class DataprocMagics(SparkMagicBase):
         super(DataprocMagics, self).__init__(shell, data)
         # load endpoints from saved.
         self.ipython = get_ipython()
-        stored_endpoints = list()
+        #stored_endpoints = list()
         self.endpoints = {}
-        print(stored_endpoints)
+        #print(stored_endpoints)
         
         self.ipython.run_line_magic('store', '-r stored_endpoints')
         # need try because if stored_endpoints is not stored, then it will error.
@@ -59,7 +59,7 @@ class DataprocMagics(SparkMagicBase):
         except Exception as e:
             #if it errors then that means we have never stored_endpoints before. 
             #we set it to the 
-            self.ipython.user_ns['stored_endpoints'] = stored_endpoints
+            self.ipython.user_ns['stored_endpoints'] = list()
             self.ipython.run_line_magic('store', 'stored_endpoints')
             
             self.endpoints = None
