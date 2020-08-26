@@ -215,7 +215,7 @@ class DataprocMagics(SparkMagicBase):
             #update with stored_endpoints
             self.ipython.user_ns['stored_endpoints'] = stored_endpoints
             #call update store so that stored endpoints will get updated stored_endpoints
-            self.ipython.run_line_magic('store', '-r stored_endpoints')
+            self.ipython.run_line_magic('store', 'stored_endpoints')
             print(self.ipython.user_ns['stored_endpoints'])
             skip = args.skip
             properties = conf.get_session_properties(language)
