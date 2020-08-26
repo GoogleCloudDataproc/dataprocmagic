@@ -177,7 +177,7 @@ class DataprocMagics(SparkMagicBase):
             endpoint_tuple = (args.url, endpoint.auth.active_credentials)
             # add the sessions for this endpoint to the session manager to so the session will be 
             # printed when self._print_local_info() is called
-            self._load_sessions_for_endpoint(endpoint_tuple)
+            # self._load_sessions_for_endpoint(endpoint_tuple)
             stored_endpoints.append(endpoint_tuple)
             self.ipython.user_ns['stored_endpoints'] = stored_endpoints
             # stored updated stored_endpoints
