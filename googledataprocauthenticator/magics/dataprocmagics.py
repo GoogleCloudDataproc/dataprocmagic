@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""Runs Scala, PySpark and SQL statement through Spark using a REST endpoint in remote cluster.
+Provides the %spark and %manage_dataproc magics."""
+
 from IPython import get_ipython
 from IPython.extensions.storemagic import StoreMagics
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
-from sparkmagic.utils.utils import parse_argstring_or_throw, get_coerce_value, initialize_auth, Namespace
+from sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth, Namespace
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.livyclientlib.exceptions import handle_expected_exceptions
 from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
@@ -25,66 +29,24 @@ from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerW
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
 
-ipython = get_ipython()
 
 @magics_class
 class DataprocMagics(SparkMagicBase):
 
     def __init__(self, shell, data=None, widget=None):
-        # You must call the parent constructor
         super(DataprocMagics, self).__init__(shell, data)
-        # load endpoints from saved.
         self.ipython = get_ipython()
-        #stored_endpoints = list()
         self.endpoints = {}
-        #print(stored_endpoints)
-        
         self.ipython.run_line_magic('store', '-r stored_endpoints')
-        # need try because if stored_endpoints is not stored, then it will error.
-        try: 
+        try:
             for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
-                args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
-                auth = initialize_auth(args)
-                endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
-                self.endpoints[endpoint.url] = endpoint
-                #get all sessions running on that endpoint
-                endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-                #add each session to session manager.
-                for session in endpoint_sessions:
-                    print(session)
-                    name = self.spark_controller.session_manager.get_session_name_by_id_endpoint(session.id, endpoint)
-                    print(name)
-                    self.spark_controller.session_manager.add_session(name, session)
-
-        except Exception as e:
-            #if it errors then that means we have never stored_endpoints before. 
-            #we set it to the 
+                self._load_sessions_for_endpoint(endpoint_tuple)
+        except Exception:
+            # if we have never ran `store% stored_endpoints`, self.ipython.user_ns['stored_endpoints']
+            # will throw exception
             self.ipython.user_ns['stored_endpoints'] = list()
             self.ipython.run_line_magic('store', 'stored_endpoints')
-            
             self.endpoints = None
-            print(e)
-       
-
-        """
-        print(stored_endpoints)
-        
-        #self.sessions = []
-        for endpoint_tuple in stored_endpoints:
-            args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
-            auth = initialize_auth(args)
-            endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
-            self.endpoints[endpoint.url] = endpoint
-            #get all sessions running on that endpoint
-            endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-            #add each session to session manager.
-            for session in endpoint_sessions:
-                print(session)
-                name = self.spark_controller.session_manager.get_session_name_by_id_endpoint(session.id, endpoint)
-                print(name)
-                self.spark_controller.session_manager.add_session(name, session)
-        
-        """
 
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         if self.endpoints is None:
@@ -92,11 +54,31 @@ class DataprocMagics(SparkMagicBase):
         self.manage_dataproc_widget = widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
+    def _load_sessions_for_endpoint(self, endpoint_tuple):
+        """Load all of the running livy sessions of an endpoint
+
+        Args:
+            endpoint_tuple (tuple): a tuple of two strings in the format (url, account) where url is
+            the endpoint url and  the endpoint url and the credentialed account used to authenticate
+        """
+        args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
+        auth = initialize_auth(args)
+        endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
+        self.endpoints[endpoint.url] = endpoint
+        #get all sessions running on that endpoint
+        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+        #add each session to session manager.
+        for session in endpoint_sessions:
+            print(session)
+            name = self.spark_controller.session_manager.get_session_name_by_id_endpoint(session.id, endpoint)
+            print(name)
+            self.spark_controller.session_manager.add_session(name, session)
+
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
         print(self.endpoints)
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
-        Then, create a session. You'll be able to select the session created from the %%spark magic."""
+        Then, create a session."""
         return self.manage_dataproc_widget
     
     @line_magic
@@ -179,17 +161,9 @@ class DataprocMagics(SparkMagicBase):
         usage = "Please look at usage of %spark by executing `%spark?`."
         user_input = line
         args = parse_argstring_or_throw(self.spark, user_input)
-
         subcommand = args.command[0].lower()
 
-        #should be able to take this out. 
-        if args.auth is None:
-            args.auth = conf.get_auth_value(args.user, args.password)
-        else:
-            args.auth = args.auth
-        # to hhere 
-
-        if subcommand == "add":
+        if subcommand == "add" and args.auth == "Google":
             if args.url is None:
                 self.ipython_display.send_error("Need to supply URL argument (e.g. -u https://example.com/livyendpoint)")
                 return
@@ -198,58 +172,22 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             print(endpoint)
-            #get current stored_endpoints
+            # get current stored_endpoints
             stored_endpoints = self.ipython.user_ns['stored_endpoints']
-            # append new (url,account) tuple
-            stored_endpoints.append((args.url, endpoint.auth.active_credentials))
-            """
-            stored_endpoints = list()
-
-            for url, endpoint in self.endpoints.items():
-                print(url)
-                print(endpoint)
-                stored_endpoints.append((url, endpoint.auth.active_credentials))
-            
-            print(stored_endpoints)
-            """
-            #update with stored_endpoints
+            endpoint_tuple = (args.url, endpoint.auth.active_credentials)
+            # add the sessions for this endpoint to the session manager to so the session will be 
+            # printed when self._print_local_info() is called
+            self._load_sessions_for_endpoint(endpoint_tuple)
+            stored_endpoints.append(endpoint_tuple)
             self.ipython.user_ns['stored_endpoints'] = stored_endpoints
-            #call update store so that stored endpoints will get updated stored_endpoints
+            # stored updated stored_endpoints
             self.ipython.run_line_magic('store', 'stored_endpoints')
-            print(self.ipython.user_ns['stored_endpoints'])
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
         else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
 
-    @staticmethod
-    def _reload_endpoints():
-        """Loads endpoints that were saved with %store"""
-        ipython = get_ipython()
-        ipython.run_line_magic('reload_ext', 'storemagic')
-        ipython.run_line_magic('store', '-r')
-
-    def get_existing_session_widgets(self, ):
-        session_widgets = []
-        session_widgets.append(self.ipywidget_factory.get_html(value="<br/>", width="600px"))
-
-        client_dict = self.spark_controller.get_managed_clients()
-        if len(client_dict) > 0:
-            # Header
-            header = self.get_session_widget("Name", "Id", "Kind", "State", False)
-            session_widgets.append(header)
-            session_widgets.append(self.ipywidget_factory.get_html(value="<hr/>", width="600px"))
-
-            # Sessions
-            for name, session in client_dict.items():
-                session_widgets.append(self.get_session_widget(name, session.id, session.kind, session.status))
-
-            session_widgets.append(self.ipywidget_factory.get_html(value="<br/>", width="600px"))
-        else:
-            session_widgets.append(self.ipywidget_factory.get_html(value="No sessions yet.", width="600px"))
-
-        return session_widgets
 
     def _print_local_info(self):
         sessions_info = ["        {}".format(i) for i in self.spark_controller.get_manager_sessions_str()]
