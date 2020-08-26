@@ -68,6 +68,8 @@ class DataprocMagics(SparkMagicBase):
         #get all sessions running on that endpoint
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
         #add each session to session manager.
+        print(self.session_manager.get_sessions_list())
+
         for session in endpoint_sessions:
             print(session)
             print(dir(session))
@@ -187,6 +189,7 @@ class DataprocMagics(SparkMagicBase):
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
+            print(self.session_manager.get_sessions_list())
         else:
             self.__remotesparkmagics.spark(line, cell="", local_ns=None)
 
