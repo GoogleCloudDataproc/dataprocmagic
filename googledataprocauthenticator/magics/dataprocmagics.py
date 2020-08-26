@@ -201,7 +201,7 @@ class DataprocMagics(SparkMagicBase):
             #get current stored_endpoints
             stored_endpoints = self.ipython.user_ns['stored_endpoints']
             # append new (url,account) tuple
-            stored_endpoints.append(args.url, endpoint.auth.active_credentials)
+            stored_endpoints.append((args.url, endpoint.auth.active_credentials))
             """
             stored_endpoints = list()
 
