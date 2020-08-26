@@ -41,13 +41,14 @@ class DataprocMagics(SparkMagicBase):
         try:
             for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
                 self._load_sessions_for_endpoint(endpoint_tuple)
-        except Exception:
+        except Exception as e:
             # if we have never ran `store% stored_endpoints`, self.ipython.user_ns['stored_endpoints']
             # will throw exception
             self.ipython.user_ns['stored_endpoints'] = list()
             self.ipython.user_ns['session_id_to_name'] = dict()
             self.ipython.run_line_magic('store', 'stored_endpoints session_id_to_name')
             self.endpoints = None
+            raise
 
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         if self.endpoints is None:
