@@ -41,13 +41,12 @@ class DataprocMagics(SparkMagicBase):
         self.ipython.run_line_magic('store', '-r session_id_to_name')
         try:
             for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
-                self._load_sessions_for_endpoint(endpoint_tuple, self.ipython.user_ns['session_id_to_name'])
+                self._load_sessions_for_endpoint(endpoint_tuple)
         except Exception:
             # if we have never ran `store% stored_endpoints`, self.ipython.user_ns['stored_endpoints']
             # will throw exception
             self.ipython.user_ns['stored_endpoints'] = list()
-            self.ipython.user_ns['session_id_to_name'] = dict()
-            self.ipython.run_line_magic('store', 'stored_endpoints session_id_to_name')
+            self.ipython.run_line_magic('store', 'stored_endpoints')
             self.endpoints = None
 
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
@@ -56,7 +55,7 @@ class DataprocMagics(SparkMagicBase):
         self.manage_dataproc_widget = widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
-    def _load_sessions_for_endpoint(self, endpoint_tuple, session_id_to_name):
+    def _load_sessions_for_endpoint(self, endpoint_tuple):
         """Load all of the running livy sessions of an endpoint
 
         Args:
@@ -67,16 +66,21 @@ class DataprocMagics(SparkMagicBase):
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
         self.endpoints[endpoint.url] = endpoint
-        #get all sessions running on that endpoint
-        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-        #add each session to session manager.
-        print(self.spark_controller.session_manager.get_sessions_list())
-        for session in endpoint_sessions:
-            print(session)
-            name = session_id_to_name.get(session.id)
-            print(name)
-            self.spark_controller.session_manager.add_session(name, session)
-        print(self.spark_controller.session_manager.get_sessions_list())
+        try: 
+            session_id_to_name = self.ipython.user_ns['session_id_to_name']
+            #get all sessions running on that endpoint
+            endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+            #add each session to session manager.
+            print(self.spark_controller.session_manager.get_sessions_list())
+            for session in endpoint_sessions:
+                print(session)
+                name = session_id_to_name.get(session.id)
+                print(name)
+                self.spark_controller.session_manager.add_session(name, session)
+            print(self.spark_controller.session_manager.get_sessions_list())
+        except Exception: 
+            self.ipython.user_ns['session_id_to_name'] = dict()
+            self.ipython.run_line_magic('store', 'session_id_to_name')
 
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
