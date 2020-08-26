@@ -67,7 +67,8 @@ class DataprocMagics(SparkMagicBase):
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
         self.endpoints[endpoint.url] = endpoint
-        try: 
+        try:
+            self.ipython.run_line_magic('store', '-r session_id_to_name')
             session_id_to_name = self.ipython.user_ns['session_id_to_name']
             #get all sessions running on that endpoint
             endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
