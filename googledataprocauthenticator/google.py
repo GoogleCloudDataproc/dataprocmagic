@@ -19,7 +19,6 @@
 import json
 import os
 import subprocess
-import re
 import urllib3.util
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 from google.cloud import dataproc_v1beta2
@@ -148,7 +147,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                     )
     try:
         response = client.get_cluster(project_id, region, cluster_name)
-
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/" + "gateway/default/livy/v1"
@@ -156,22 +154,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     except:
         raise
 
-
-def get_cluster_pool(project_id, region, client):
-    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
-    cluster_pool = set()
-    for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
-        #check component gateway is enabled
-        if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
-            action_list = list()
-            for action in cluster.config.initialization_actions:
-                #check if action is livy init action with a region with regex pattern [a-z0-9-]+
-                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
-                    [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
-                if is_livy_action:
-                    action_list.append(action.executable_file)
-                    cluster_pool.add(cluster.cluster_name)
-    return cluster_pool
 
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
@@ -278,10 +260,6 @@ class GoogleAuth(Authenticator):
             "credentials to use for Application Default Credentials.")
         if self.credentials is not None:
             try:
-                # need to pass map of filters:
-                # Behind the scenes: ('status.state = ACTIVE)
-                # From user input: (clusterName=cluster-name OR [label.dataproc-reaper-exempt=amacaskill'])
-                # we want to pass list of labels probably. 
                 self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                     self.cluster_name_widget.value, self.credentials)
             except:
