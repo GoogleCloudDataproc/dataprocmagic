@@ -38,10 +38,12 @@ class DataprocMagics(SparkMagicBase):
         self.ip = self.shell
         self.db = self.ip.db
         self.endpoints = {}
+        print(self.spark_controller.session_manager.get_sessions_list())
         stored_endpoints = self.get_stored_endpoints()
+
         #session_id_to_name = db['autorestore/' + 'session_id_to_name']
         for endpoint_tuple in stored_endpoints:
-            self._load_sessions_for_endpoint(endpoint_tuple) 
+            self._load_sessions_for_endpoint(endpoint_tuple)
         # except KeyError:
         #     self.db[ 'autorestore/' + 'stored_endpoints'] = list()
         #     self.db[ 'autorestore/' + 'session_id_to_name'] = dict()
@@ -104,6 +106,7 @@ class DataprocMagics(SparkMagicBase):
         session_id_to_name = self.get_session_id_to_name()
         #get all sessions running on that endpoint
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+        print(self.spark_controller.session_manager.get_sessions_list())
         #add each session to session manager.
         for session in endpoint_sessions:
             name = session_id_to_name.get(session.id)
