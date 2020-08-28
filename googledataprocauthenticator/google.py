@@ -166,7 +166,6 @@ def get_cluster_pool(project_id, region, client, filters=None):
     cluster_pool = list()
     for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
         #check component gateway is enabled
-        print(cluster)
         if (len(cluster.config.endpoint_config.http_ports.values()) != 0 and cluster.cluster_name == "amacaskill-livy"):
             action_list = list()
             for action in cluster.config.initialization_actions:
@@ -175,6 +174,7 @@ def get_cluster_pool(project_id, region, client, filters=None):
                 #check if action is livy init action with a region with regex pattern [a-z0-9-]+
                 is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
                     [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
+                print(is_livy_action)
                 if is_livy_action:
                     action_list.append(action.executable_file)
                     cluster_pool.append(cluster.cluster_name)
