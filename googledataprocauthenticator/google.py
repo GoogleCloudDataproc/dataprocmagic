@@ -20,8 +20,11 @@
 import json
 import os
 import subprocess
+import re
+import random
 import urllib3.util
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
+import ipywidgets
 from google.cloud import dataproc_v1beta2
 import google.auth.transport.requests
 from google.auth import _cloud_sdk
@@ -147,6 +150,9 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                         }
                     )
     try:
+        #if they do not enter a cluster name, we get a random one for them.
+        if cluster_name == '':
+            cluster_name = random.choice(get_cluster_pool(project_id, region, client))
         response = client.get_cluster(project_id, region, cluster_name)
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
@@ -154,6 +160,37 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         return endpoint_address
     except:
         raise
+
+def get_cluster_pool(project_id, region, client, filters=None):
+    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
+    cluster_pool = list()
+    for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
+        #check component gateway is enabled
+        if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
+            action_list = list()
+            for action in cluster.config.initialization_actions:
+                #check if action is livy init action with a region with regex pattern [a-z0-9-]+
+                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
+                    [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
+                if is_livy_action:
+                    action_list.append(action.executable_file)
+                    cluster_pool.append(cluster.cluster_name)
+    return cluster_pool
+
+def get_regions(project):
+    if os.name == "nt":
+        command = _CLOUD_SDK_WINDOWS_COMMAND
+    else:
+        command = _CLOUD_SDK_POSIX_COMMAND
+    try:
+        output = subprocess.check_output(
+            [command, "compute", "regions", "list", "--project", project, "--format=json"]
+        )
+        data = json.loads(output.decode("utf-8"))
+        #returns list of region names
+        return [_["name"] for _ in data]
+    except Exception:
+        return []
 
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
@@ -228,11 +265,34 @@ class GoogleAuth(Authenticator):
             width=widget_width
         )
 
+        self.region_dropdown = ipywidgets.Combobox(
+            description='Region:',
+            placeholder='Select a project first',
+            options=[],
+            ensure_option=False,
+            disabled=False
+        )
+
         self.google_credentials_widget = ipywidget_factory.get_dropdown(
             options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
             value=None,
             description=u"Account:"
         )
+
+        self.cluster_dropdown = ipywidgets.Combobox(
+        # value='John',
+            placeholder='Select a Cluster',
+            options=[],
+            description='Cluster:',
+            ensure_option=True,
+            disabled=False
+        )
+        
+        #populate region dropdown when a project is entered  
+        self.project_widget.observe(self._update_region_list)
+        #populate cluster dropdown when a region is selected
+        self.region_dropdown.observe(self._update_cluster_list)
+        #self.cluster_dropdown.observe(self._update_cluster_list)
 
         if self.active_credentials is not None: 
             self.google_credentials_widget.value = self.active_credentials
@@ -241,6 +301,22 @@ class GoogleAuth(Authenticator):
 
         widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.google_credentials_widget]
         return widgets
+
+    def _update_region_list(self, change):
+        if change['type'] == 'change' and change['name'] == 'value':
+            project_id = change['new']
+            self.region_dropdown.options = self.get_regions(project_id)
+    
+    def _update_cluster_list(self, change):
+        if change['type'] == 'change' and change['name'] == 'value':
+            region = change['new']
+            #what error if the region is not valid? 
+            client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+                        client_options={
+                            "api_endpoint": f"{region}-dataproc.googleapis.com:443"
+                        }
+                    )
+            self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client)
 
     def initialize_credentials_with_auth_account_selection(self, account):
         """Initializes self.credentials with the accound selected from the auth dropdown widget"""
