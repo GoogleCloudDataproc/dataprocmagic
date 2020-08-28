@@ -167,7 +167,7 @@ def get_cluster_pool(project_id, region, client, filters=None):
     for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
         #check component gateway is enabled
         print(cluster)
-        if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
+        if (len(cluster.config.endpoint_config.http_ports.values()) != 0 and cluster.cluster_name == "amacaskill-livy"):
             action_list = list()
             for action in cluster.config.initialization_actions:
 
