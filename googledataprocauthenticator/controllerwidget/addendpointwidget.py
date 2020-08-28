@@ -33,7 +33,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.auth_instances = {}
         for auth in conf.authenticators().values():
             module, class_name = (auth).rsplit('.', 1)
-            if (auth_class == "GoogleAuth"):
+            if (class_name == "GoogleAuth"):
                 events_handler_module = importlib.import_module(module)
                 auth_class = getattr(events_handler_module, class_name)
                 self.auth_instances[auth] = auth_class()
