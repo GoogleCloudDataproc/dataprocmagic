@@ -15,7 +15,6 @@
 """Runs Scala, PySpark and SQL statement through Spark using a REST endpoint in remote cluster.
 Provides the %spark and %manage_dataproc magics."""
 
-from IPython import get_ipython
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
@@ -34,7 +33,6 @@ class DataprocMagics(SparkMagicBase):
 
     def __init__(self, shell, data=None, widget=None):
         super(DataprocMagics, self).__init__(shell, data)
-        self.ipython = get_ipython()
         self.ip = self.shell
         self.db = self.ip.db
         self.endpoints = {}

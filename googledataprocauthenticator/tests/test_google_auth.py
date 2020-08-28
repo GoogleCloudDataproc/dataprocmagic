@@ -18,8 +18,8 @@
 
 import datetime
 from unittest.mock import call
-from mock import patch, Mock, MagicMock
-from nose.tools import raises, assert_equals, assert_is_not_none, assert_false, assert_true, assert_raises, with_setup
+from mock import patch, Mock
+from nose.tools import raises, assert_equals, assert_is_not_none, assert_false, assert_true, assert_raises
 import requests
 from google.oauth2 import credentials
 from google.cloud import dataproc_v1beta2
@@ -30,84 +30,11 @@ from google.api_core.exceptions import GoogleAPICallError, RetryError
 import sparkmagic
 import sparkmagic.auth.google as google_auth_class
 from sparkmagic.auth.google import GoogleAuth
-from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
 from sparkmagic.livyclientlib.reliablehttpclient import ReliableHttpClient
-from sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
 
-magic = None
-spark_controller = None
-shell = None
-
-def _setup():
-    global magic, spark_controller, shell
-    magic = RemoteSparkMagics(shell=None, widget=MagicMock())
-    magic.shell = shell = MagicMock()
-    magic.spark_controller = spark_controller = MagicMock()
-
-def _teardown():
-    pass
-
-@with_setup(_setup, _teardown)
-def test_add_sessions_command_parses_google_default_credentials():
-    with patch('google.auth.default', return_value=(creds, 'project'), \
-    autospec=True):
-        add_sessions_mock = MagicMock()
-        spark_controller.add_session = add_sessions_mock
-        command = "add"
-        name = "-s name"
-        language = "-l python"
-        account = "-g default-credentials"
-        connection_string = "-u http://url.com -t Google"
-        line = " ".join([command, name, language, connection_string, account])
-        magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
-        auth_instance = initialize_auth(args)
-        add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
-                                                False, {"kind": "pyspark"})
-        assert_equals(auth_instance.url, "http://url.com")
-        isinstance(auth_instance, GoogleAuth)
-        assert_equals(auth_instance.active_credentials, 'default-credentials')
-
-@with_setup(_setup, _teardown)
-def test_add_sessions_command_parses_google_user_credentials():
-    with patch('sparkmagic.auth.google.list_credentialed_accounts', \
-    return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output',\
-    return_value=AUTH_DESCRIBE_USER):
-        add_sessions_mock = MagicMock()
-        spark_controller.add_session = add_sessions_mock
-        command = "add"
-        name = "-s name"
-        language = "-l python"
-        account = "-g account@google.com"
-        connection_string = "-u http://url.com -t Google"
-        line = " ".join([command, name, language, connection_string, account])
-        magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
-        auth_instance = initialize_auth(args)
-        add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
-                                                False, {"kind": "pyspark"})
-        assert_equals(auth_instance.url, "http://url.com")
-        isinstance(auth_instance, GoogleAuth)
-        assert_equals(auth_instance.active_credentials, 'account@google.com')
-
-@raises(BadUserConfigurationException)
-@with_setup(_setup, _teardown)
-def test_add_sessions_command_raises_google_no_account():
-    with patch('google.auth.default', return_value=(creds, 'project'), \
-    autospec=True):
-        add_sessions_mock = MagicMock()
-        spark_controller.add_session = add_sessions_mock
-        command = "add"
-        name = "-s name"
-        language = "-l python"
-        connection_string = "-u http://url.com -t Google"
-        line = " ".join([command, name, language, connection_string])
-        magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
-        initialize_auth(args)
 
 def test_get_google():
     retry_policy = LinearRetryPolicy(0.01, 5)
@@ -117,10 +44,10 @@ def test_get_google():
         client = ReliableHttpClient(endpoint, {}, retry_policy)
         result = client.get("r", [200])
         assert_equals(200, result.status_code)
-        
+
 def test_google_auth():
     retry_policy = LinearRetryPolicy(0.01, 5)
-    endpoint = Endpoint("http://url.com",  GoogleAuth())
+    endpoint = Endpoint("http://url.com", GoogleAuth())
     client = ReliableHttpClient(endpoint, {}, retry_policy)
     assert_is_not_none(client._auth)
     assert isinstance(client._auth, GoogleAuth)
