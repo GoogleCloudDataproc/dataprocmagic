@@ -323,7 +323,6 @@ class GoogleAuth(Authenticator):
         if change['type'] == 'change' and change['name'] == 'value':
             region = change['new']
             print(region)
-            print(type(region))
             #what error if the region is not valid? 
             client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
                         client_options={
