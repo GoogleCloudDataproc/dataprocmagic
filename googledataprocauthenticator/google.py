@@ -299,7 +299,7 @@ class GoogleAuth(Authenticator):
         else: 
             self.google_credentials_widget.disabled = True
 
-        widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.google_credentials_widget]
+        widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         return widgets
 
     def _update_region_list(self, change):
