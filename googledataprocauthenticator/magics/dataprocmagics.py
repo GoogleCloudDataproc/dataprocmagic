@@ -110,7 +110,8 @@ class DataprocMagics(SparkMagicBase):
         #add each session to session manager.
         for session in endpoint_sessions:
             name = session_id_to_name.get(session.id)
-            self.spark_controller.session_manager.add_session(name, session)
+            if name not in self.spark_controller.get_managed_clients():
+                self.spark_controller.session_manager.add_session(name, session)
         # except KeyError:
         #     self.db[ 'autorestore/' + 'session_id_to_name'] = dict()
             # self.ipython.user_ns['session_id_to_name'] = dict()
