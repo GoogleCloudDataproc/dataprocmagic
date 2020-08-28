@@ -26,6 +26,7 @@ from sparkmagic.magics.sparkmagicsbase import SparkMagicBase
 from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
+from googledataprocauthenticator.controllerwidget.controllerwidget import ControllerWidget
 
 
 @magics_class
@@ -41,7 +42,7 @@ class DataprocMagics(SparkMagicBase):
             self._load_sessions_for_endpoint(endpoint_tuple)
         if len(stored_endpoints) == 0:
             self.endpoints = None
-        widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         if self.endpoints is None:
             self.endpoints = {}
         self.manage_dataproc_widget = widget
