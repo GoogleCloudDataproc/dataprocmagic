@@ -170,30 +170,33 @@ def get_cluster_pool(project_id, region, client, filters=None):
         if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
             action_list = list()
             for action in cluster.config.initialization_actions:
-                is_livy_action = f"gs://goog-dataproc-initialization-actions-{region}/livy/livy.sh" == action.executable_file
                 #check if action is livy init action with a region with regex pattern [a-z0-9-]+
-                #returns false always 
-                # is_livy_action = re.search("gs://goog-dataproc-initialization-actions-\
-                #     [a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
+                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
                 if is_livy_action:
                     action_list.append(action.executable_file)
                     cluster_pool.append(cluster.cluster_name)
     return cluster_pool
 
 def get_regions(project):
-    if os.name == "nt":
-        command = _CLOUD_SDK_WINDOWS_COMMAND
-    else:
-        command = _CLOUD_SDK_POSIX_COMMAND
-    try:
-        output = subprocess.check_output(
-            [command, "compute", "regions", "list", "--project", project, "--format=json"]
-        )
-        data = json.loads(output.decode("utf-8"))
-        #returns list of region names
-        return [_["name"] for _ in data]
-    except Exception:
-        return []
+    regions = ['asia-east1', 'asia-east2', 'asia-northeast1', 'asia-northeast2', 'asia-northeast3',
+    'asia-south1', 'asia-southeast1', 'asia-southeast2', 'australia-southeast1', 'europe-north1', 
+    'europe-west1', 'europe-west2', 'europe-west3', 'europe-west4', 'europe-west5', 'europe-west6', 
+    'northamerica-northeast1', 'southamerica-east1', 'us-central1', 'us-central2', 'us-east1', 
+    'us-east2', 'us-east4', 'us-west1', 'us-west2', 'us-west3', 'us-west4']
+    return regions
+    # if os.name == "nt":
+    #     command = _CLOUD_SDK_WINDOWS_COMMAND
+    # else:
+    #     command = _CLOUD_SDK_POSIX_COMMAND
+    # try:
+    #     output = subprocess.check_output(
+    #         [command, "compute", "regions", "list", "--project", project, "--format=json"]
+    #     )
+    #     data = json.loads(output.decode("utf-8"))
+    #     #returns list of region names
+    #     return [_["name"] for _ in data]
+    # except Exception:
+    #     return []
 
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
@@ -289,7 +292,6 @@ class GoogleAuth(Authenticator):
         )
 
         self.cluster_dropdown = ipywidgets.Combobox(
-        # value='John',
             placeholder='Select a Cluster',
             options=[],
             description='Cluster:',
