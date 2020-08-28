@@ -43,6 +43,8 @@ class AddEndpointWidget(AbstractMenuWidget):
             description=u"Auth type:"
         )
 
+        self.auth_type.layout.display = 'none'
+
         #combine all authentication instance's widgets into one list to pass to self.children.
         self.all_widgets = list()
         for _class, instance in self.auth_instances.items():
