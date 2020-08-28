@@ -121,7 +121,8 @@ def get_credentials_for_account(account, scopes_list):
         command = (command,) + describe_account_command
         account_json = subprocess.check_output(command, stderr=subprocess.STDOUT)
         account_describe = json.loads(account_json)
-        return Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
+        credentials = Credentials.from_authorized_user_info(account_describe, scopes=scopes_list)
+        return (credentials, credentials.quota_project_id)
     except Exception as caught_exc:
         new_exc = UserAccessTokenError(f"Could not obtain access token for {account}")
         raise new_exc from caught_exc
@@ -222,7 +223,7 @@ class GoogleAuth(Authenticator):
                 if self.active_credentials == 'default-credentials' and self.default_credentials_configured:
                     self.credentials, self.project = google.auth.default(scopes=self.scopes)
                 else:
-                    self.credentials = get_credentials_for_account(self.active_credentials, self.scopes)
+                    self.credentials, self.project = get_credentials_for_account(self.active_credentials, self.scopes)
             else:
                 new_exc = BadUserConfigurationException(
                 f"{parsed_attributes.account} is not a credentialed account. Run `gcloud auth login` in "\
@@ -236,7 +237,8 @@ class GoogleAuth(Authenticator):
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
                 self.active_credentials = 'default-credentials'
             elif active_user_account is not None:
-                self.credentials = get_credentials_for_account(active_user_account, self.scopes)
+                self.credentials, self.project = get_credentials_for_account(active_user_account, self.scopes)
+
                 self.active_credentials = active_user_account
             else:
                 self.credentials, self.project = None, None
@@ -258,6 +260,8 @@ class GoogleAuth(Authenticator):
             description='Project:',
             width=widget_width
         )
+        if self.project is not None: 
+            self.project_widget.value =  self.project
 
         self.cluster_name_widget = ipywidget_factory.get_text(
             description='Cluster:',
@@ -271,7 +275,7 @@ class GoogleAuth(Authenticator):
 
         self.region_dropdown = ipywidgets.Combobox(
             description='Region:',
-            placeholder='Select a project first',
+            placeholder='Select a region',
             options=[],
             ensure_option=True,
             disabled=False
@@ -296,14 +300,14 @@ class GoogleAuth(Authenticator):
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         self.region_dropdown.observe(self._update_cluster_list)
-        #self.cluster_dropdown.observe(self._update_cluster_list)
 
-        if self.active_credentials is not None: 
+        if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
         else: 
             self.google_credentials_widget.disabled = True
 
-        widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
+        # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
+        widgets = [self.project_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         return widgets
 
     def _update_region_list(self, change):
@@ -333,7 +337,7 @@ class GoogleAuth(Authenticator):
             if account == 'default-credentials':
                 self.credentials, self.project = google.auth.default(scopes=self.scopes)
             else:
-                self.credentials = get_credentials_for_account(account, self.scopes)
+                self.credentials, self.project = get_credentials_for_account(account, self.scopes)
 
     def update_with_widget_values(self):
         """Updates url to be the component gateway url of the cluster found with the project, 
@@ -345,8 +349,10 @@ class GoogleAuth(Authenticator):
             "credentials to use for Application Default Credentials.")
         if self.credentials is not None:
             try:
-                self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
-                    self.cluster_name_widget.value, self.credentials)
+                # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
+                #     self.cluster_name_widget.value, self.credentials)
+                self.url = get_component_gateway_url(self.project_widget.value, self.region_dropdown.value, \
+                    self.cluster_dropdown.value, self.credentials)
             except:
                 raise
         else:
