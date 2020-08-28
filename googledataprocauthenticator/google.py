@@ -260,8 +260,8 @@ class GoogleAuth(Authenticator):
             description='Project:',
             width=widget_width
         )
-        if self.project is not None: 
-            self.project_widget.value =  self.project
+        if self.project is not None:
+            self.project_widget.value = self.project
 
         self.cluster_name_widget = ipywidget_factory.get_text(
             description='Cluster:',
@@ -280,6 +280,9 @@ class GoogleAuth(Authenticator):
             ensure_option=True,
             disabled=False
         )
+
+        if self.project is not None:
+            self.region_dropdown.options = get_regions(self.project)
 
         self.google_credentials_widget = ipywidget_factory.get_dropdown(
             options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
