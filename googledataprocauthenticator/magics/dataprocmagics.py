@@ -38,31 +38,11 @@ class DataprocMagics(SparkMagicBase):
         self.ip = self.shell
         self.db = self.ip.db
         self.endpoints = {}
-        print(self.spark_controller.session_manager.get_sessions_list())
         stored_endpoints = self.get_stored_endpoints()
-
-        #session_id_to_name = db['autorestore/' + 'session_id_to_name']
         for endpoint_tuple in stored_endpoints:
             self._load_sessions_for_endpoint(endpoint_tuple)
-        # except KeyError:
-        #     self.db[ 'autorestore/' + 'stored_endpoints'] = list()
-        #     self.db[ 'autorestore/' + 'session_id_to_name'] = dict()
         if len(stored_endpoints) == 0:
             self.endpoints = None
-
-        #self.ipython.run_line_magic('store', '-r stored_endpoints')
-        #self.ipython.run_line_magic('store', '-r session_id_to_name')
-        # try:
-        #     for endpoint_tuple in self.ipython.user_ns['stored_endpoints']:
-        #         self._load_sessions_for_endpoint(endpoint_tuple)
-        # except Exception:
-            # if we have never stored an endpoint self.ipython.user_ns['stored_endpoints']
-            # will throw exception
-            # self.ipython.user_ns['stored_endpoints'] = list()
-            # self.ipython.user_ns['session_id_to_name'] = dict()
-            # self.ipython.run_line_magic('store', 'stored_endpoints session_id_to_name')
-            # self.endpoints = None
-
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         if self.endpoints is None:
             self.endpoints = {}
@@ -70,9 +50,17 @@ class DataprocMagics(SparkMagicBase):
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
     def get_stored_endpoints(self):
+        """Gets a list of endpoints that were added in previous notebook sessions
+
+        Returns:
+            stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+            (url, account) where url is an endpoint url and account is the credentialed
+            account used to authenticate the endpoint connection. If no endpoints can be
+            obtained from previous notebook sessions, an empty list is returned.
+        """
         try:
             stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
-        #if stored_endpoints has never been saved
+        #if stored_endpoints has never been saved, it throws a KeyError
         except KeyError:
             self.db['autorestore/' + 'stored_endpoints'] = list()
             stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
@@ -80,9 +68,15 @@ class DataprocMagics(SparkMagicBase):
             return stored_endpoints
 
     def get_session_id_to_name(self):
-        try: 
+        """Gets a dictionary that maps currently running livy session id's to their names
+
+        Returns:
+            session_id_to_name (dict): a dictionary mapping session.id -> name
+            If no sessions can be obtained from previous notebook sessions, an
+            empty dict is returned.
+        """
+        try:
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
-        #if session_id_to_name has never been saved
         except KeyError:
             self.db['autorestore/' + 'session_id_to_name'] = dict()
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
@@ -90,32 +84,24 @@ class DataprocMagics(SparkMagicBase):
             return session_id_to_name
 
     def _load_sessions_for_endpoint(self, endpoint_tuple):
-        """Load all of the running livy sessions of an endpoint
+        """Loads all of the running livy sessions of an endpoint
 
         Args:
             endpoint_tuple (tuple): a tuple of two strings in the format (url, account) where url is
-            the endpoint url and  the endpoint url and the credentialed account used to authenticate
+            the endpoint url and account is the credentialed account used to authenticate
         """
         args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
         self.endpoints[endpoint.url] = endpoint
-        # try:
-        #self.ipython.run_line_magic('store', '-r session_id_to_name')
-        #session_id_to_name = self.ipython.user_ns['session_id_to_name']
         session_id_to_name = self.get_session_id_to_name()
         #get all sessions running on that endpoint
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-        print(self.spark_controller.session_manager.get_sessions_list())
         #add each session to session manager.
         for session in endpoint_sessions:
             name = session_id_to_name.get(session.id)
             if name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
-        # except KeyError:
-        #     self.db[ 'autorestore/' + 'session_id_to_name'] = dict()
-            # self.ipython.user_ns['session_id_to_name'] = dict()
-            # self.ipython.run_line_magic('store', 'session_id_to_name')
 
     @line_magic
     def manage_dataproc(self, line, local_ns=None):
@@ -217,26 +203,19 @@ class DataprocMagics(SparkMagicBase):
             self.endpoints[args.url] = endpoint
             # get current stored_endpoints
             stored_endpoints = self.get_stored_endpoints()
-            #stored_endpoints = self.ipython.user_ns['stored_endpoints']
             endpoint_tuple = (args.url, endpoint.auth.active_credentials)
             stored_endpoints.append(endpoint_tuple)
-            #self.ipython.user_ns['stored_endpoints'] = stored_endpoints
             # stored updated stored_endpoints
             self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
-            # self.ipython.run_line_magic('store', 'stored_endpoints')
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
             # session_id_to_name dict is necessary to restore session name across notebook sessions
             # since the livy server does not store the name.
             session_id_to_name = self.get_session_id_to_name()
-            
-            # session_id_to_name = self.ipython.user_ns['session_id_to_name']
             # add session id -> name to session_id_to_name dict
             session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
             self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
-            # self.ipython.user_ns['session_id_to_name'] = session_id_to_name
-            # self.ipython.run_line_magic('store', 'session_id_to_name')
         elif subcommand == "sessions":
             if args.url is not None and args.id is not None:
                 endpoint = Endpoint(args.url, initialize_auth(args))
