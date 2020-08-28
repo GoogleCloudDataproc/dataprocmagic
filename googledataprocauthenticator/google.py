@@ -319,6 +319,7 @@ class GoogleAuth(Authenticator):
                             "api_endpoint": f"{region}-dataproc.googleapis.com:443"
                         }
                     )
+            print(self.project_widget.value)
             print(get_cluster_pool(self.project_widget.value, region, client))
             self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client)
 
