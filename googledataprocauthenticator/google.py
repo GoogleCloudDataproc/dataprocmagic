@@ -269,7 +269,7 @@ class GoogleAuth(Authenticator):
             description='Region:',
             placeholder='Select a project first',
             options=[],
-            ensure_option=False,
+            ensure_option=True,
             disabled=False
         )
 
@@ -305,6 +305,7 @@ class GoogleAuth(Authenticator):
     def _update_region_list(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
             project_id = change['new']
+            print(get_regions(project_id))
             self.region_dropdown.options = get_regions(project_id)
     
     def _update_cluster_list(self, change):
@@ -316,6 +317,7 @@ class GoogleAuth(Authenticator):
                             "api_endpoint": f"{region}-dataproc.googleapis.com:443"
                         }
                     )
+            print(get_cluster_pool(self.project_widget.value, region, client))
             self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client)
 
     def initialize_credentials_with_auth_account_selection(self, account):
