@@ -16,7 +16,7 @@ import importlib
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import WIDGET_WIDTH
-from .abstractmenuwidget import AbstractMenuWidget
+from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 
 
 class AddEndpointWidget(AbstractMenuWidget):

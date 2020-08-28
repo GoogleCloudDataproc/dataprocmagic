@@ -26,7 +26,7 @@ from sparkmagic.utils.utils import Namespace, initialize_auth
 
 class ControllerWidget(AbstractMenuWidget):
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints=None):
-        super(MagicsControllerWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display)
+        super(ControllerWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display)
 
         if endpoints is None:
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
