@@ -305,7 +305,7 @@ class GoogleAuth(Authenticator):
     def _update_region_list(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
             project_id = change['new']
-            self.region_dropdown.options = self.get_regions(project_id)
+            self.region_dropdown.options = get_regions(project_id)
     
     def _update_cluster_list(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
