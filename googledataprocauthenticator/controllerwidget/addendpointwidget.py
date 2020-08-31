@@ -64,7 +64,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         #     description='Add endpoint'
         # )
 
-        self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};border: 1px solid lightgrey', class_='mx-auto', children=[
+        self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto',
                 children=[
             v.Col(
