@@ -35,6 +35,7 @@ from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 
+_SELECT_REGION_MESSAGE = "Select a region"
 _NO_ACCOUNTS_FOUND_MESSAGE = "No accounts found"
 _NO_ACCOUNTS_FOUND_HELP_MESSAGE = "Run `gcloud auth login` in "\
     "your command line to authorize gcloud to access the Cloud Platform with Google user "\
@@ -347,6 +348,20 @@ class GoogleAuth(Authenticator):
         #     value=None,
         #     description=u"Account:"
         # )
+        self.region_combobox = v.Combobox(
+            class_='ma-2',
+            placeholder=_SELECT_REGION_MESSAGE,
+            label='Region',
+            deletable_chips=True,
+            dense=True,
+            color='primary',
+            persistent_hint=True,
+            hide_selected=True,
+            outlined=True,
+            items=get_regions(),
+            v_model=[],
+        )
+        
 
         self.filter_combobox = v.Combobox(
             class_='ma-2',
@@ -413,7 +428,7 @@ class GoogleAuth(Authenticator):
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         #self.region_dropdown.observe(self._update_cluster_list)
-        self.region_dropdown.on_event('change', self._update_cluster_list)
+        self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list)
     
 
@@ -432,7 +447,7 @@ class GoogleAuth(Authenticator):
         if change['type'] == 'change' and change['name'] == 'value':
             project_id = change['new']
             print(get_regions())
-            self.region_dropdown.options = get_regions()
+            self._update_region_list.options = get_regions()
     
     def _update_cluster_list(self, widget, event, data):
         if self.region_dropdown.value is not '' and self.region_dropdown.value is not None:
