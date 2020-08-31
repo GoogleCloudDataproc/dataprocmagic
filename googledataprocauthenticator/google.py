@@ -177,13 +177,16 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         raise
 
     
-def get_cluster_pool(project_id, region, client, filters=None):
-    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
+def get_cluster_pool(project_id, region, client, selected_filters=None):
     cluster_pool = list()
     filter_set = set()
-
+    filters = ['status.state = ACTIVE']
+    if selected_filters is not None: 
+        filters.extend(selected_filters)
+    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
+    filter_str = ' AND '.join(filters)
     try:
-        for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
+        for cluster in client.list_clusters(project_id, region, filter_str):
             #check component gateway is enabled
             if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
                 action_list = list()
@@ -356,7 +359,7 @@ class GoogleAuth(Authenticator):
             persistent_hint=True,
             hide_selected=True,
             outlined=True,
-            items=['one', 'two', 'three', 'four'],
+            items=[],
             auto_select_first=True,
             v_slots=[{
                 'name':
@@ -366,6 +369,31 @@ class GoogleAuth(Authenticator):
                     v.ListItemContent(children=[
                         v.ListItemTitle(
                             children=[_NO_FILTERS_FOUND_HELP_MESSAGE])
+                    ])
+                ])
+            }],
+        )
+
+        self.cluster_combobox = v.Combobox(
+            class_='ma-2',
+            placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
+            label='Cluster',
+            deletable_chips=True,
+            dense=True,
+            color='primary',
+            persistent_hint=True,
+            hide_selected=True,
+            outlined=True,
+            items=[],
+            auto_select_first=True,
+            v_slots=[{
+                'name':
+                'no-data',
+                'children':
+                v.ListItem(children=[
+                    v.ListItemContent(children=[
+                        v.ListItemTitle(
+                            children=[_NO_CLUSTERS_FOUND_HELP_MESSAGE])
                     ])
                 ])
             }],
@@ -381,9 +409,12 @@ class GoogleAuth(Authenticator):
         
         #can comment this then say like uncomment it to populate based on project? 
         #populate region dropdown when a project is entered  
+
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         self.region_dropdown.observe(self._update_cluster_list)
+        self.filter_combobox.on_event('change', on_filter)
+    
 
         if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
@@ -393,7 +424,7 @@ class GoogleAuth(Authenticator):
             self.google_credentials_widget.disabled = True
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown, self.filter_by_label, self.filter_combobox]
+        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_combobox, self.filter_combobox]
         return widgets
 
     def _update_region_list(self, change):
@@ -414,15 +445,18 @@ class GoogleAuth(Authenticator):
                     )
             print(self.project_widget.value)
             #is
-            self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+            #self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+            self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
             self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-            self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
+            #self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
             #
             #print(get_cluster_pool(self.project_widget.value, region, client))
             if self.filter_by_label.value is not None:
-                self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
+                #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
+                self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, region, client)
+
             else:
-                _, self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_by_label.value)
+                _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_combobox.value)
             
 
 
