@@ -412,7 +412,8 @@ class GoogleAuth(Authenticator):
 
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
-        self.region_dropdown.observe(self._update_cluster_list)
+        #self.region_dropdown.observe(self._update_cluster_list)
+        self.region_dropdown.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list)
     
 
