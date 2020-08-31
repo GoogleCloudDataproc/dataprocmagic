@@ -473,10 +473,10 @@ class GoogleAuth(Authenticator):
             print(self.project_widget.value)
             self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
             self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-            self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, data, client)
+            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_widget.value, data, client)
         if widget.label == 'Filter by label' and data is not '' and data is not None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-                _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, self.region, client, data)
+                _, self.cluster_combobox.items = get_cluster_pool(self.project_widget.value, self.region, client, data)
             
 
     
