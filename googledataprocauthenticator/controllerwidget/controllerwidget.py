@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import ipyvuetify as v
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 from googledataprocauthenticator.controllerwidget.addendpointwidget import AddEndpointWidget
 from googledataprocauthenticator.controllerwidget.createsessionwidget import CreateSessionWidget
@@ -22,6 +22,7 @@ from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.utils.constants import LANGS_SUPPORTED
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.utils import Namespace, initialize_auth
+
 
 
 class ControllerWidget(AbstractMenuWidget):
@@ -62,6 +63,10 @@ class ControllerWidget(AbstractMenuWidget):
             options=self.endpoints
         )
 
+        
+        
+
+
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
@@ -71,12 +76,20 @@ class ControllerWidget(AbstractMenuWidget):
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                     self.endpoints, self._refresh)
 
-        self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
-                                                             self.add_endpoint, self.manage_endpoint])
-        self.tabs.set_title(0, "Manage Sessions")
-        self.tabs.set_title(1, "Create Session")
-        self.tabs.set_title(2, "Add Endpoint")
-        self.tabs.set_title(3, "Manage Endpoints")
+        session_tab = [v.Tab(children=['Sessions']), v.TabItem(children=[self.create_session])]
+
+        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(children=[self.add_endpoint])] 
+        # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
+        #                                                      self.add_endpoint, self.manage_endpoint])
+        self.tabs = v.Tabs(
+            v_model=1,
+            children=session_tab + endpoint_tab)
+
+
+        # self.tabs.set_title(0, "Manage Sessions")
+        # self.tabs.set_title(1, "Create Session")
+        # self.tabs.set_title(2, "Add Endpoint")
+        # self.tabs.set_title(3, "Manage Endpoints")
 
         self.children = [self.tabs]
 
