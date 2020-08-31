@@ -59,9 +59,12 @@ class DataprocMagics(SparkMagicBase):
         try:
             stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
         #if stored_endpoints has never been saved, it throws a KeyError
-        except KeyError:
+        except Exception as caught_exc:
             self.db['autorestore/' + 'stored_endpoints'] = list()
             stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
+            self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints. "\
+            f"stored_endpoints is now:{stored_endpoints}")
         finally:
             return stored_endpoints
 
@@ -75,9 +78,12 @@ class DataprocMagics(SparkMagicBase):
         """
         try:
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
-        except KeyError:
+        except Exception as caught_exc:
             self.db['autorestore/' + 'session_id_to_name'] = dict()
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
+            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name. "\
+            f"session_id_to_name is now:{session_id_to_name}")
         finally:
             return session_id_to_name
 
@@ -198,13 +204,15 @@ class DataprocMagics(SparkMagicBase):
             name = args.session
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
-            self.endpoints[args.url] = endpoint
-            # get current stored_endpoints
-            stored_endpoints = self.get_stored_endpoints()
-            endpoint_tuple = (args.url, endpoint.auth.active_credentials)
-            stored_endpoints.append(endpoint_tuple)
-            # stored updated stored_endpoints
-            self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
+            #we only add endpoint to stored_endpoints if it does not already exist
+            if args.url not in self.endpoints:
+                self.endpoints[args.url] = endpoint
+                # get current stored_endpoints
+                stored_endpoints = self.get_stored_endpoints()
+                endpoint_tuple = (args.url, endpoint.auth.active_credentials)
+                stored_endpoints.append(endpoint_tuple)
+                # stored updated stored_endpoints
+                self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
