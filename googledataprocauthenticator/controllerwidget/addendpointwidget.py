@@ -63,13 +63,42 @@ class AddEndpointWidget(AbstractMenuWidget):
         # self.submit_widget = self.ipywidget_factory.get_submit_button(
         #     description='Add endpoint'
         # )
+
+        self.flex_widget = v.Container(class_='ma-2', children=[
+            v.Row(class_='ma-2',
+                children=[
+            v.Col(
+                cols=5,
+                children=[self.all_widgets[0]]),
+            v.Col(
+                cols=5,
+                children=[self.all_widgets[1]])
+        ]),
+            v.Row(class_='ma-2',
+                
+                children=[
+            v.Col(
+                cols=5,
+                children=[self.all_widgets[2]]),
+            v.Col(
+                cols=5,
+                children=[self.all_widgets[3]])
+        ]),
+            v.Row(class_='ma-2',
+                children=[self.submit_widget])
+        ])
+
+
         self.submit_widget.on_event('click', self._add_endpoint)
 
         self.auth_type.on_trait_change(self._update_auth)
 
-        self.children = [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.auth_type] + self.all_widgets \
-        + [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.submit_widget]
+        # self.children = [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.auth_type] + self.all_widgets \
+        # + [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.submit_widget]
+        
+        # self.children = self.all_widgets.append(self.submit_widget)
 
+        self.children = [self.flex_widget]
         for child in self.children:
             child.parent_widget = self
         self._update_auth()
