@@ -413,7 +413,7 @@ class GoogleAuth(Authenticator):
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         self.region_dropdown.observe(self._update_cluster_list)
-        self.filter_combobox.on_event('change', on_filter)
+        self.filter_combobox.on_event('change', self._update_cluster_list)
     
 
         if self.active_credentials is not None:
@@ -433,14 +433,15 @@ class GoogleAuth(Authenticator):
             print(get_regions())
             self.region_dropdown.options = get_regions()
     
-    def _update_cluster_list(self, change):
-        if change['type'] == 'change' and change['name'] == 'value':
-            region = change['new']
-            print(region)
+    def _update_cluster_list(self, widget, event, data):
+        if self.region_dropdown.value is not '' and self.region_dropdown.value is not None:
+            #region = change['new']
+            print(data)
+            print(event)
             #what error if the region is not valid? 
             client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
                         client_options={
-                            "api_endpoint": f"{region}-dataproc.googleapis.com:443"
+                            "api_endpoint": f"{self.region_dropdown.value}-dataproc.googleapis.com:443"
                         }
                     )
             print(self.project_widget.value)
@@ -451,12 +452,38 @@ class GoogleAuth(Authenticator):
             #self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
             #
             #print(get_cluster_pool(self.project_widget.value, region, client))
-            if self.filter_by_label.value is not None:
+            if self.filter_by_label.value is None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-                self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, region, client)
+                self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, self.region_dropdown.value, client)
 
             else:
-                _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_combobox.value)
+                _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, self.region_dropdown.value, client, self.filter_combobox.value)
+            
+    
+    # def _update_cluster_list(self, change):
+    #     if change['type'] == 'change' and change['name'] == 'value':
+    #         region = change['new']
+    #         print(region)
+    #         #what error if the region is not valid? 
+    #         client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+    #                     client_options={
+    #                         "api_endpoint": f"{region}-dataproc.googleapis.com:443"
+    #                     }
+    #                 )
+    #         print(self.project_widget.value)
+    #         #is
+    #         #self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+    #         self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+    #         self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
+    #         #self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
+    #         #
+    #         #print(get_cluster_pool(self.project_widget.value, region, client))
+    #         if self.filter_by_label.value is not None:
+    #             #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
+    #             self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, region, client)
+
+    #         else:
+    #             _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_combobox.value)
             
 
 
