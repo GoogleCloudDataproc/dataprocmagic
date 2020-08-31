@@ -72,17 +72,21 @@ class AddEndpointWidget(AbstractMenuWidget):
                 children=[self.all_widgets[0]]),
             v.Col(
                 cols=5,
-                children=[self.all_widgets[1]])
+                children=[self.all_widgets[1]]), 
+            v.Col(
+                cols=5,
+                children=[self.all_widgets[2]])
+
         ]),
             v.Row(class_='mx-auto',
                 
                 children=[
             v.Col(
                 cols=5,
-                children=[self.all_widgets[2]]),
+                children=[self.all_widgets[3]]),
             v.Col(
                 cols=5,
-                children=[self.all_widgets[3]])
+                children=[self.all_widgets[4]])
         ]),
             v.Row(class_='ma-2',
                 children=[self.submit_widget])
