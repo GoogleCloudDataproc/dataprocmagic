@@ -34,8 +34,7 @@ from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 
-#No accounts found message
-_NO_ACCOUNTS_FOUND_MESSAGE = "No accounts found"
+
 # The name of the Cloud SDK shell script
 _CLOUD_SDK_POSIX_COMMAND = "gcloud"
 _CLOUD_SDK_WINDOWS_COMMAND = "gcloud.cmd"
@@ -61,8 +60,6 @@ def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
         accounts_dict[account] = account
     if default_credentials_configured:
         accounts_dict['default-credentials'] = 'default-credentials'
-    if not accounts_dict:
-        accounts_dict[_NO_ACCOUNTS_FOUND_MESSAGE] = _NO_ACCOUNTS_FOUND_MESSAGE
     return accounts_dict
 
 def list_credentialed_accounts():
@@ -168,7 +165,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
 def get_cluster_pool(project_id, region, client, filters=None):
     #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
     cluster_pool = list()
-    filter_set = set()
     for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
         #check component gateway is enabled
         if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
@@ -179,30 +175,7 @@ def get_cluster_pool(project_id, region, client, filters=None):
                 if is_livy_action:
                     action_list.append(action.executable_file)
                     cluster_pool.append(cluster.cluster_name)
-                    for _filter in cluster.labels:
-                        filter_set.add(_filter)
-    return cluster_pool, list(filter_set)
-
-# def get_filter_labels(project_id, region, client, filters=None):
-#     if os.name == "nt":
-#         command = _CLOUD_SDK_WINDOWS_COMMAND
-#     else:
-#         command = _CLOUD_SDK_POSIX_COMMAND
-#     try:
-#         output = subprocess.check_output(
-#             [command, "dataproc", "clusters", "list", f"--project={project_id}", f"--region={region}" "--format=json"]
-#         )
-#         print(output)
-#         print(type(output))
-#         print(dir(output))
-#         data = json.loads(output.decode("utf-8"))
-#         #returns list of region names
-#         labels_list = [_["labels"] for _ in data]
-#         clusters_list = [_["labels"] for _ in data]
-#         return set(labels_list)
-#     except Exception:
-#         return set()
-    
+    return cluster_pool
 
 def get_regions(project):
     regions = ['asia-east1', 'asia-east2', 'asia-northeast1', 'asia-northeast2', 'asia-northeast3',
@@ -312,23 +285,11 @@ class GoogleAuth(Authenticator):
         if self.project is not None:
             self.region_dropdown.options = get_regions(self.project)
 
-        self.filter_by_label = ipywidget_factory.get_dropdown(
-            options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
-            value=None,
-            description=u"Filter by label:"
-        )
-
         self.google_credentials_widget = ipywidget_factory.get_dropdown(
             options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
             value=None,
             description=u"Account:"
         )
-
-        # self.google_credentials_widget = ipywidget_factory.get_dropdown(
-        #     options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
-        #     value=None,
-        #     description=u"Account:"
-        # )
 
         self.cluster_dropdown = ipywidgets.Combobox(
             placeholder='Select a Cluster',
@@ -345,13 +306,11 @@ class GoogleAuth(Authenticator):
 
         if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
-        else:
+        else: 
             self.google_credentials_widget.disabled = True
-            self.google_credentials_widget.value = _NO_ACCOUNTS_FOUND_MESSAGE
-
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown]
+        widgets = [self.project_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         return widgets
 
     def _update_region_list(self, change):
@@ -372,27 +331,8 @@ class GoogleAuth(Authenticator):
                     )
             print(self.project_widget.value)
             print(get_cluster_pool(self.project_widget.value, region, client))
-            if self.filter_by_label.value is None:
-                self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-            else:
-                _, self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_by_label.value)
+            self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client)
 
-
-    # def _update_filter_list(self, change):
-    #     if change['type'] == 'change' and change['name'] == 'value':
-    #         region = change['new']
-    #         print(region)
-    #         #what error if the region is not valid? 
-    #         client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
-    #                     client_options={
-    #                         "api_endpoint": f"{region}-dataproc.googleapis.com:443"
-    #                     }
-    #                 )
-    #         print(self.project_widget.value)
-    #         print(get_cluster_pool(self.project_widget.value, region, client))
-            
-    #         self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-            
     def initialize_credentials_with_auth_account_selection(self, account):
         """Initializes self.credentials with the accound selected from the auth dropdown widget"""
         if account != self.active_credentials:

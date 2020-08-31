@@ -15,9 +15,9 @@
 
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 from googledataprocauthenticator.controllerwidget.addendpointwidget import AddEndpointWidget
+from googledataprocauthenticator.controllerwidget.createsessionwidget import CreateSessionWidget
 from sparkmagic.controllerwidget.manageendpointwidget import ManageEndpointWidget
 from sparkmagic.controllerwidget.managesessionwidget import ManageSessionWidget
-from sparkmagic.controllerwidget.createsessionwidget import CreateSessionWidget
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.utils.constants import LANGS_SUPPORTED
 import sparkmagic.utils.configuration as conf
