@@ -362,6 +362,29 @@ class GoogleAuth(Authenticator):
             description=u"Account:",
             ensure_option=True
         )
+        self.account_combobox = v.Combobox(
+            class_='ma-2',
+            placeholder='No accounts found',
+            label='Account',
+            dense=True,
+            color='primary',
+            persistent_hint=True,
+            hide_selected=True,
+            outlined=True,
+            items=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
+            auto_select_first=True,
+            v_slots=[{
+                'name':
+                'no-data',
+                'children':
+                v.ListItem(children=[
+                    v.ListItemContent(children=[
+                        v.ListItemTitle(
+                            children=[_NO_ACCOUNTS_FOUND_HELP_MESSAGE])
+                    ])
+                ])
+            }],
+        )
 
         # self.google_credentials_widget = ipywidget_factory.get_dropdown(
         #     options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
@@ -449,27 +472,30 @@ class GoogleAuth(Authenticator):
         #self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         #self.region_dropdown.observe(self._update_cluster_list)
+        self.account_combobox.on_event('change', self._update_active_credentials)
+
         self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list)
         self.cluster_combobox.on_event('change', self._update_cluster_selection)
 
+
     
 
         if self.active_credentials is not None:
-            self.google_credentials_widget.value = self.active_credentials
-        else:
-            self.google_credentials_widget.options = [_NO_ACCOUNTS_FOUND_HELP_MESSAGE]
-            self.google_credentials_widget.placeholder = _NO_ACCOUNTS_FOUND_MESSAGE
-            self.google_credentials_widget.disabled = True
-
+            self.account_combobox.value = self.active_credentials
+           
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
+        widgets = [self.account_combobox, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
         return widgets
 
     def _update_cluster_selection(self, widget, event, data):
             print(data)
             self.cluster_selection = data
+    
+    def _update_active_credentials(self, widget, event, data):
+            print(data)
+            self.active_credentials = data
 
     def _update_region_list(self, widget, event, data):
         print(get_regions())
@@ -569,7 +595,7 @@ class GoogleAuth(Authenticator):
                 raise
         else:
             raise no_credentials_exception
-        self.initialize_credentials_with_auth_account_selection(self.google_credentials_widget.value)
+        self.initialize_credentials_with_auth_account_selection(self.active_credentials)
 
     def __call__(self, request):
         if not self.credentials.valid:
