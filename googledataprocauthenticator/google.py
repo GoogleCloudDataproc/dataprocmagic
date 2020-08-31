@@ -177,15 +177,15 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     except:
         raise
 
-    
 def get_cluster_pool(project_id, region, client, selected_filters=None):
     cluster_pool = list()
     filter_set = set()
     filters = ['status.state = ACTIVE']
-    if selected_filters is not None: 
+    if selected_filters is not None:
         filters.extend(selected_filters)
     #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
     filter_str = ' AND '.join(filters)
+    print(filter_str)
     try:
         for cluster in client.list_clusters(project_id, region, filter_str):
             #check component gateway is enabled
@@ -196,6 +196,7 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
                     is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
                     if is_livy_action:
                         action_list.append(action.executable_file)
+                        print(cluster.cluster_name)
                         cluster_pool.append(cluster.cluster_name)
                         for _filter in cluster.labels:
                             filter_set.add(_filter)
@@ -451,7 +452,6 @@ class GoogleAuth(Authenticator):
             self._update_region_list.options = get_regions()
     
     def _update_cluster_list(self, widget, event, data):
-        print(self.region_combobox.value)
         print(data)
 
         #if a region is selected. 
