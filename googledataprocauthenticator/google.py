@@ -34,8 +34,15 @@ from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 
-#No accounts found message
 _NO_ACCOUNTS_FOUND_MESSAGE = "No accounts found"
+_NO_ACCOUNTS_FOUND_HELP_MESSAGE = "Run `gcloud auth login` in "\
+    "your command line to authorize gcloud to access the Cloud Platform with Google user "\
+    "credentials to authenticate. Run `gcloud auth application-default login` acquire new "\
+    "user credentials to use for Application Default Credentials. Run `gcloud auth list` to see "\
+    "your credentialed accounts."
+_NO_CLUSTERS_FOUND_MESSAGE = "No clusters found"
+_NO_CLUSTERS_FOUND_HELP_MESSAGE = f"{_NO_CLUSTERS_FOUND_MESSAGE}. Please make sure you have the correct "\
+    "account, project ID, and region."
 # The name of the Cloud SDK shell script
 _CLOUD_SDK_POSIX_COMMAND = "gcloud"
 _CLOUD_SDK_WINDOWS_COMMAND = "gcloud.cmd"
@@ -61,8 +68,6 @@ def list_accounts_pairs(credentialed_accounts, default_credentials_configured):
         accounts_dict[account] = account
     if default_credentials_configured:
         accounts_dict['default-credentials'] = 'default-credentials'
-    if not accounts_dict:
-        accounts_dict[_NO_ACCOUNTS_FOUND_MESSAGE] = _NO_ACCOUNTS_FOUND_MESSAGE
     return accounts_dict
 
 def list_credentialed_accounts():
@@ -305,12 +310,10 @@ class GoogleAuth(Authenticator):
             description='Region:',
             placeholder='Select a region',
             options=[],
-            ensure_option=True,
-            disabled=False
+            ensure_option=False
         )
 
-        if self.project is not None:
-            self.region_dropdown.options = get_regions(self.project)
+        self.region_dropdown.options = get_regions(self.project)
 
         self.filter_by_label = ipywidget_factory.get_dropdown(
             options=[],
@@ -318,10 +321,11 @@ class GoogleAuth(Authenticator):
             description=u"Filter by label:"
         )
 
-        self.google_credentials_widget = ipywidget_factory.get_dropdown(
-            options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
+        self.google_credentials_widget = ipywidgets.Combobox(
+            options=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
             value=None,
-            description=u"Account:"
+            description=u"Account:",
+            ensure_option=True
         )
 
         # self.google_credentials_widget = ipywidget_factory.get_dropdown(
@@ -331,11 +335,10 @@ class GoogleAuth(Authenticator):
         # )
 
         self.cluster_dropdown = ipywidgets.Combobox(
-            placeholder='Select a Cluster',
-            options=[],
+            placeholder='No cluster found',
+            options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
             description='Cluster:',
-            ensure_option=True,
-            disabled=False
+            ensure_option=True
         )
         
         #populate region dropdown when a project is entered  
@@ -352,8 +355,8 @@ class GoogleAuth(Authenticator):
         if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
         else:
-            self.google_credentials_widget.disabled = True
-            self.google_credentials_widget.value = _NO_ACCOUNTS_FOUND_MESSAGE
+            self.google_credentials_widget.options = [_NO_ACCOUNTS_FOUND_HELP_MESSAGE]
+            self.google_credentials_widget.placeholder = _NO_ACCOUNTS_FOUND_MESSAGE
 
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
