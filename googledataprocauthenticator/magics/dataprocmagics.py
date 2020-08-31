@@ -39,6 +39,9 @@ class DataprocMagics(SparkMagicBase):
         stored_endpoints = self.get_stored_endpoints()
         for endpoint_tuple in stored_endpoints:
             self._load_sessions_for_endpoint(endpoint_tuple)
+        # update session_id_to_name to be all of the sessions now loaded into session_manager
+        session_id_to_name = dict([(session.id, name) for name, session in self.spark_controller.get_managed_clients().items()])
+        self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
         if len(stored_endpoints) == 0:
             self.endpoints = None
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
@@ -58,15 +61,12 @@ class DataprocMagics(SparkMagicBase):
         """
         try:
             stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
-        #if stored_endpoints has never been saved, it throws a KeyError
+            return stored_endpoints
         except Exception as caught_exc:
             self.db['autorestore/' + 'stored_endpoints'] = list()
-            stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
             self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints. "\
-            f"stored_endpoints is now:{stored_endpoints}")
-        finally:
-            return stored_endpoints
+            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
+            return list()
 
     def get_session_id_to_name(self):
         """Gets a dictionary that maps currently running livy session id's to their names
@@ -78,14 +78,12 @@ class DataprocMagics(SparkMagicBase):
         """
         try:
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
+            return session_id_to_name
         except Exception as caught_exc:
             self.db['autorestore/' + 'session_id_to_name'] = dict()
-            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
             self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name. "\
-            f"session_id_to_name is now:{session_id_to_name}")
-        finally:
-            return session_id_to_name
+            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
+            return dict()
 
     def _load_sessions_for_endpoint(self, endpoint_tuple):
         """Loads all of the running livy sessions of an endpoint
@@ -104,7 +102,7 @@ class DataprocMagics(SparkMagicBase):
         #add each session to session manager.
         for session in endpoint_sessions:
             name = session_id_to_name.get(session.id)
-            if name not in self.spark_controller.get_managed_clients():
+            if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
 
     @line_magic
@@ -204,15 +202,11 @@ class DataprocMagics(SparkMagicBase):
             name = args.session
             language = args.language
             endpoint = Endpoint(args.url, initialize_auth(args))
-            #we only add endpoint to stored_endpoints if it does not already exist
-            if args.url not in self.endpoints:
-                self.endpoints[args.url] = endpoint
-                # get current stored_endpoints
-                stored_endpoints = self.get_stored_endpoints()
-                endpoint_tuple = (args.url, endpoint.auth.active_credentials)
-                stored_endpoints.append(endpoint_tuple)
-                # stored updated stored_endpoints
-                self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
+            self.endpoints[args.url] = endpoint
+            # convert self.endpoints dict into list of (url, account) tuples
+            stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
+            # stored updated stored_endpoints
+            self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
