@@ -76,12 +76,13 @@ class ControllerWidget(AbstractMenuWidget):
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                     self.endpoints, self._refresh)
 
-        session_tab = [v.Tab(children=['Sessions']), v.TabItem(children=[self.create_session])]
+        session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
 
-        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(children=[self.add_endpoint])] 
+        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint])]
         # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
         #                                                      self.add_endpoint, self.manage_endpoint])
         self.tabs = v.Tabs(
+            style_='border: 1px solid lightgrey',
             v_model=1,
             children=session_tab + endpoint_tab)
 
