@@ -313,7 +313,7 @@ class GoogleAuth(Authenticator):
             self.region_dropdown.options = get_regions(self.project)
 
         self.filter_by_label = ipywidget_factory.get_dropdown(
-            options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
+            options=[],
             value=None,
             description=u"Filter by label:"
         )
