@@ -40,8 +40,13 @@ _NO_ACCOUNTS_FOUND_HELP_MESSAGE = "Run `gcloud auth login` in "\
     "credentials to authenticate. Run `gcloud auth application-default login` acquire new "\
     "user credentials to use for Application Default Credentials. Run `gcloud auth list` to see "\
     "your credentialed accounts."
+_SELECT_CLUSTER_MESSAGE = "Select a cluster"
 _NO_CLUSTERS_FOUND_MESSAGE = "No clusters found"
 _NO_CLUSTERS_FOUND_HELP_MESSAGE = f"{_NO_CLUSTERS_FOUND_MESSAGE}. Please make sure you have the correct "\
+    "account, project ID, and region."
+_SELECT_FILTER_MESSAGE = "Select a filter"
+_NO_FILTERS_FOUND_MESSAGE = "No filters found"
+_NO_FILTERS_FOUND_HELP_MESSAGE = f"{_NO_FILTERS_FOUND_MESSAGE}. Please make sure you have the correct "\
     "account, project ID, and region."
 # The name of the Cloud SDK shell script
 _CLOUD_SDK_POSIX_COMMAND = "gcloud"
@@ -209,7 +214,7 @@ def get_cluster_pool(project_id, region, client, filters=None):
 #         return set()
     
 
-def get_regions(project):
+def get_regions(project=None):
     regions = ['asia-east1', 'asia-east2', 'asia-northeast1', 'asia-northeast2', 'asia-northeast3',
     'asia-south1', 'asia-southeast1', 'asia-southeast2', 'australia-southeast1', 'europe-north1', 
     'europe-west1', 'europe-west2', 'europe-west3', 'europe-west4', 'europe-west5', 'europe-west6', 
@@ -309,14 +314,13 @@ class GoogleAuth(Authenticator):
         self.region_dropdown = ipywidgets.Combobox(
             description='Region:',
             placeholder='Select a region',
-            options=[],
+            options=get_regions(),
             ensure_option=False
         )
 
-        self.region_dropdown.options = get_regions(self.project)
-
-        self.filter_by_label = ipywidget_factory.get_dropdown(
-            options=[],
+        self.filter_by_label = ipywidgets.Combobox(
+            placeholder=_NO_FILTERS_FOUND_MESSAGE,
+            options=[_NO_FILTERS_FOUND_HELP_MESSAGE],
             value=None,
             description=u"Filter by label:"
         )
@@ -335,29 +339,23 @@ class GoogleAuth(Authenticator):
         # )
 
         self.cluster_dropdown = ipywidgets.Combobox(
-            placeholder='No cluster found',
+            placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
             options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
             description='Cluster:',
             ensure_option=True
         )
         
+        #can comment this then say like uncomment it to populate based on project? 
         #populate region dropdown when a project is entered  
         self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         self.region_dropdown.observe(self._update_cluster_list)
-
-        if self.region_dropdown.value is None or self.project_widget.value is '':
-            self.filter_by_label.options = {"No filters found":"No filters found"}
-            self.filter_by_label.value = "No filters found"
-            self.filter_by_label.disabled = True
-        
 
         if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
         else:
             self.google_credentials_widget.options = [_NO_ACCOUNTS_FOUND_HELP_MESSAGE]
             self.google_credentials_widget.placeholder = _NO_ACCOUNTS_FOUND_MESSAGE
-
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown, self.filter_by_label]
@@ -366,8 +364,8 @@ class GoogleAuth(Authenticator):
     def _update_region_list(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
             project_id = change['new']
-            print(get_regions(project_id))
-            self.region_dropdown.options = get_regions(project_id)
+            print(get_regions())
+            self.region_dropdown.options = get_regions()
     
     def _update_cluster_list(self, change):
         if change['type'] == 'change' and change['name'] == 'value':
@@ -382,9 +380,12 @@ class GoogleAuth(Authenticator):
             print(self.project_widget.value)
             print(get_cluster_pool(self.project_widget.value, region, client))
             if self.filter_by_label.value is None:
+                
                 self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
             else:
                 _, self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_by_label.value)
+            self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+            self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
 
 
     # def _update_filter_list(self, change):
