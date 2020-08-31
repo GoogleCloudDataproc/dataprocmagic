@@ -59,7 +59,7 @@ class AddEndpointWidget(AbstractMenuWidget):
                 self.all_widgets.append(widget)
 
         # Submit widget
-        self.submit_widget = v.Btn(color='primary', children=['Add Endpoint'])
+        self.submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
         # self.submit_widget = self.ipywidget_factory.get_submit_button(
         #     description='Add endpoint'
         # )
