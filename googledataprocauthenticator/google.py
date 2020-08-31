@@ -351,7 +351,7 @@ class GoogleAuth(Authenticator):
 
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown]
+        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown, self.filter_by_label]
         return widgets
 
     def _update_region_list(self, change):
