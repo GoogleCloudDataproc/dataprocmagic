@@ -453,14 +453,14 @@ class GoogleAuth(Authenticator):
         print(self.region_combobox.value)
         print(data)
       
-        if self.region_combobox.value is not '' and self.region_combobox.value is not None:
+        if data is not '' and data is not None:
             #region = change['new']
             print(data)
             print(event)
             #what error if the region is not valid? 
             client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
                         client_options={
-                            "api_endpoint": f"{self.region_dropdown.value}-dataproc.googleapis.com:443"
+                            "api_endpoint": f"{data}-dataproc.googleapis.com:443"
                         }
                     )
             print(self.project_widget.value)
@@ -471,6 +471,7 @@ class GoogleAuth(Authenticator):
             #self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
             #
             #print(get_cluster_pool(self.project_widget.value, region, client))
+            print(self.filter_by_label.value)
             if self.filter_by_label.value is None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
                 self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, self.region_dropdown.value, client)
