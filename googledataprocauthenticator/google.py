@@ -343,6 +343,12 @@ class GoogleAuth(Authenticator):
         #populate cluster dropdown when a region is selected
         self.region_dropdown.observe(self._update_cluster_list)
 
+        if self.region_dropdown.value is None or self.project_widget.value is '':
+            self.filter_by_label.options = {"No filters found":"No filters found"}
+            self.filter_by_label.value = "No filters found"
+            self.filter_by_label.disabled = True
+        
+
         if self.active_credentials is not None:
             self.google_credentials_widget.value = self.active_credentials
         else:
