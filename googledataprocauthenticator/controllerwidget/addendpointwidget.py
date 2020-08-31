@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import importlib
+import ipyvuetify as v
+
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import WIDGET_WIDTH
@@ -57,9 +59,11 @@ class AddEndpointWidget(AbstractMenuWidget):
                 self.all_widgets.append(widget)
 
         # Submit widget
-        self.submit_widget = self.ipywidget_factory.get_submit_button(
-            description='Add endpoint'
-        )
+        self.submit_widget = v.Btn(color='primary', children=['Add Endpoint'])
+        # self.submit_widget = self.ipywidget_factory.get_submit_button(
+        #     description='Add endpoint'
+        # )
+        self.submit_widget.on_event('click', self._add_endpoint)
 
         self.auth_type.on_trait_change(self._update_auth)
 
@@ -70,7 +74,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             child.parent_widget = self
         self._update_auth()
 
-    def run(self):
+    def _add_endpoint(self, widget, event, data):
         self.auth.update_with_widget_values()
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)
