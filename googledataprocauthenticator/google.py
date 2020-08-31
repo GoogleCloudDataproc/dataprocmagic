@@ -347,9 +347,9 @@ class GoogleAuth(Authenticator):
 
         self.filter_combobox = v.Combobox(
             class_='ma-2',
-            placeholder='Select a filter',
+            placeholder=_NO_FILTERS_FOUND_MESSAGE,
             multiple=True,
-            label='Combobox example',
+            label='Filter by label',
             chips=True,
             deletable_chips=True,
             color='primary',
@@ -358,8 +358,6 @@ class GoogleAuth(Authenticator):
             outlined=True,
             items=['one', 'two', 'three', 'four'],
             auto_select_first=True,
-            
-
             v_slots=[{
                 'name':
                 'no-data',
@@ -367,7 +365,7 @@ class GoogleAuth(Authenticator):
                 v.ListItem(children=[
                     v.ListItemContent(children=[
                         v.ListItemTitle(
-                            children=['Your search returned no items. Press Enter to create a new one'])
+                            children=[_NO_FILTERS_FOUND_HELP_MESSAGE])
                     ])
                 ])
             }],
@@ -417,6 +415,7 @@ class GoogleAuth(Authenticator):
             print(self.project_widget.value)
             #is
             self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+            self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
             self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
             #
             #print(get_cluster_pool(self.project_widget.value, region, client))
