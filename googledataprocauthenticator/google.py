@@ -450,7 +450,10 @@ class GoogleAuth(Authenticator):
             self._update_region_list.options = get_regions()
     
     def _update_cluster_list(self, widget, event, data):
-        if self.region_dropdown.value is not '' and self.region_dropdown.value is not None:
+        print(self.region_combobox.value)
+        print(data)
+      
+        if self.region_combobox.value is not '' and self.region_combobox.value is not None:
             #region = change['new']
             print(data)
             print(event)
