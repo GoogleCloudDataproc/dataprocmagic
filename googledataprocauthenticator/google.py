@@ -35,6 +35,8 @@ from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
 
+_ENTER_PROJECT_MESSAGE = "Enter a project ID"
+
 _SELECT_REGION_MESSAGE = "Select a region"
 _NO_ACCOUNTS_FOUND_MESSAGE = "No accounts found"
 _NO_ACCOUNTS_FOUND_HELP_MESSAGE = "Run `gcloud auth login` in "\
@@ -167,7 +169,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                     )
     try:
         #if they do not enter a cluster name, we get a random one for them.
-        if cluster_name == '':
+        if cluster_name is None:
             cluster_name = random.choice(get_cluster_pool(project_id, region, client))
         response = client.get_cluster(project_id, region, cluster_name)
         url = response.config.endpoint_config.http_ports.popitem()[1]
@@ -269,7 +271,9 @@ class GoogleAuth(Authenticator):
         self.active_credentials = None
         self.default_credentials_configured = application_default_credentials_configured()
         account_dict = list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)
-
+        self.client = None
+        self.cluster_selection = None
+        self.region = None
         if parsed_attributes is not None:
             if parsed_attributes.account in account_dict:
                 self.active_credentials = parsed_attributes.account
@@ -313,8 +317,19 @@ class GoogleAuth(Authenticator):
             description='Project:',
             width=widget_width
         )
+
+        self.project_textfield = v.TextField(
+            class_='ma-2',
+            placeholder=_ENTER_PROJECT_MESSAGE,
+            label='Project',
+            dense=True,
+            value='value',
+            color='primary',
+            outlined=True,
+        )
+
         if self.project is not None:
-            self.project_widget.value = self.project
+            self.project_textfield.value = self.project
 
         self.cluster_name_widget = ipywidget_factory.get_text(
             description='Cluster:',
@@ -420,22 +435,25 @@ class GoogleAuth(Authenticator):
             }],
         )
 
-        self.cluster_dropdown = ipywidgets.Combobox(
-            placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
-            options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
-            description='Cluster:',
-            ensure_option=True, 
-            disabled=True
-        )
+        # self.cluster_dropdown = ipywidgets.Combobox(
+        #     placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
+        #     options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
+        #     description='Cluster:',
+        #     ensure_option=True, 
+        #     disabled=True
+        # )
         
         #can comment this then say like uncomment it to populate based on project? 
         #populate region dropdown when a project is entered  
 
-        self.project_widget.observe(self._update_region_list)
+        #self.project_widget.observe(self._update_region_list)
         #populate cluster dropdown when a region is selected
         #self.region_dropdown.observe(self._update_cluster_list)
+        self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list)
+        self.cluster_combobox.on_event('change', self._update_cluster_selection)
+
     
 
         if self.active_credentials is not None:
@@ -446,18 +464,21 @@ class GoogleAuth(Authenticator):
             self.google_credentials_widget.disabled = True
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_widget, self.region_combobox, self.cluster_combobox, self.filter_combobox]
+        widgets = [self.google_credentials_widget, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
         return widgets
 
-    def _update_region_list(self, change):
-        if change['type'] == 'change' and change['name'] == 'value':
-            project_id = change['new']
-            print(get_regions())
-            self._update_region_list.options = get_regions()
+    def _update_cluster_selection(self, widget, event, data):
+            print(data)
+            self.cluster_selection = data
+
+    def _update_region_list(self, widget, event, data):
+        print(get_regions())
+        self.project = data
+        self._update_region_list.items = get_regions()
     
     def _update_cluster_list(self, widget, event, data):
         print(data)
-
+        
         #if a region is selected. 
         if widget.label == 'Region' and data is not '' and data is not None:
             #region = change['new']
@@ -465,18 +486,18 @@ class GoogleAuth(Authenticator):
             self.region = data
             print(event)
             #what error if the region is not valid? 
-            client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+            self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
                         client_options={
                             "api_endpoint": f"{data}-dataproc.googleapis.com:443"
                         }
                     )
-            print(self.project_widget.value)
+            print(self.project_textfield.value)
             self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
             self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_widget.value, data, client)
+            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project, data, self.client)
         if widget.label == 'Filter by label' and data is not '' and data is not None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-                _, self.cluster_combobox.items = get_cluster_pool(self.project_widget.value, self.region, client, data)
+                _, self.cluster_combobox.items = get_cluster_pool(self.project.value, self.region, self.client, data)
             
 
     
@@ -542,8 +563,8 @@ class GoogleAuth(Authenticator):
             try:
                 # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                 #     self.cluster_name_widget.value, self.credentials)
-                self.url = get_component_gateway_url(self.project_widget.value, self.region_dropdown.value, \
-                    self.cluster_dropdown.value, self.credentials)
+                self.url = get_component_gateway_url(self.project, self.region, \
+                    self.cluster_selection, self.credentials)
             except:
                 raise
         else:
