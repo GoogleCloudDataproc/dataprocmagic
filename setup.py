@@ -29,6 +29,7 @@ setuptools.setup(
         'hdijupyterutils>=0.6',
         'google-cloud-dataproc',
         'google-auth',
-        'urllib3'
+        'urllib3',
+        'ipyvuetify'
     ]
 )

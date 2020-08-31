@@ -25,6 +25,7 @@ import random
 import urllib3.util
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
 import ipywidgets
+import ipyvuetify as v
 from google.cloud import dataproc_v1beta2
 import google.auth.transport.requests
 from google.auth import _cloud_sdk
@@ -175,23 +176,28 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     except:
         raise
 
+    
 def get_cluster_pool(project_id, region, client, filters=None):
     #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
     cluster_pool = list()
     filter_set = set()
-    for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
-        #check component gateway is enabled
-        if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
-            action_list = list()
-            for action in cluster.config.initialization_actions:
-                #check if action is livy init action with a region with regex pattern [a-z0-9-]+
-                is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
-                if is_livy_action:
-                    action_list.append(action.executable_file)
-                    cluster_pool.append(cluster.cluster_name)
-                    for _filter in cluster.labels:
-                        filter_set.add(_filter)
-    return cluster_pool, list(filter_set)
+
+    try:
+        for cluster in client.list_clusters(project_id, region, 'status.state = ACTIVE'):
+            #check component gateway is enabled
+            if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
+                action_list = list()
+                for action in cluster.config.initialization_actions:
+                    #check if action is livy init action with a region with regex pattern [a-z0-9-]+
+                    is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
+                    if is_livy_action:
+                        action_list.append(action.executable_file)
+                        cluster_pool.append(cluster.cluster_name)
+                        for _filter in cluster.labels:
+                            filter_set.add(_filter)
+        return cluster_pool, list(filter_set)
+    except: 
+        raise
 
 # def get_filter_labels(project_id, region, client, filters=None):
 #     if os.name == "nt":
@@ -321,6 +327,7 @@ class GoogleAuth(Authenticator):
         self.filter_by_label = ipywidgets.Combobox(
             placeholder=_NO_FILTERS_FOUND_MESSAGE,
             options=[_NO_FILTERS_FOUND_HELP_MESSAGE],
+            disabled=True,
             value=None,
             description=u"Filter by label:"
         )
@@ -338,11 +345,40 @@ class GoogleAuth(Authenticator):
         #     description=u"Account:"
         # )
 
+        self.filter_combobox = v.Combobox(
+            class_='ma-2',
+            placeholder='Select a filter',
+            multiple=True,
+            label='Combobox example',
+            chips=True,
+            deletable_chips=True,
+            color='primary',
+            persistent_hint=True,
+            hide_selected=True,
+            outlined=True,
+            items=['one', 'two', 'three', 'four'],
+            auto_select_first=True,
+            
+
+            v_slots=[{
+                'name':
+                'no-data',
+                'children':
+                v.ListItem(children=[
+                    v.ListItemContent(children=[
+                        v.ListItemTitle(
+                            children=['Your search returned no items. Press Enter to create a new one'])
+                    ])
+                ])
+            }],
+        )
+
         self.cluster_dropdown = ipywidgets.Combobox(
             placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
             options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
             description='Cluster:',
-            ensure_option=True
+            ensure_option=True, 
+            disabled=True
         )
         
         #can comment this then say like uncomment it to populate based on project? 
@@ -356,9 +392,10 @@ class GoogleAuth(Authenticator):
         else:
             self.google_credentials_widget.options = [_NO_ACCOUNTS_FOUND_HELP_MESSAGE]
             self.google_credentials_widget.placeholder = _NO_ACCOUNTS_FOUND_MESSAGE
+            self.google_credentials_widget.disabled = True
 
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
-        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown, self.filter_by_label]
+        widgets = [self.google_credentials_widget, self.project_widget, self.region_dropdown, self.cluster_dropdown, self.filter_by_label, self.filter_combobox]
         return widgets
 
     def _update_region_list(self, change):
@@ -378,14 +415,16 @@ class GoogleAuth(Authenticator):
                         }
                     )
             print(self.project_widget.value)
-            print(get_cluster_pool(self.project_widget.value, region, client))
-            if self.filter_by_label.value is None:
-                
+            #is
+            self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
+            self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
+            #
+            #print(get_cluster_pool(self.project_widget.value, region, client))
+            if self.filter_by_label.value is not None:
                 self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
             else:
                 _, self.cluster_dropdown.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_by_label.value)
-            self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
-            self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
+            
 
 
     # def _update_filter_list(self, change):
