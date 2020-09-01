@@ -45,21 +45,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
             ],
             app=True,  # If true, the other widgets float under on scroll
         )
-        toolbar = v.Row(children=[back_toolbar, submit_widget])
-
-        # self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
-        #     v.Row(class_='mx-auto', children=[
-        #         v.Col(cols=3, children=[self.all_widgets[0]]),
-        #         v.Col(cols=3, children=[self.all_widgets[1]]),
-        #         v.Col(cols=3,children=[self.all_widgets[2]])
-        #     ]),
-        #     v.Row(class_='mx-auto', children=[
-        #         v.Col( cols=3, children=[self.all_widgets[3]]),
-        #         v.Col( cols=3, children=[self.all_widgets[4]])
-        #     ]),
-        #     v.Row(class_='ma-2', children=[self.submit_widget])])
-
-         
+        self.toolbar = v.Row(children=[back_toolbar, submit_widget])
 
         self.endpoint_table = v.DataTable(hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -68,7 +54,11 @@ class ListEndpointsWidget(AbstractMenuWidget):
             {'text': 'Url', 'sortable': False, 'value': 'url'},
         ], items=endpoint_table_values, dense=False, fixedHeader=False)
 
-        self.children = [toolbar, self.endpoint_table]
+        self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+            v.Row(class_='mx-auto', children=[self.toolbar]),
+            v.Row(class_='mx-auto', children=[self.endpoint_table])])
+
+        self.children = [self.toolbar_with_table, self.endpoint_table]
         for child in self.children:
             child.parent_widget = self
 
