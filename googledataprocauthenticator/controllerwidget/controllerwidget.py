@@ -29,10 +29,15 @@ from sparkmagic.utils.utils import Namespace, initialize_auth
 class ControllerWidget(AbstractMenuWidget):
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints=None):
         super(ControllerWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display)
-        self.state = 'add'
+        
         if endpoints is None:
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
+        print(self.endpoints)
+        if not self.endpoints:
+            self.state = 'add'
+        else:
+            self.state = 'list'
 
         self._refresh()
 
@@ -84,7 +89,7 @@ class ControllerWidget(AbstractMenuWidget):
         if not self.endpoints or self.state == 'add':
             self.list_endpoint.layout.display = 'none'
             self.add_endpoint.layout.display = 'flex'
-        elif self.state == 'table':
+        elif self.state == 'list':
             self.add_endpoint.layout.display = 'none'
             self.list_endpoint.layout.display = 'flex'
             

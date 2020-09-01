@@ -63,13 +63,9 @@ class ListEndpointsWidget(AbstractMenuWidget):
         for child in self.children:
             child.parent_widget = self
 
-    def _on_add_click(self):
-        self.state = 'add'
-
     def _on_add_click(self, widget, event, data):
             self.state = 'add'
             self.refresh_method()
-
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []

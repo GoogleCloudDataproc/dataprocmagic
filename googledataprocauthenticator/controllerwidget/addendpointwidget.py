@@ -92,7 +92,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
-        self.state = 'table'
+        self.state = 'list'
         self.auth.update_with_widget_values()
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)
