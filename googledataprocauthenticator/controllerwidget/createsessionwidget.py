@@ -198,7 +198,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
             return
 
-        endpoint = self.endpoint
+        endpoint = self.endpoints[self.endpoint]
         language = self.language
         alias = self.session_name
         skip = False
