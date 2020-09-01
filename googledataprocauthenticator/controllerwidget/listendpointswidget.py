@@ -34,20 +34,13 @@ class ListEndpointsWidget(AbstractMenuWidget):
         
 
         # Submit widget
-        self.submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
+        #self.submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
         # self.submit_widget = self.ipywidget_factory.get_submit_button(
         #     description='Add endpoint'
         # )
-        desserts= [
-          {
-            'name': 'clane',
-            'project': 'region',
-            'region': 'frenka',
-            'labels': 'dmsakl',
-            'url': 'dnskl'
-          }]
+ 
         endpoint_table_values = []
-        for endpoint in self.endpoints:
+        for endpoint in self.endpoints.values():
             endpoint_table_values.append({'name':endpoint.auth.cluster_selection, 'url':endpoint.url, 'project': endpoint.auth.project, \
                 'region':endpoint.auth.region })
 
