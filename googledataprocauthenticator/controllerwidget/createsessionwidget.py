@@ -37,8 +37,6 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.state = state
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
-        if not self.spark_controller.get_managed_clients():
-            print('nosessions')
 
         self.name_textfield = v.TextField(
             class_='ma-2',
