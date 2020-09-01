@@ -36,7 +36,6 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.endpoint = None
         self.state = state
         self.db = db
-        self.session_id_to_name = session_id_to_name
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
 
