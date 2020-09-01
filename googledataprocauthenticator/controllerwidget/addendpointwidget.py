@@ -80,15 +80,43 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.submit_widget.on_event('click', self._add_endpoint)
 
         self.auth_type.on_trait_change(self._update_auth)
+        
+        endpoint_table_values = self._generate_endpoint_values()
+        new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
+        backicon = v.Icon(children=['mdi-arrow-left'])
+        #backicon.on_event('click', self._on_back_click)
+        new_endpoint.on_event('click', self._on_add_click)
+
+        back_toolbar = v.Toolbar(elevation="0",
+            children=[
+                v.ToolbarItems(children=[backicon]),
+                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Endpoints']),
+                v.Spacer()
+            ],
+            app=True,  # If true, the other widgets float under on scroll
+        )
+        self.toolbar = v.Row(children=[back_toolbar, new_endpoint])
+
+        self.endpoint_table = v.DataTable(hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
+            {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
+            {'text': 'Project', 'sortable': False, 'value': 'project'},
+            {'text': 'Region', 'sortable': False, 'value': 'region'},
+            {'text': 'Url', 'sortable': False, 'value': 'url'},
+        ], items=endpoint_table_values, dense=False, fixedHeader=False)
+
+        self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+            v.Row(class_='mx-auto', children=[self.toolbar]),
+            v.Row(class_='mx-auto', children=[self.endpoint_table])])
 
         # self.children = [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.auth_type] + self.all_widgets \
         # + [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.submit_widget]
         
         # self.children = self.all_widgets.append(self.submit_widget)
 
-        self.children = [self.flex_widget]
+        self.children = [self.flex_widget, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
+        self._update_view(self.state)
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
@@ -109,6 +137,14 @@ class AddEndpointWidget(AbstractMenuWidget):
             self.refresh_method()
             raise
 
+    def _update_view(self, state):
+        if not self.endpoints or self.state == 'add':
+            self.toolbar_with_table.layout.display = 'none'
+            self.flex_widget.layout.display = 'flex'
+        elif self.state == 'list':
+            self.flex_widget.layout.display = 'none'
+            self.toolbar_with_table.layout.display = 'flex'
+    
     def _update_auth(self):
         """
         Create an instance of the chosen auth type maps to in the config file.
@@ -118,3 +154,15 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.auth = self.auth_instances.get(self.auth_type.value)
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
+
+    def _on_add_click(self, widget, event, data):
+        self.state = 'add'
+        self.refresh_method()
+
+    def _generate_endpoint_values(self):
+        endpoint_table_values = []
+        for endpoint in self.endpoints.values():
+            endpoint_table_values.append({'name':endpoint.auth.cluster_selection, 'url':endpoint.url, 'project': endpoint.auth.project, \
+                'region':endpoint.auth.region})
+        return endpoint_table_values
+

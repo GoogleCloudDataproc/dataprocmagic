@@ -38,6 +38,7 @@ class ControllerWidget(AbstractMenuWidget):
             self.state = 'add'
         else:
             self.state = 'list'
+        print(self.state)
 
         self._refresh()
 
@@ -75,8 +76,8 @@ class ControllerWidget(AbstractMenuWidget):
                                                   self.endpoints_dropdown_widget, self._refresh)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                               self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
-        self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
+        # self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
+        #                                       self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                     self.endpoints, self._refresh)
 
