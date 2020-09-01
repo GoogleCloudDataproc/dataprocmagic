@@ -33,11 +33,7 @@ class ControllerWidget(AbstractMenuWidget):
         if endpoints is None:
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
-        if not self.endpoints:
-            self.state = 'add'
-        else:
-            self.state = 'list'
-
+        self.state = 'list'
         self._refresh()
 
     def run(self):
