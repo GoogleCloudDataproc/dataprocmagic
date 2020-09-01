@@ -16,15 +16,17 @@
 """Tests the `%manage_dataproc` and `%spark` magics"""
 
 
-from mock import patch, MagicMock
+from mock import patch, MagicMock, PropertyMock
 from nose.tools import raises, assert_equals, with_setup
 from google.oauth2 import credentials
 from googledataprocauthenticator.google import GoogleAuth
 from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
-from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
 from sparkmagic.livyclientlib.endpoint import Endpoint
+from sparkmagic.livyclientlib.livysession import LivySession
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
+from sparkmagic.utils.constants import SESSION_KIND_SPARK
+
 
 
 magic = None
@@ -32,15 +34,26 @@ spark_controller = None
 shell = None
 ipython_display = None
 
+
 def _setup():
-    global magic, spark_controller, shell, ipython_display
-    magic = DataprocMagics(shell=None, widget=MagicMock())
-    magic.shell = shell = MagicMock()
-    magic.ipython_display = ipython_display = MagicMock()
-    magic.spark_controller = spark_controller = MagicMock()
+    with patch('googledataprocauthenticator.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
+           return_value=mocked_db):
+        global magic, spark_controller, shell, ipython_display
+        magic = DataprocMagics(shell=None, widget=MagicMock())
+        magic.shell = shell = MagicMock()
+        magic.ipython_display = ipython_display = MagicMock()
+        magic.spark_controller = spark_controller = MagicMock()
 
 def _teardown():
     pass
+
+stored_endpoints = ("http://url.com", Endpoint("http://url.com", "default-credentials"))
+get_session_id_to_name = {1234: 'my_session'}
+sessions_mock = {'my_session': LivySession(http_client=MagicMock(), properties={"kind":SESSION_KIND_SPARK, \
+    "heartbeatTimeoutInSecond": 60}, ipython_display=ipython_display, session_id=1234)}
+sessions_list_mock = [LivySession(http_client=MagicMock(), properties={"kind":SESSION_KIND_SPARK,\
+    "heartbeatTimeoutInSecond": 60}, ipython_display=ipython_display, session_id=1234)]
+mocked_db = {'autorestore/stored_endpoints': stored_endpoints, 'autorestore/get_session_id_to_name': get_session_id_to_name,}
 
 def make_credentials():
     return credentials.Credentials(
@@ -86,7 +99,7 @@ def test_add_sessions_command_parses_google_default_credentials():
         connection_string = "-u http://url.com -t Google"
         line = " ".join([command, name, language, connection_string, account])
         magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
+        args = parse_argstring_or_throw(DataprocMagics.spark, line)
         auth_instance = initialize_auth(args)
         add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
                                                 False, {"kind": "pyspark"})
@@ -108,7 +121,7 @@ def test_add_sessions_command_parses_google_user_credentials():
         connection_string = "-u http://url.com -t Google"
         line = " ".join([command, name, language, connection_string, account])
         magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
+        args = parse_argstring_or_throw(DataprocMagics.spark, line)
         auth_instance = initialize_auth(args)
         add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
                                                   False, {"kind": "pyspark"})
@@ -116,6 +129,23 @@ def test_add_sessions_command_parses_google_user_credentials():
         isinstance(auth_instance, GoogleAuth)
         assert_equals(auth_instance.active_credentials, 'account@google.com')
 
+@with_setup(_setup, _teardown)
+def test_add_sessions_command_parses_session_already_exists():
+    spark_controller.get_all_sessions_endpoint = MagicMock(return_value=sessions_list_mock)
+    get_managed_clients_mock = MagicMock(return_value = sessions_mock)
+    spark_controller.get_managed_clients = get_managed_clients_mock
+    add_sessions_mock = MagicMock()
+    spark_controller.session_manager.add_session = add_sessions_mock
+    command = "add"
+    name = "-s my_session"
+    language = "-l python"
+    connection_string = "-u http://url.com -t {} -g account@google.com".format('Google')
+    line = " ".join([command, name, language, connection_string])
+    magic.spark(line)
+    assert_equals(magic.db['autorestore/stored_endpoints'], stored_endpoints)
+    assert_equals(magic.db['autorestore/get_session_id_to_name'], get_session_id_to_name)
+    add_sessions_mock.assert_not_called()
+    
 @raises(BadUserConfigurationException)
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_raises_google_no_account():
@@ -129,13 +159,23 @@ def test_add_sessions_command_raises_google_no_account():
         connection_string = "-u http://url.com -t Google"
         line = " ".join([command, name, language, connection_string])
         magic.spark(line)
-        args = parse_argstring_or_throw(RemoteSparkMagics.spark, line)
+        args = parse_argstring_or_throw(DataprocMagics.spark, line)
         initialize_auth(args)
 
 @with_setup(_setup, _teardown)
 def test_restore_endpoints():
-    stored_endpoints = ("http://url.com", Endpoint("http://url.com", "default-credentials"))
-    with patch('googledataprocauthenticator.magics.dataprocmagics.get_stored_endpoints',\
-    return_value=stored_endpoints), patch('google.auth.default', return_value=(creds, 'project'),\
+    with patch('google.auth.default', return_value=(creds, 'project'),\
     autospec=True):
         assert_equals(magic.endpoints, stored_endpoints)
+        
+@with_setup(_setup, _teardown)
+def test_restore_sessions():
+    with patch('google.auth.default', return_value=(creds, 'project'),\
+    autospec=True):
+        spark_controller.get_all_sessions_endpoint = MagicMock(return_value=sessions_list_mock)
+        spark_controller.get_managed_clients = []
+        add_sessions_mock = MagicMock()
+        spark_controller.session_manager.add_session = add_sessions_mock
+        add_sessions_mock.assert_called_once_with("my_session", LivySession(http_client=MagicMock(),\
+    properties={"kind":SESSION_KIND_SPARK, "heartbeatTimeoutInSecond": 60}, ipython_display=ipython_display, session_id=12345))
+        assert_equals(spark_controller, stored_endpoints)
