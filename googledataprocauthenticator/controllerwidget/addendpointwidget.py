@@ -16,8 +16,6 @@ import importlib
 import ipyvuetify as v
 from IPython.core.magic import Magics
 
-from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
-
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import WIDGET_WIDTH
