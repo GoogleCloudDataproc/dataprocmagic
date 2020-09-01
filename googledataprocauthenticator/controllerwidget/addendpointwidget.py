@@ -138,7 +138,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             raise
 
     def _update_view(self):
-        if not self.endpoints or self.state == 'add':
+        if self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
             self.flex_widget.layout.display = 'flex'
         elif self.state == 'list':
