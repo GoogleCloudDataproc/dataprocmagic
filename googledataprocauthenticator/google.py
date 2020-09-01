@@ -321,7 +321,7 @@ class GoogleAuth(Authenticator):
         self.project_textfield = v.TextField(
             class_='ma-2',
             placeholder=_ENTER_PROJECT_MESSAGE,
-            label='Project',
+            label='Project *',
             dense=True,
             value='value',
             color='primary',
@@ -365,7 +365,7 @@ class GoogleAuth(Authenticator):
         self.account_combobox = v.Combobox(
             class_='ma-2',
             placeholder='No accounts found',
-            label='Account',
+            label='Account *',
             dense=True,
             color='primary',
             persistent_hint=True,
@@ -394,7 +394,7 @@ class GoogleAuth(Authenticator):
         self.region_combobox = v.Combobox(
             class_='ma-2',
             placeholder=_SELECT_REGION_MESSAGE,
-            label='Region',
+            label='Region *',
             deletable_chips=True,
             dense=True,
             color='primary',
@@ -506,7 +506,7 @@ class GoogleAuth(Authenticator):
         print(data)
         
         #if a region is selected. 
-        if widget.label == 'Region' and data is not '' and data is not None:
+        if widget.label == 'Region *' and data is not '' and data is not None:
             #region = change['new']
             print(data)
             self.region = data

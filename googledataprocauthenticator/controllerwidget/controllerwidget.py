@@ -15,6 +15,7 @@
 import ipyvuetify as v
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 from googledataprocauthenticator.controllerwidget.addendpointwidget import AddEndpointWidget
+from googledataprocauthenticator.controllerwidget.addendpointwidget import ListEndpointsWidget
 from googledataprocauthenticator.controllerwidget.createsessionwidget import CreateSessionWidget
 from sparkmagic.controllerwidget.manageendpointwidget import ManageEndpointWidget
 from sparkmagic.controllerwidget.managesessionwidget import ManageSessionWidget
@@ -73,12 +74,14 @@ class ControllerWidget(AbstractMenuWidget):
                                                   self.endpoints_dropdown_widget, self._refresh)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                               self.endpoints, self.endpoints_dropdown_widget, self._refresh)
+        self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
+                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh)
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                     self.endpoints, self._refresh)
 
         session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
 
-        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint])]
+        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint, self.list_endpoint])]
         # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
         #                                                      self.add_endpoint, self.manage_endpoint])
         self.tabs = v.Tabs(
