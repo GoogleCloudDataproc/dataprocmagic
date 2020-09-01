@@ -25,7 +25,7 @@ from sparkmagic.utils.constants import WIDGET_WIDTH
 
 
 class CreateSessionWidget(AbstractMenuWidget):
-    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget, refresh_method):
+    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget, refresh_method, state):
         # This is nested
         super(CreateSessionWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
@@ -34,6 +34,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.properties = None
         self.language = None
         self.endpoint = None
+        self.state = state
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
         if not self.spark_controller.get_managed_clients():

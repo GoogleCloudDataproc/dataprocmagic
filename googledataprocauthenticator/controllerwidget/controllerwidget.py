@@ -71,7 +71,7 @@ class ControllerWidget(AbstractMenuWidget):
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                                  self.endpoints, self.endpoints_dropdown_widget, self._refresh)
+                                                  self.endpoints, self.endpoints_dropdown_widget, self._refresh, self._state)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                               self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         # self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
