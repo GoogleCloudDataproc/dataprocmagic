@@ -30,7 +30,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
         self.endpoints = endpoints
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
-
+        self.state = state
         endpoint_table_values = self._generate_endpoint_values()
         
         new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
