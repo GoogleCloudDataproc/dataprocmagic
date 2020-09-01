@@ -97,7 +97,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         )
         self.toolbar = v.Row(children=[back_toolbar, new_endpoint])
 
-        self.endpoint_table = v.DataTable(no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
+        self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},

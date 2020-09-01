@@ -135,7 +135,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         )
         self.toolbar = v.Row(children=[back_toolbar, new_session])
 
-        self.session_table = v.DataTable(no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
+        self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
             {'text': 'ID', 'sortable': False, 'value': 'id'},
             {'text': 'Yarn ID', 'sortable': False, 'value': 'yarn'},
