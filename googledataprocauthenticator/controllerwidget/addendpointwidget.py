@@ -85,7 +85,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
         backicon = v.Icon(children=['mdi-arrow-left'])
         #backicon.on_event('click', self._on_back_click)
-        new_endpoint.on_event('click', self._on_add_click)
+        new_endpoint.on_event('click', self._on_new_endpoint_click)
 
         back_toolbar = v.Toolbar(elevation="0",
             children=[
@@ -116,7 +116,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.children = [self.flex_widget, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
-        self._update_view(self.state)
+        self._update_view()
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
@@ -137,7 +137,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             self.refresh_method()
             raise
 
-    def _update_view(self, state):
+    def _update_view(self):
         if not self.endpoints or self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
             self.flex_widget.layout.display = 'flex'
@@ -155,9 +155,9 @@ class AddEndpointWidget(AbstractMenuWidget):
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
 
-    def _on_add_click(self, widget, event, data):
+    def _on_new_endpoint_click(self, widget, event, data):
         self.state = 'add'
-        self.refresh_method()
+        self._update_view()
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []
