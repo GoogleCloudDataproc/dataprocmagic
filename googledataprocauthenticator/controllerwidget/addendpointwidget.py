@@ -65,33 +65,16 @@ class AddEndpointWidget(AbstractMenuWidget):
         # )
 
         self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
-            v.Row(class_='mx-auto',
-                children=[
-            v.Col(
-                cols=3,
-                children=[self.all_widgets[0]]),
-            v.Col(
-                cols=3,
-                children=[self.all_widgets[1]]), 
-            v.Col(
-                cols=3,
-                children=[self.all_widgets[2]])
-
-        ]),
-            v.Row(class_='mx-auto',
-                
-                children=[
-            v.Col(
-                cols=3,
-                children=[self.all_widgets[3]]),
-            v.Col(
-                cols=3,
-                children=[self.all_widgets[4]])
-        ]),
-            v.Row(class_='ma-2',
-                children=[self.submit_widget])
-        ])
-
+            v.Row(class_='mx-auto', children=[
+                v.Col(cols=3, children=[self.all_widgets[0]]),
+                v.Col(cols=3, children=[self.all_widgets[1]]),
+                v.Col(cols=3,children=[self.all_widgets[2]])
+            ]),
+            v.Row(class_='mx-auto', children=[
+                v.Col( cols=3, children=[self.all_widgets[3]]),
+                v.Col( cols=3, children=[self.all_widgets[4]])
+            ]),
+            v.Row(class_='ma-2', children=[self.submit_widget])])
 
         self.submit_widget.on_event('click', self._add_endpoint)
 

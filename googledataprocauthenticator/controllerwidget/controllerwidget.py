@@ -80,6 +80,12 @@ class ControllerWidget(AbstractMenuWidget):
                                                     self.endpoints, self._refresh)
 
         session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
+        #if there is no endpoints, we hide table. If there is endpoints, we only show table. 
+        if not self.endpoints:
+            self.list_endpoint.layout.display = 'none'
+        else:
+            self.add_endpoint.layout.display = 'none'
+
 
         endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint, self.list_endpoint])]
         # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
