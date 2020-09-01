@@ -25,7 +25,7 @@ from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 class AddEndpointWidget(AbstractMenuWidget):
 
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget,
-                 refresh_method, state):
+                 refresh_method, state, db):
                  
         # This is nested
         super(AddEndpointWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
@@ -33,6 +33,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
         self.state = state
+        self.db = db
             
         #map auth class path string to the instance of the class.
         self.auth_instances = {}
