@@ -33,12 +33,10 @@ class ControllerWidget(AbstractMenuWidget):
         if endpoints is None:
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
-        print(self.endpoints)
         if not self.endpoints:
             self.state = 'add'
         else:
             self.state = 'list'
-        print(self.state)
 
         self._refresh()
 
@@ -73,7 +71,7 @@ class ControllerWidget(AbstractMenuWidget):
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                                  self.endpoints_dropdown_widget, self._refresh)
+                                                  self.endpoints, self.endpoints_dropdown_widget, self._refresh)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                               self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         # self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
