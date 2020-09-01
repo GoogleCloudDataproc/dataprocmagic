@@ -25,7 +25,7 @@ from sparkmagic.utils.constants import WIDGET_WIDTH
 
 
 class CreateSessionWidget(AbstractMenuWidget):
-    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget, refresh_method, state):
+    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget, refresh_method, state, db):
         # This is nested
         super(CreateSessionWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
@@ -35,6 +35,8 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.language = None
         self.endpoint = None
         self.state = state
+        self.db = db
+        self.session_id_to_name = session_id_to_name
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
 
@@ -203,7 +205,12 @@ class CreateSessionWidget(AbstractMenuWidget):
         alias = self.session_name
         skip = False
         properties = conf.get_session_properties(language)
-
+        # session_id_to_name dict is necessary to restore session name across notebook sessions
+        # since the livy server does not store the name.
+        session_id_to_name = self.get_session_id_to_name()
+        # add session id -> name to session_id_to_name dict
+        session_id_to_name[self.spark_controller.session_manager.get_session(alias).id] = alias
+        self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
         try:
             self.spark_controller.add_session(alias, endpoint, skip, properties)
         except ValueError as e:
@@ -259,3 +266,20 @@ due to error: '{}'""".format(alias, properties, e))
         elif self.state == 'list':
             self.create_session_container.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
+
+    def get_session_id_to_name(self):
+        """Gets a dictionary that maps currently running livy session id's to their names
+
+        Returns:
+            session_id_to_name (dict): a dictionary mapping session.id -> name
+            If no sessions can be obtained from previous notebook sessions, an
+            empty dict is returned.
+        """
+        try:
+            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
+            return session_id_to_name
+        except Exception as caught_exc:
+            self.db['autorestore/' + 'session_id_to_name'] = dict()
+            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
+            return dict()

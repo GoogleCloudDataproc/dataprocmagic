@@ -33,8 +33,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
         self.state = state
-        self.ip = Magics().shell
-        self.db = self.ip.db
+\
         try:
             session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
             print(session_id_to_name)
@@ -147,6 +146,10 @@ class AddEndpointWidget(AbstractMenuWidget):
         else:
             endpoint = Endpoint(self.auth.url, self.auth)
         self.endpoints[self.auth.url] = endpoint
+        # convert self.endpoints dict into list of (url, account) tuples
+        stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
+        # stored updated stored_endpoints
+        self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
         self.ipython_display.writeln("Added endpoint {}".format(self.auth.url))
         try:
             # We need to call the refresh method because drop down in Tab 2 for endpoints wouldn't

@@ -25,9 +25,8 @@ import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.utils import Namespace, initialize_auth
 
 
-
 class ControllerWidget(AbstractMenuWidget):
-    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints=None):
+    def __init__(self, spark_controller, ipywidget_factory, ipython_display, db, endpoints=None):
         super(ControllerWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display)
         
         if endpoints is None:
@@ -35,6 +34,8 @@ class ControllerWidget(AbstractMenuWidget):
         self.endpoints = endpoints
         self.state = 'list'
         self._refresh()
+        self.db = db
+        self.session_id_to_name = session_id_to_name
 
     def run(self):
         pass
@@ -64,12 +65,14 @@ class ControllerWidget(AbstractMenuWidget):
             options=self.endpoints
         )
 
+
+
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                                  self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
+                                                  self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state, self.db)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
+                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state, self.db)
         # self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
         #                                       self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
