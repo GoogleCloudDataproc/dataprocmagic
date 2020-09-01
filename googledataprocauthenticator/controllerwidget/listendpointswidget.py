@@ -31,43 +31,53 @@ class ListEndpointsWidget(AbstractMenuWidget):
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
 
+        endpoint_table_values = self._generate_endpoint_values()
         
+        submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
+        backicon = v.Icon(children=['mdi-arrow-left'])
+        backicon.on_event('click', _on_back_click)
 
-        # Submit widget
-        #self.submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
-        # self.submit_widget = self.ipywidget_factory.get_submit_button(
-        #     description='Add endpoint'
-        # )
- 
+        back_toolbar = v.Toolbar(elevation="0",
+            children=[
+                v.ToolbarItems(children=[backicon]),
+                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Endpoints']),
+                v.Spacer()
+            ],
+            app=True,  # If true, the other widgets float under on scroll
+        )
+        toolbar = v.Row(children=[back_toolbar, submit_widget])
+
+        # self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+        #     v.Row(class_='mx-auto', children=[
+        #         v.Col(cols=3, children=[self.all_widgets[0]]),
+        #         v.Col(cols=3, children=[self.all_widgets[1]]),
+        #         v.Col(cols=3,children=[self.all_widgets[2]])
+        #     ]),
+        #     v.Row(class_='mx-auto', children=[
+        #         v.Col( cols=3, children=[self.all_widgets[3]]),
+        #         v.Col( cols=3, children=[self.all_widgets[4]])
+        #     ]),
+        #     v.Row(class_='ma-2', children=[self.submit_widget])])
+
+         
+
+        self.endpoint_table = v.DataTable(hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
+            {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
+            {'text': 'Project', 'sortable': False, 'value': 'project'},
+            {'text': 'Region', 'sortable': False, 'value': 'region'},
+            {'text': 'Url', 'sortable': False, 'value': 'url'},
+        ], items=endpoint_table_values, dense=False, fixedHeader=False)
+
+        self.children = [toolbar, self.endpoint_table]
+        for child in self.children:
+            child.parent_widget = self
+
+    def _on_back_click(self): 
+        print('back')
+
+    def _generate_endpoint_values(self):
         endpoint_table_values = []
         for endpoint in self.endpoints.values():
             endpoint_table_values.append({'name':endpoint.auth.cluster_selection, 'url':endpoint.url, 'project': endpoint.auth.project, \
-                'region':endpoint.auth.region })
-
-        self.endpoint_table = v.DataTable(disable_pagination=True, item_key='name', headers=[
-            {
-                'text': 'Cluster',
-                'align': 'start',
-                'sortable': False,
-                'value': 'name',
-            },
-            { 
-                'text': 'Project',
-                'sortable': False, 
-                'value': 'project'
-            },
-            {
-                'text': 'Region',
-                'sortable': False, 
-                'value': 'region' 
-            },
-            { 
-                'text': 'Url',
-                'sortable': False,
-                'value': 'url'
-            },
-        ],items=endpoint_table_values, dense=False, fixedHeader=False)
-
-        self.children = [self.endpoint_table]
-        for child in self.children:
-            child.parent_widget = self
+                'region':endpoint.auth.region})
+        return endpoint_table_values
