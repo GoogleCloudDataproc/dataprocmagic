@@ -33,16 +33,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
         self.state = state
-\
-        try:
-            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
-            print(session_id_to_name)
-        except Exception as caught_exc:
-            self.db['autorestore/' + 'session_id_to_name'] = dict()
-            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
             
-    
         #map auth class path string to the instance of the class.
         self.auth_instances = {}
         for auth in conf.authenticators().values():
