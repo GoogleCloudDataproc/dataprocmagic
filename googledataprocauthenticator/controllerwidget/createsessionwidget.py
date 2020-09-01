@@ -204,14 +204,14 @@ class CreateSessionWidget(AbstractMenuWidget):
         alias = self.session_name
         skip = False
         properties = conf.get_session_properties(language)
-        # session_id_to_name dict is necessary to restore session name across notebook sessions
-        # since the livy server does not store the name.
-        session_id_to_name = self.get_session_id_to_name()
-        # add session id -> name to session_id_to_name dict
-        session_id_to_name[self.spark_controller.session_manager.get_session(alias).id] = alias
-        self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
         try:
             self.spark_controller.add_session(alias, endpoint, skip, properties)
+            # session_id_to_name dict is necessary to restore session name across notebook sessions
+            # since the livy server does not store the name.
+            session_id_to_name = self.get_session_id_to_name()
+            # add session id -> name to session_id_to_name dict
+            session_id_to_name[self.spark_controller.session_manager.get_session(alias).id] = alias
+            self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
         except ValueError as e:
             self.ipython_display.send_error("""Could not add session with
 name:
