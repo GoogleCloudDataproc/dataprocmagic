@@ -24,12 +24,13 @@ from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 class AddEndpointWidget(AbstractMenuWidget):
 
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget,
-                 refresh_method):
+                 refresh_method, state):
         # This is nested
         super(AddEndpointWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
+        self.state = state
 
         #map auth class path string to the instance of the class.
         self.auth_instances = {}
@@ -91,6 +92,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
+        self.state = 'table'
         self.auth.update_with_widget_values()
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)

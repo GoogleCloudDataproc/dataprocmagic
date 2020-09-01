@@ -24,7 +24,7 @@ from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 class ListEndpointsWidget(AbstractMenuWidget):
 
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget,
-                 refresh_method):
+                 refresh_method, state):
         # This is nested
         super(ListEndpointsWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
@@ -33,9 +33,10 @@ class ListEndpointsWidget(AbstractMenuWidget):
 
         endpoint_table_values = self._generate_endpoint_values()
         
-        submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
+        new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
         backicon = v.Icon(children=['mdi-arrow-left'])
-        backicon.on_event('click', self._on_back_click)
+        #backicon.on_event('click', self._on_back_click)
+        new_endpoint.on_event('click', self._on_add_click)
 
         back_toolbar = v.Toolbar(elevation="0",
             children=[
@@ -45,7 +46,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
             ],
             app=True,  # If true, the other widgets float under on scroll
         )
-        self.toolbar = v.Row(children=[back_toolbar, submit_widget])
+        self.toolbar = v.Row(children=[back_toolbar, new_endpoint])
 
         self.endpoint_table = v.DataTable(hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -62,8 +63,13 @@ class ListEndpointsWidget(AbstractMenuWidget):
         for child in self.children:
             child.parent_widget = self
 
-    def _on_back_click(self):
-        print('back')
+    def _on_add_click(self):
+        self.state = 'add'
+
+    def _on_add_click(self, widget, event, data):
+            self.state = 'add'
+            self.refresh_method()
+
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []

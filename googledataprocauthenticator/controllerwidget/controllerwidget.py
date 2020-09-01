@@ -29,7 +29,7 @@ from sparkmagic.utils.utils import Namespace, initialize_auth
 class ControllerWidget(AbstractMenuWidget):
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints=None):
         super(ControllerWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display)
-
+        self.state = 'add'
         if endpoints is None:
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
@@ -73,19 +73,21 @@ class ControllerWidget(AbstractMenuWidget):
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self.endpoints_dropdown_widget, self._refresh)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh)
+                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         self.list_endpoint = ListEndpointsWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh)
+                                              self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state)
         self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                     self.endpoints, self._refresh)
 
         session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
         #if there is no endpoints, we hide table. If there is endpoints, we only show table. 
-        if not self.endpoints:
+        if not self.endpoints or self.state == 'add':
             self.list_endpoint.layout.display = 'none'
-        else:
+            self.add_endpoint.layout.display = 'flex'
+        elif self.state == 'table':
             self.add_endpoint.layout.display = 'none'
-
+            self.list_endpoint.layout.display = 'flex'
+            
 
         endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint, self.list_endpoint])]
         # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
