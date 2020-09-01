@@ -31,7 +31,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.endpoints = endpoints
         self.refresh_method = refresh_method
         self.session_name = None
-        self.properties = None
+        self.properties = json.dumps(conf.session_configs())
         self.language = None
         self.endpoint = None
         self.state = state
