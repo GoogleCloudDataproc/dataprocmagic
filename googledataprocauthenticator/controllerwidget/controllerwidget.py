@@ -33,9 +33,8 @@ class ControllerWidget(AbstractMenuWidget):
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
         self.state = 'list'
-        self._refresh()
         self.db = db
-        self.session_id_to_name = session_id_to_name
+        self._refresh()
 
     def run(self):
         pass
