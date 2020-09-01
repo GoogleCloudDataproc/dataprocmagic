@@ -96,7 +96,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
 
 
-        self.create_session = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+        self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[
                 v.Col(children=[self.name_textfield])
             ]),
@@ -153,7 +153,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         
         # self.children = self.all_widgets.append(self.submit_widget)
 
-        self.children = [self.create_session, self.toolbar_with_table]
+        self.children = [self.create_session_container, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
         self._update_view()
@@ -246,7 +246,7 @@ due to error: '{}'""".format(alias, properties, e))
     def _update_view(self):
         if self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
-            self.create_session.layout.display = 'flex'
+            self.create_session_container.layout.display = 'flex'
         elif self.state == 'list':
-            self.create_session.layout.display = 'none'
+            self.create_session_container.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
