@@ -188,7 +188,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         try:
             properties_json = self.properties_textbox.value
             if properties_json.strip() != "":
-                conf.override(conf.session_configs.__name__, json.loads(self.properties))
+                conf.override(conf.session_configs.__name__, self.properties)
         except ValueError as e:
             self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
             return
