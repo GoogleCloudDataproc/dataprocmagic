@@ -69,10 +69,6 @@ class ControllerWidget(AbstractMenuWidget):
             options=self.endpoints
         )
 
-        
-        
-
-
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
@@ -85,16 +81,10 @@ class ControllerWidget(AbstractMenuWidget):
                                                     self.endpoints, self._refresh)
 
         session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
-        #if there is no endpoints, we hide table. If there is endpoints, we only show table. 
-        if not self.endpoints or self.state == 'add':
-            self.list_endpoint.layout.display = 'none'
-            self.add_endpoint.layout.display = 'flex'
-        elif self.state == 'list':
-            self.add_endpoint.layout.display = 'none'
-            self.list_endpoint.layout.display = 'flex'
-            
+        #if there is no endpoints, we hide table. If there is endpoints, we only show table.
+        
 
-        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint, self.list_endpoint])]
+        endpoint_tab = [v.Tab(children=['Endpoint']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.add_endpoint])]
         # self.tabs = self.ipywidget_factory.get_tab(children=[self.manage_session, self.create_session,
         #                                                      self.add_endpoint, self.manage_endpoint])
         self.tabs = v.Tabs(
