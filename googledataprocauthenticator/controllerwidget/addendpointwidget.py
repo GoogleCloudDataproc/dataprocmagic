@@ -14,6 +14,9 @@
 
 import importlib
 import ipyvuetify as v
+from IPython.core.magic import Magics
+
+from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
 
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
@@ -25,13 +28,24 @@ class AddEndpointWidget(AbstractMenuWidget):
 
     def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget,
                  refresh_method, state):
+                 
         # This is nested
         super(AddEndpointWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
         self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
         self.state = state
-
+        self.ip = Magics().shell
+        self.db = self.ip.db
+        try:
+            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
+            print(session_id_to_name)
+        except Exception as caught_exc:
+            self.db['autorestore/' + 'session_id_to_name'] = dict()
+            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
+            
+    
         #map auth class path string to the instance of the class.
         self.auth_instances = {}
         for auth in conf.authenticators().values():

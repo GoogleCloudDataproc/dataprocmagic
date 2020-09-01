@@ -45,10 +45,11 @@ class DataprocMagics(SparkMagicBase):
         self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
         if len(stored_endpoints) == 0:
             self.endpoints = None
-        widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
         if self.endpoints is None:
             self.endpoints = {}
-        self.manage_dataproc_widget = widget
+        self.manage_dataproc_widget = dataproc_widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
     def get_stored_endpoints(self):
