@@ -58,7 +58,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.endpoint_table])])
 
-        self.children = [self.toolbar_with_table, self.endpoint_table]
+        self.children = [self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
 
