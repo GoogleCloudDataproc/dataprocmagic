@@ -35,7 +35,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
         
         submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
         backicon = v.Icon(children=['mdi-arrow-left'])
-        backicon.on_event('click', _on_back_click)
+        backicon.on_event('click', self._on_back_click)
 
         back_toolbar = v.Toolbar(elevation="0",
             children=[
@@ -72,7 +72,7 @@ class ListEndpointsWidget(AbstractMenuWidget):
         for child in self.children:
             child.parent_widget = self
 
-    def _on_back_click(self): 
+    def _on_back_click(self):
         print('back')
 
     def _generate_endpoint_values(self):
