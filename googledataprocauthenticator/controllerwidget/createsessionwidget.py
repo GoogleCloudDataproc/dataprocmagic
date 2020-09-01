@@ -45,7 +45,6 @@ class CreateSessionWidget(AbstractMenuWidget):
             placeholder='Enter session name',
             label='Name',
             dense=True,
-            value='value',
             color='primary',
             outlined=True,
         )
@@ -99,20 +98,20 @@ class CreateSessionWidget(AbstractMenuWidget):
 
         self.create_session = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[
-                v.Col(cols=3, children=[self.name_textfield])
+                v.Col(children=[self.name_textfield])
             ]),
             v.Row(class_='mx-auto', children=[
-                v.Col(cols=3, children=[self.endpoints_dropdown_widget])
+                v.Col(children=[self.endpoints_dropdown_widget])
             ]),
             v.Row(class_='mx-auto', children=[
-                v.Col(cols=3, children=[self.language_dropdown])
+                v.Col(children=[self.language_dropdown])
             ]),
             v.Row(class_='mx-auto', children=[
-                v.Col(cols=3, children=[self.properties_textbox])
+                v.Col(children=[self.properties_textbox])
             ]),
             v.Row(class_='mx-auto', children=[
-                v.Col( cols=4, children=[self.create_session]),
-                v.Col( cols=4, children=[self.cancel])
+                v.Col(children=[self.create_session]),
+                v.Col(children=[self.cancel])
             ])
         ])
         
@@ -189,7 +188,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         try:
             properties_json = self.properties_textbox.value
             if properties_json.strip() != "":
-                conf.override(conf.session_configs.__name__, json.loads(self.properties.value))
+                conf.override(conf.session_configs.__name__, json.loads(self.properties))
         except ValueError as e:
             self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
             return
