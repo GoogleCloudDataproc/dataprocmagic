@@ -11,31 +11,43 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+"""Tests the Google Cloud Dataproc Authenticator for Sparkmagic"""
+
+
 import datetime
+from unittest.mock import call
 from mock import patch, Mock
 from nose.tools import raises, assert_equals, assert_is_not_none, assert_false, assert_true, assert_raises
 import requests
-import sparkmagic
-import sparkmagic.auth.google as google_auth_class
+from google.oauth2 import credentials
+from google.cloud import dataproc_v1beta2
+import google
 import google.auth
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import GoogleAPICallError, RetryError
+import sparkmagic
+import sparkmagic.auth.google as google_auth_class
 from sparkmagic.auth.google import GoogleAuth
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
 from sparkmagic.livyclientlib.reliablehttpclient import ReliableHttpClient
-from unittest.mock import call
-from google.oauth2 import credentials
-from google.cloud import dataproc_v1beta2
-import google
 
 
-google_auth_instance = GoogleAuth()
+def test_get_google():
+    retry_policy = LinearRetryPolicy(0.01, 5)
+    with patch('requests.Session.get') as patched_get:
+        type(patched_get.return_value).status_code = 200
+        endpoint = Endpoint("http://url.com", GoogleAuth())
+        client = ReliableHttpClient(endpoint, {}, retry_policy)
+        result = client.get("r", [200])
+        assert_equals(200, result.status_code)
 
 def test_google_auth():
     retry_policy = LinearRetryPolicy(0.01, 5)
-    endpoint = Endpoint("http://url.com", google_auth_instance)
+    endpoint = Endpoint("http://url.com", GoogleAuth())
     client = ReliableHttpClient(endpoint, {}, retry_policy)
     assert_is_not_none(client._auth)
     assert isinstance(client._auth, GoogleAuth)
@@ -79,9 +91,9 @@ def test_default_credentials_not_configured_credentials_and_active_account_is_no
     when one is available"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
     autospec=True), patch('sparkmagic.auth.google.list_credentialed_accounts', \
-    return_value=mock_credentialed_accounts_no_accounts), patch('subprocess.check_output', \
+    return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output', \
     return_value=AUTH_DESCRIBE_USER):
-        assert_equals(GoogleAuth().credentials, None)
+        assert_is_not_none(GoogleAuth().credentials)
 
 def test_default_credentials_not_configured_account_pairs_contains_no_default():
     """Tests default-credentials is not in google credentials dropdown if if default credentials
