@@ -59,7 +59,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             persistent_hint=True,
             hide_selected=True,
             outlined=True,
-            items=self.endpoints.keys(),
+            items=list(self.endpoints.keys()),
             auto_select_first=True,
         )
         
