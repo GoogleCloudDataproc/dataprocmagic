@@ -95,8 +95,19 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.create_session = v.Btn(class_='ma-2', color='primary', children=['Create'])
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
 
+        backicon = v.Icon(children=['mdi-arrow-left'])
+        backicon.on_event('click', self._on_back_click)
+        back_toolbar = v.Toolbar(elevation="0",
+            children=[
+                v.ToolbarItems(children=[backicon]),
+                v.ToolbarTitle(children=['Create new session']),
+                v.Spacer()
+            ],
+            app=True,  # If true, the other widgets float under on scroll
+        )
 
         self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+            back_toolbar, 
             v.Row(class_='mx-auto', children=[
                 v.Col(children=[self.name_textfield])
             ]),
@@ -115,25 +126,21 @@ class CreateSessionWidget(AbstractMenuWidget):
             ])
         ])
         
-
         self.create_session.on_event('click', self._on_create_click)
-        
         
         session_table_values = self._generate_session_values()
         new_session = v.Btn(class_='ma-2', color='primary', children=['New Session'])
-        backicon = v.Icon(children=['mdi-arrow-left'])
-        #backicon.on_event('click', self._on_back_click)
+    
         new_session.on_event('click', self._on_new_session_click)
 
-        back_toolbar = v.Toolbar(elevation="0",
+        no_back_toolbar = v.Toolbar(elevation="0",
             children=[
-                v.ToolbarItems(children=[backicon]),
                 v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Sessions']),
                 v.Spacer()
             ],
             app=True,  # If true, the other widgets float under on scroll
         )
-        self.toolbar = v.Row(children=[back_toolbar, new_session])
+        self.toolbar = v.Row(children=[no_back_toolbar, new_session])
 
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -230,6 +237,10 @@ due to error: '{}'""".format(alias, properties, e))
         self._update_view()
     
     def _on_cancel_click(self, widget, event, data):
+        self.state = 'list'
+        self._update_view()
+    
+    def _on_back_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
 

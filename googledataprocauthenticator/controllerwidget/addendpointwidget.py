@@ -60,12 +60,21 @@ class AddEndpointWidget(AbstractMenuWidget):
                 self.all_widgets.append(widget)
 
         # Submit widget
-        self.submit_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
-        # self.submit_widget = self.ipywidget_factory.get_submit_button(
-        #     description='Add endpoint'
-        # )
+        self.add_endpoint_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
 
+        backicon = v.Icon(children=['mdi-arrow-left'])
+        backicon.on_event('click', self._on_back_click)
+        back_toolbar = v.Toolbar(elevation="0",
+            children=[
+                v.ToolbarItems(children=[backicon]),
+                v.ToolbarTitle(children=['Create new endpoint']),
+                v.Spacer()
+            ],
+            app=True,  # If true, the other widgets float under on scroll
+        )
+        
         self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+            back_toolbar,
             v.Row(class_='mx-auto', children=[
                 v.Col(cols=3, children=[self.all_widgets[0]]),
                 v.Col(cols=3, children=[self.all_widgets[1]]),
@@ -75,27 +84,26 @@ class AddEndpointWidget(AbstractMenuWidget):
                 v.Col( cols=3, children=[self.all_widgets[3]]),
                 v.Col( cols=3, children=[self.all_widgets[4]])
             ]),
-            v.Row(class_='ma-2', children=[self.submit_widget])])
+            v.Row(class_='ma-2', children=[self.add_endpoint_widget])])
 
-        self.submit_widget.on_event('click', self._add_endpoint)
+        self.add_endpoint_widget.on_event('click', self._add_endpoint)
 
         self.auth_type.on_trait_change(self._update_auth)
         
         endpoint_table_values = self._generate_endpoint_values()
         new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
-        backicon = v.Icon(children=['mdi-arrow-left'])
-        #backicon.on_event('click', self._on_back_click)
+        # backicon = v.Icon(children=['mdi-arrow-left'])
+        # backicon.on_event('click', self._on_back_click)
         new_endpoint.on_event('click', self._on_new_endpoint_click)
 
-        back_toolbar = v.Toolbar(elevation="0",
+        no_back_toolbar = v.Toolbar(elevation="0",
             children=[
-                v.ToolbarItems(children=[backicon]),
                 v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Endpoints']),
                 v.Spacer()
             ],
             app=True,  # If true, the other widgets float under on scroll
         )
-        self.toolbar = v.Row(children=[back_toolbar, new_endpoint])
+        self.toolbar = v.Row(children=[no_back_toolbar, new_endpoint])
 
         self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -154,6 +162,10 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.auth = self.auth_instances.get(self.auth_type.value)
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
+
+    def _on_back_click(self, widget, event, data):
+        self.state = 'list'
+        self._update_view()
 
     def _on_new_endpoint_click(self, widget, event, data):
         self.state = 'add'
