@@ -184,7 +184,8 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     try:
         #if they do not enter a cluster name, we get a random one for them.
         if cluster_name is None:
-            cluster_name = random.choice(get_cluster_pool(project_id, region, client))
+            cluster_pool, _ = get_cluster_pool(project_id, region, client)
+            cluster_name = random.choice(cluster_pool)
         print('about to get cluster')
         response = client.get_cluster(project_id, region, cluster_name)
         print(response)
