@@ -38,6 +38,8 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.db = db
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
+        for endpoint in self.endpoints:
+            self._load_sessions_for_endpoint(endpoint)
 
         self.name_textfield = v.TextField(
             class_='ma-2',
@@ -252,7 +254,12 @@ due to error: '{}'""".format(alias, properties, e))
         session_table_values = []
         print('generate sessions')
         print(self.spark_controller.get_managed_clients())
+        #for name, session in self.spark_controller.get_managed_clients().items():
+        #need to reload before. 
+        for endpoint in self.endpoints.values():
+            self._load_sessions_for_endpoint(endpoint)
         for name, session in self.spark_controller.get_managed_clients().items():
+
             #need a way to list endpoint 
             #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
             #.format(self.id, self.get_app_id(), self.kind, self.status, self.get_spark_ui_url(), self.get_driver_log_url())
@@ -284,3 +291,19 @@ due to error: '{}'""".format(alias, properties, e))
             self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
             f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
             return dict()
+
+    def _load_sessions_for_endpoint(self, endpoint):
+        """Loads all of the running livy sessions of an endpoint
+
+        Args:
+            endpoint (sparkmagic.livyclientlib.Endpoint): a tuple of two strings in the format (url, account) where url is
+            the endpoint url and account is the credentialed account used to authenticate
+        """
+        session_id_to_name = self.get_session_id_to_name()
+        #get all sessions running on that endpoint
+        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+        #add each session to session manager.
+        for session in endpoint_sessions:
+            name = session_id_to_name.get(session.id)
+            if name is not None and name not in self.spark_controller.get_managed_clients():
+                self.spark_controller.session_manager.add_session(name, session)
