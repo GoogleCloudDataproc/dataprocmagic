@@ -99,7 +99,7 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         no_back_toolbar = v.Toolbar(elevation="0",
             children=[
-                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Endpoints']),
+                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp", children=['Endpoints']),
                 v.Spacer()
             ],
             app=True,  # If true, the other widgets float under on scroll
@@ -182,9 +182,13 @@ class AddEndpointWidget(AbstractMenuWidget):
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []
-        for endpoint in self.endpoints.values():
-            endpoint_table_values.append({'name':endpoint.auth.cluster_combobox.v_model, 'url':endpoint.url, 'project': endpoint.auth.project_textfield.v_model, \
-                'region':endpoint.auth.region_combobox.v_model})
+        for endpoint in self.get_stored_endpoints1():
+        
+        #for endpoint in self.endpoints.values():
+            # endpoint_table_values.append({'name':endpoint.auth.cluster_combobox.v_model, 'url':endpoint.url, 'project': endpoint.auth.project_textfield.v_model, \
+            #         'region':endpoint.auth.region_combobox.v_model})
+            endpoint_table_values.append({'name':endpoint.get('cluster'), 'url':endpoint.get('url'), 'project': endpoint.get('project'), \
+                'region':endpoint.get('region')})
         return endpoint_table_values
 
     def get_stored_endpoints(self):
