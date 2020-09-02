@@ -186,7 +186,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         if cluster_name is None:
             cluster_pool, _ = get_cluster_pool(project_id, region, client)
             cluster_name = random.choice(cluster_pool)
-            self.cluster_combobox.v_model = cluster_name
         print('about to get cluster')
         response = client.get_cluster(project_id, region, cluster_name)
         print(response)
