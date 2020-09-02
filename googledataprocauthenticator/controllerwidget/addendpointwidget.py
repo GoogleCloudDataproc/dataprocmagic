@@ -145,10 +145,10 @@ class AddEndpointWidget(AbstractMenuWidget):
         try:
             # We need to call the refresh method because drop down in Tab 2 for endpoints wouldn't
             # refresh with the new value otherwise.
-            self.refresh_method()
+            self.refresh_method(1)
         except:
             self.endpoints.pop(self.auth.url, None)
-            self.refresh_method()
+            self.refresh_method(1)
             raise
 
     def _update_view(self):

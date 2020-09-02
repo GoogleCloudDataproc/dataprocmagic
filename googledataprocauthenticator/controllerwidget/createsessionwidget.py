@@ -183,7 +183,7 @@ properties:
 due to error: '{}'""".format(alias, properties, e))
             return
 
-        self.refresh_method()
+        self.refresh_method(0)
    
     def _on_cancel_click(self, widget, event, data):
         self.state = 'session_list'

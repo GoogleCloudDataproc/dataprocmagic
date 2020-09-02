@@ -59,7 +59,7 @@ class ControllerWidget(AbstractMenuWidget):
 
         return default_endpoints
 
-    def _refresh(self):
+    def _refresh(self, tab=0):
         self.endpoints_dropdown_widget = self.ipywidget_factory.get_dropdown(
             description="Endpoint:",
             options=self.endpoints
@@ -107,7 +107,7 @@ class ControllerWidget(AbstractMenuWidget):
         #                                                      self.add_endpoint, self.manage_endpoint])
         self.tabs = v.Tabs(
             style_='border: 1px solid lightgrey',
-            v_model=1,
+            v_model=tab, #loads session tab when on
             children=session_tab + endpoint_tab)
 
 
