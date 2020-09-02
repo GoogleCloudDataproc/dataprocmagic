@@ -64,7 +64,12 @@ class ControllerWidget(AbstractMenuWidget):
             options=self.endpoints
         )
 
-        self.endpoints = self.get_stored_endpoints()
+        stored_endpoints = self.get_stored_endpoints()
+        for endpoint_tuple in stored_endpoints: 
+            args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
+            auth = initialize_auth(args)
+            endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
+            self.endpoints[endpoint.url] = endpoint
 
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
