@@ -39,14 +39,14 @@ class DataprocMagics(SparkMagicBase):
         self.endpoints = {}
         stored_endpoints = self.get_stored_endpoints()
         stored_endpoints1 = self.get_stored_endpoints1()
-        for endpoint in stored_endpoints1:
-            args = Namespace(auth='Google', url=endpoint.get('url'), account=endpoint.get('account'))
+        for serialized_endpoint in stored_endpoints1:
+            args = Namespace(auth='Google', url=serialized_endpoint.get('url'), account=serialized_endpoint.get('account'))
             auth = initialize_auth(args)
-            endpoint = Endpoint(url=endpoint.get('url'), auth=auth)
+            endpoint = Endpoint(url=serialized_endpoint.get('url'), auth=auth)
             self.endpoints[endpoint.url] = endpoint
 
-        # for endpoint_tuple in stored_endpoints:
-        #     self._load_sessions_for_endpoint(endpoint_tuple)
+        for endpoint in self.endpoints.values():
+            self._load_sessions_for_endpoint1(endpoint)
         
         # update session_id_to_name to be all of the sessions now loaded into session_manager
         session_id_to_name = dict([(session.id, name) for name, session in self.spark_controller.get_managed_clients().items()])
@@ -125,6 +125,22 @@ class DataprocMagics(SparkMagicBase):
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
         self.endpoints[endpoint.url] = endpoint
+        session_id_to_name = self.get_session_id_to_name()
+        #get all sessions running on that endpoint
+        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+        #add each session to session manager.
+        for session in endpoint_sessions:
+            name = session_id_to_name.get(session.id)
+            if name is not None and name not in self.spark_controller.get_managed_clients():
+                self.spark_controller.session_manager.add_session(name, session)
+        
+    def _load_sessions_for_endpoint1(self, endpoint):
+        """Loads all of the running livy sessions of an endpoint
+
+        Args:
+            endpoint_tuple (tuple): a tuple of two strings in the format (url, account) where url is
+            the endpoint url and account is the credentialed account used to authenticate
+        """
         session_id_to_name = self.get_session_id_to_name()
         #get all sessions running on that endpoint
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
@@ -234,12 +250,12 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             # convert self.endpoints dict into list of (url, account) tuples
-            stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]        
+            stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]      
 
             stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
             # stored updated stored_endpoints
             self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
-            self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints1
+            self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
 
             skip = args.skip
             properties = conf.get_session_properties(language)
