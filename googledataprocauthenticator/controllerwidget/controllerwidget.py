@@ -33,7 +33,7 @@ class ControllerWidget(AbstractMenuWidget):
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
 
-        self.state = 'session_list'
+        self.state = 'list'
         self.db = db
         self._refresh()
 

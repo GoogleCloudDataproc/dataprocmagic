@@ -128,7 +128,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
-        self.state = 'endpoint_list'
+        self.state = 'list'
         self.auth.update_with_widget_values()
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)
@@ -152,10 +152,10 @@ class AddEndpointWidget(AbstractMenuWidget):
             raise
 
     def _update_view(self):
-        if self.state == 'endpoint_add':
+        if self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
             self.flex_widget.layout.display = 'flex'
-        elif self.state == 'endpoint_list':
+        elif self.state == 'list':
             self.flex_widget.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
     
@@ -171,15 +171,15 @@ class AddEndpointWidget(AbstractMenuWidget):
             widget.layout.display = 'flex'
     
     def _on_cancel_click(self, widget, event, data):
-        self.state = 'endpoint_list'
+        self.state = 'list'
         self._update_view()
     
     def _on_back_click(self, widget, event, data):
-        self.state = 'endpoint_list'
+        self.state = 'list'
         self._update_view()
 
     def _on_new_endpoint_click(self, widget, event, data):
-        self.state = 'endpoint_add'
+        self.state = 'add'
         self._update_view()
 
     def _generate_endpoint_values(self):

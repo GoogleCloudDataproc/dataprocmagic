@@ -186,16 +186,16 @@ due to error: '{}'""".format(alias, properties, e))
         self.refresh_method(0)
    
     def _on_cancel_click(self, widget, event, data):
-        self.state = 'session_list'
+        self.state = 'list'
         self._update_view()
 
 
     def _on_new_session_click(self, widget, event, data):
-        self.state = 'session_add'
+        self.state = 'add'
         self._update_view()
     
     def _on_back_click(self, widget, event, data):
-        self.state = 'session_list'
+        self.state = 'list'
         self._update_view()
 
     def _generate_session_values(self):
@@ -220,10 +220,10 @@ due to error: '{}'""".format(alias, properties, e))
         return session_table_values
 
     def _update_view(self):
-        if self.state == 'session_add':
+        if self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
             self.create_session_container.layout.display = 'flex'
-        elif self.state == 'session_list':
+        elif self.state == 'list':
             self.create_session_container.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
 
