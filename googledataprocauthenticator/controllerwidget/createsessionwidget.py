@@ -100,24 +100,25 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
         self.cancel.on_event('click', self._on_cancel_click)
 
-        self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+        self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='ma-2', children=[
             back_toolbar,
-            v.Row(class_='mx-auto', children=[
+            v.Row(class_='ma-2', children=[
                 v.Col(children=[self.name_textfield])
             ]),
-            v.Row(class_='mx-auto', children=[
+            v.Row(class_='ma-2', children=[
                 v.Col(children=[self.endpoints_dropdown_widget])
             ]),
-            v.Row(class_='mx-auto', children=[
+            v.Row(class_='ma-2', children=[
                 v.Col(children=[self.language_dropdown])
             ]),
-            v.Row(class_='mx-auto', children=[
+            v.Row(class_='ma-2', children=[
                 v.Col(children=[self.properties_textbox])
             ]),
-            v.Row(class_='mx-auto', children=[
-                v.Col(children=[self.create_session, self.cancel])
-            ])
+            v.Row(class_='ma-2', children=[
+                v.Col(cols=5, children=[self.create_session]),
+                v.Col(cols=5, children=[self.cancel])]),
         ])
+        
         
         no_back_toolbar = v.Toolbar(elevation="0",
             children=[

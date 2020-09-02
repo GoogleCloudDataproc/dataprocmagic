@@ -77,26 +77,28 @@ class AddEndpointWidget(AbstractMenuWidget):
             app=True,  # If true, the other widgets float under on scroll
         )
         
-        self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+        self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='ma-2', children=[
             back_toolbar,
-            v.Row(class_='mx-auto', children=[
-                v.Col(cols=3, children=[self.all_widgets[0]]),
-                v.Col(cols=3, children=[self.all_widgets[1]]),
-                v.Col(cols=3,children=[self.all_widgets[2]])
+            v.Row(class_='ma-2', children=[
+                v.Col(children=[self.all_widgets[0]]),
+                v.Col(children=[self.all_widgets[1]]),
+                v.Col(children=[self.all_widgets[2]])
             ]),
-            v.Row(class_='mx-auto', children=[
-                v.Col( cols=3, children=[self.all_widgets[3]]),
-                v.Col( cols=3, children=[self.all_widgets[4]])
+            v.Row(class_='ma-2', children=[
+                v.Col(children=[self.all_widgets[3]]),
+                v.Col(children=[self.all_widgets[4]]),
+                v.Col(children=[v.Spacer()]),
             ]),
-            v.Row(class_='ma-2', children=[self.add_endpoint_widget, self.cancel])])
-
+            v.Row(class_='ma-2', children=[
+                v.Col(cols=5, children=[self.add_endpoint_widget]),
+                v.Col(cols=5, children=[self.cancel])])
+        ])
 
         self.auth_type.on_trait_change(self._update_auth)
         
         endpoint_table_values = self._generate_endpoint_values()
         new_endpoint = v.Btn(class_='ma-2', color='primary', children=['New Endpoint'])
-        # backicon = v.Icon(children=['mdi-arrow-left'])
-        # backicon.on_event('click', self._on_back_click)
+  
         new_endpoint.on_event('click', self._on_new_endpoint_click)
 
         no_back_toolbar = v.Toolbar(elevation="0",
@@ -185,10 +187,6 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _generate_endpoint_values(self):
         endpoint_table_values = []
         for endpoint in self.get_stored_endpoints1():
-        
-        #for endpoint in self.endpoints.values():
-            # endpoint_table_values.append({'name':endpoint.auth.cluster_combobox.v_model, 'url':endpoint.url, 'project': endpoint.auth.project_textfield.v_model, \
-            #         'region':endpoint.auth.region_combobox.v_model})
             endpoint_table_values.append({'name':endpoint.get('cluster'), 'url':endpoint.get('url'), 'project': endpoint.get('project'), \
                 'region':endpoint.get('region')})
         return endpoint_table_values

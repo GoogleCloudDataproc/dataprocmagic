@@ -336,6 +336,7 @@ class GoogleAuth(Authenticator):
 
         self.project_textfield = v.TextField(
             class_='ma-2',
+            
             placeholder=_ENTER_PROJECT_MESSAGE,
             label='Project *',
             dense=True,
