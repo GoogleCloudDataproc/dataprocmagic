@@ -31,8 +31,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.endpoints = endpoints
         self.refresh_method = refresh_method
         self.properties = json.dumps(conf.session_configs())
-        self.language = None
-        self.endpoint = None
+     
         self.state = state
         self.db = db
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
@@ -80,15 +79,12 @@ class CreateSessionWidget(AbstractMenuWidget):
 
         self.properties_textbox = v.TextField(
             class_='ma-2',
-            value=json.dumps(conf.session_configs()),
             label='Properties',
             dense=True,
             color='primary',
             outlined=True,
-            v_model=None,
+            v_model=json.dumps(conf.session_configs()),
         )
-        
-
         
         self.create_session = v.Btn(class_='ma-2', color='primary', children=['Create'])
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
@@ -126,7 +122,6 @@ class CreateSessionWidget(AbstractMenuWidget):
         
         self.create_session.on_event('click', self._on_create_click)
         
-        session_table_values = self._generate_session_values()
         new_session = v.Btn(class_='ma-2', color='primary', children=['New Session'])
     
         new_session.on_event('click', self._on_new_session_click)
@@ -139,6 +134,9 @@ class CreateSessionWidget(AbstractMenuWidget):
             app=True,  # If true, the other widgets float under on scroll
         )
         self.toolbar = v.Row(children=[no_back_toolbar, new_session])
+        
+        
+        session_table_values = self._generate_session_values()
 
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -153,47 +151,18 @@ class CreateSessionWidget(AbstractMenuWidget):
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.session_table])])
 
-        # self.children = [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.auth_type] + self.all_widgets \
-        # + [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.submit_widget]
-        
-        # self.children = self.all_widgets.append(self.submit_widget)
 
         self.children = [self.create_session_container, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
         self._update_view()
         
-
-
-        # self.session_widget = self.ipywidget_factory.get_text(
-        #     description='Name:',
-        #     value='session-name'
-        # )
-        # self.lang_widget = self.ipywidget_factory.get_toggle_buttons(
-        #     description='Language:',
-        #     options=[LANG_SCALA, LANG_PYTHON],
-        # )
-        # self.properties = self.ipywidget_factory.get_text(
-        #     description='Properties:',
-        #     value=json.dumps(conf.session_configs())
-        # )
-        # self.submit_widget = self.ipywidget_factory.get_submit_button(
-        #     description='Create Session'
-        # )
-
-        # self.children = [self.ipywidget_factory.get_html(value="<br/>", width="600px"), self.endpoints_dropdown_widget,
-        #                  self.session_widget, self.lang_widget, self.properties,
-        #                  self.ipywidget_factory.get_html(value="<br/>", width="600px"), self.submit_widget]
-
-        # for child in self.children:
-        #     child.parent_widget = self
-
-    #def run(self):
+       
     def _on_create_click(self, widget, event, data):
         try:
-            properties_json = self.properties
+            properties_json = self.properties_textbox.v_model
             if properties_json.strip() != "":
-                conf.override(conf.session_configs.__name__, json.loads(self.properties))
+                conf.override(conf.session_configs.__name__, json.loads(self.properties_textbox.v_model))
         except ValueError as e:
             self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
             return
@@ -295,6 +264,8 @@ due to error: '{}'""".format(alias, properties, e))
         #add each session to session manager.
         for session in endpoint_sessions:
             print(session)
+            print('load session')
+            print(self.spark_controller.get_managed_clients())
             name = session_id_to_name.get(session.id)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
