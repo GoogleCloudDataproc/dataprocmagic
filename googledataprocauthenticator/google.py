@@ -168,6 +168,9 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
     """
     print('getting url')
     print(region)
+    print(project_id)
+    print(credentials)
+    print(cluster_name)
     try: 
         client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
                         client_options={
