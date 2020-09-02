@@ -112,7 +112,7 @@ class DataprocMagics(SparkMagicBase):
         """Magic to manage Spark endpoints and sessions for Dataproc. First, add an endpoint via the 'Add Endpoint' tab.
         Then, create a session."""
         print(f"dataproc magic {self.endpoints}")
-        self.manage_dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
+        self.manage_dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.db, self.endpoints)
         return self.manage_dataproc_widget
     
     @line_magic
