@@ -186,6 +186,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         if cluster_name is None:
             cluster_pool, _ = get_cluster_pool(project_id, region, client)
             cluster_name = random.choice(cluster_pool)
+            self.cluster_combobox.v_model = cluster_name
         print('about to get cluster')
         response = client.get_cluster(project_id, region, cluster_name)
         print(response)
@@ -193,7 +194,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/" + "gateway/default/livy/v1"
         print(endpoint_address)
-        return endpoint_address
+        return endpoint_address, cluster_name
     except:
         raise
 
@@ -626,7 +627,7 @@ class GoogleAuth(Authenticator):
             try:
                 # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                 #     self.cluster_name_widget.value, self.credentials)
-                self.url = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, \
+                self.url, self.cluster_combobox.v_model = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, \
                     self.cluster_combobox.v_model, self.credentials)
             except:
                 raise

@@ -137,7 +137,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         else:
             endpoint = Endpoint(self.auth.url, self.auth)
         self.endpoints[self.auth.url] = endpoint
-        stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]        
+        stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
         # convert self.endpoints dict into list of (url, account) tuples
         stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
         # stored updated stored_endpoints
