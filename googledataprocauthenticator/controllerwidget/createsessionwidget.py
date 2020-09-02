@@ -114,9 +114,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             v.Row(class_='ma-2', children=[
                 v.Col(children=[self.properties_textbox])
             ]),
-            v.Row(class_='ma-2', children=[
-                v.Col(cols=5, children=[self.create_session]),
-                v.Col(cols=5, children=[self.cancel])]),
+            v.Row(class_='ma-2', children=[self.create_session,self.cancel]),
         ])
         
         

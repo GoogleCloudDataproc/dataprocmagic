@@ -90,8 +90,7 @@ class AddEndpointWidget(AbstractMenuWidget):
                 v.Col(children=[v.Spacer()]),
             ]),
             v.Row(class_='ma-2', children=[
-                v.Col(cols=5, children=[self.add_endpoint_widget]),
-                v.Col(cols=5, children=[self.cancel])])
+                self.add_endpoint_widget, self.cancel])
         ])
 
         self.auth_type.on_trait_change(self._update_auth)
