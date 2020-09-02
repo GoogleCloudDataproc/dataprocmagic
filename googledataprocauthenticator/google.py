@@ -166,11 +166,17 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         google.api_core.exceptions.RetryError: If the request failed due to a retryable error and retry attempts failed.
         ValueError: If the parameters are invalid.
     """
-    client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
-                       client_options={
-                            "api_endpoint": f"{region}-dataproc.googleapis.com:443"
-                        }
-                    )
+    print('getting url')
+    print('region')
+    try: 
+        client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
+                        client_options={
+                                "api_endpoint": f"{region}-dataproc.googleapis.com:443"
+                            }
+                        )
+    except: 
+        ('errored')
+        raise
     try:
         #if they do not enter a cluster name, we get a random one for them.
         if cluster_name is None:

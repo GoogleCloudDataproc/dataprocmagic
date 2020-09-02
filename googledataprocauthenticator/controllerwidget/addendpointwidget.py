@@ -131,6 +131,7 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _add_endpoint(self, widget, event, data):
         self.state = 'list'
         self.auth.update_with_widget_values()
+        print('updated widget with values')
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)
         else:
