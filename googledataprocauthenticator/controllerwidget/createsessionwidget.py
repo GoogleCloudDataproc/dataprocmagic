@@ -38,7 +38,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.db = db
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
-        for endpoint in self.endpoints:
+        for endpoint in self.endpoints.values():
             self._load_sessions_for_endpoint(endpoint)
 
         self.name_textfield = v.TextField(
