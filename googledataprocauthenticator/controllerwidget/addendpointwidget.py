@@ -14,7 +14,6 @@
 
 import importlib
 import ipyvuetify as v
-from IPython.core.magic import Magics
 
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
@@ -57,7 +56,6 @@ class AddEndpointWidget(AbstractMenuWidget):
                 if  _class == self.auth_type.value:
                     widget.layout.display = 'flex'
                     self.auth = instance
-                    print(self.auth.__dict__)
                 else:
                     widget.layout.display = 'none'
                 self.all_widgets.append(widget)
