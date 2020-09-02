@@ -36,8 +36,19 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.db = db
         #self.endpoints_dropdown_widget = endpoints_dropdown_widget
         # if there are no sessions, then we bring them to empty list. ?
-        for endpoint in self.endpoints.values():
-            self._load_sessions_for_endpoint(endpoint)
+        # for endpoint in self.endpoints.values():
+        #     self._load_sessions_for_endpoint(endpoint)
+
+        backicon = v.Icon(children=['mdi-arrow-left'])
+        backicon.on_event('click', self._on_back_click)
+        back_toolbar = v.Toolbar(elevation="0",
+            children=[
+                v.ToolbarItems(children=[backicon]),
+                v.ToolbarTitle(children=['Create new session']),
+                v.Spacer()
+            ],
+            app=True,  # If true, the other widgets float under on scroll
+        )
 
         self.name_textfield = v.TextField(
             class_='ma-2',
@@ -76,7 +87,6 @@ class CreateSessionWidget(AbstractMenuWidget):
             v_model=None,
         )
     
-
         self.properties_textbox = v.TextField(
             class_='ma-2',
             label='Properties',
@@ -85,23 +95,13 @@ class CreateSessionWidget(AbstractMenuWidget):
             outlined=True,
             v_model=json.dumps(conf.session_configs()),
         )
-        
         self.create_session = v.Btn(class_='ma-2', color='primary', children=['Create'])
+        self.create_session.on_event('click', self._on_create_click)
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
-
-        backicon = v.Icon(children=['mdi-arrow-left'])
-        backicon.on_event('click', self._on_back_click)
-        back_toolbar = v.Toolbar(elevation="0",
-            children=[
-                v.ToolbarItems(children=[backicon]),
-                v.ToolbarTitle(children=['Create new session']),
-                v.Spacer()
-            ],
-            app=True,  # If true, the other widgets float under on scroll
-        )
+        self.cancel.on_event('click', self._on_cancel_click)
 
         self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
-            back_toolbar, 
+            back_toolbar,
             v.Row(class_='mx-auto', children=[
                 v.Col(children=[self.name_textfield])
             ]),
@@ -120,22 +120,17 @@ class CreateSessionWidget(AbstractMenuWidget):
             ])
         ])
         
-        self.create_session.on_event('click', self._on_create_click)
-        
-        new_session = v.Btn(class_='ma-2', color='primary', children=['New Session'])
-    
-        new_session.on_event('click', self._on_new_session_click)
-
         no_back_toolbar = v.Toolbar(elevation="0",
             children=[
-                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp",children=['Sessions']),
+                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp", children=['Sessions']),
                 v.Spacer()
             ],
             app=True,  # If true, the other widgets float under on scroll
         )
+        new_session = v.Btn(class_='ma-2', color='primary', children=['New Session'])
+        new_session.on_event('click', self._on_new_session_click)
         self.toolbar = v.Row(children=[no_back_toolbar, new_session])
-        
-        
+
         session_table_values = self._generate_session_values()
 
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
@@ -151,13 +146,11 @@ class CreateSessionWidget(AbstractMenuWidget):
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.session_table])])
 
-
         self.children = [self.create_session_container, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
         self._update_view()
         
-       
     def _on_create_click(self, widget, event, data):
         try:
             properties_json = self.properties_textbox.v_model
@@ -178,6 +171,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             # since the livy server does not store the name.
             session_id_to_name = self.get_session_id_to_name()
             # add session id -> name to session_id_to_name dict
+
             session_id_to_name[self.spark_controller.session_manager.get_session(alias).id] = alias
             self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
         except ValueError as e:
@@ -207,18 +201,18 @@ due to error: '{}'""".format(alias, properties, e))
 
     def _generate_session_values(self):
         session_table_values = []
-        print('generate sessions')
-        print(self.spark_controller.get_managed_clients())
+        #print('generate sessions')
+        #print(self.spark_controller.get_managed_clients())
         #for name, session in self.spark_controller.get_managed_clients().items():
         #need to reload before.
-        print(self.endpoints)
-        for endpoint in self.endpoints.values():
-            self._load_sessions_for_endpoint(endpoint)
+        #print(self.endpoints)
+        # for endpoint in self.endpoints.values():
+        #     self._load_sessions_for_endpoint(endpoint)
 
-        print(self.spark_controller.get_managed_clients())
+        # print(self.spark_controller.get_managed_clients())
+        print(f"generating table values with sparkcontroller.get_managed_clients: {self.spark_controller.get_managed_clients()}")
         for name, session in self.spark_controller.get_managed_clients().items():
-            print(name)
-            print(session)
+            
             #need a way to list endpoint 
             #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
             #.format(self.id, self.get_app_id(), self.kind, self.status, self.get_spark_ui_url(), self.get_driver_log_url())
@@ -263,11 +257,6 @@ due to error: '{}'""".format(alias, properties, e))
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
         #add each session to session manager.
         for session in endpoint_sessions:
-            print(session)
-            print('load session')
-            print(self.spark_controller.get_managed_clients())
             name = session_id_to_name.get(session.id)
-            print(name)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
-                print('added session')

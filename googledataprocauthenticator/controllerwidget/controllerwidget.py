@@ -33,7 +33,6 @@ class ControllerWidget(AbstractMenuWidget):
             endpoints = {endpoint.url: endpoint for endpoint in self._get_default_endpoints()}
         self.endpoints = endpoints
 
-        print(self.endpoints)
         self.state = 'list'
         self.db = db
         self._refresh()
@@ -76,14 +75,19 @@ class ControllerWidget(AbstractMenuWidget):
         #     self.endpoints[endpoint.url] = endpoint
         
         stored_endpoints1 = self.get_stored_endpoints1()
-        #need to add name space to store endpoint region cluster etc. or pass this in addition to endpoints? or map url to additional info
-        for endpoint in stored_endpoints1:
-            args = Namespace(auth='Google', url=endpoint.get('url'), account=endpoint.get('account'))
-            auth = initialize_auth(args)
-            endpoint = Endpoint(url=endpoint.get('url'), auth=auth)
-            self.endpoints[endpoint.url] = endpoint
+        print(f"getting stored endpoints 1 in controller widget: {stored_endpoints1}")
 
-        print(self.endpoints)
+        #need to add name space to store endpoint region cluster etc. or pass this in addition to endpoints? or map url to additional info
+        for serialized_endpoint in stored_endpoints1:
+            args = Namespace(auth='Google', url=serialized_endpoint.get('url'), account=serialized_endpoint.get('account'))
+            auth = initialize_auth(args)
+            endpoint = Endpoint(url=serialized_endpoint.get('url'), auth=auth)
+            self.endpoints[endpoint.url] = endpoint
+            self._load_sessions_for_endpoint(endpoint)
+
+        print(f"refreshed endpoints in controller widget. Endpoints are now: {self.endpoints}")
+        print(f"refreshed sessions in controller widget. Sessions are now: {self.spark_controller.get_managed_clients()}")
+
 
         self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self._refresh)
@@ -155,3 +159,38 @@ class ControllerWidget(AbstractMenuWidget):
                 self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
                 f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints1.")
                 return list()
+
+    def get_session_id_to_name(self):
+        """Gets a dictionary that maps currently running livy session id's to their names
+
+        Returns:
+            session_id_to_name (dict): a dictionary mapping session.id -> name
+            If no sessions can be obtained from previous notebook sessions, an
+            empty dict is returned.
+        """
+        try:
+            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
+            return session_id_to_name
+        except Exception as caught_exc:
+            self.db['autorestore/' + 'session_id_to_name'] = dict()
+            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
+            return dict()
+
+
+    def _load_sessions_for_endpoint(self, endpoint):
+        """Loads all of the running livy sessions of an endpoint
+
+        Args:
+            endpoint_tuple (tuple): a tuple of two strings in the format (url, account) where url is
+            the endpoint url and account is the credentialed account used to authenticate
+        """
+        
+        session_id_to_name = self.get_session_id_to_name()
+        #get all sessions running on that endpoint
+        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
+        #add each session to session manager.
+        for session in endpoint_sessions:
+            name = session_id_to_name.get(session.id)
+            if name is not None and name not in self.spark_controller.get_managed_clients():
+                self.spark_controller.session_manager.add_session(name, session)
