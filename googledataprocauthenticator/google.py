@@ -272,8 +272,6 @@ class GoogleAuth(Authenticator):
         self.default_credentials_configured = application_default_credentials_configured()
         account_dict = list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)
         self.client = None
-        self.cluster_selection = None
-        self.region = None
         if parsed_attributes is not None:
             if parsed_attributes.account in account_dict:
                 self.active_credentials = parsed_attributes.account
@@ -313,66 +311,68 @@ class GoogleAuth(Authenticator):
         """
         ipywidget_factory = IpyWidgetFactory()
 
-        self.project_widget = ipywidget_factory.get_text(
-            description='Project:',
-            width=widget_width
-        )
+        # self.project_widget = ipywidget_factory.get_text(
+        #     description='Project:',
+        #     width=widget_width
+        # )
 
         self.project_textfield = v.TextField(
             class_='ma-2',
             placeholder=_ENTER_PROJECT_MESSAGE,
             label='Project *',
             dense=True,
-            value='value',
+            v_model=self.project, #will be none if no project can be determined from credentials
             color='primary',
             outlined=True,
         )
 
-        if self.project is not None:
-            self.project_textfield.value = self.project
+        # if self.project is not None:
+        #     self.project_textfield.v_model = self.project
 
-        self.cluster_name_widget = ipywidget_factory.get_text(
-            description='Cluster:',
-            width=widget_width
-        )
+        # self.cluster_name_widget = ipywidget_factory.get_text(
+        #     description='Cluster:',
+        #     width=widget_width
+        # )
 
-        self.region_widget = ipywidget_factory.get_text(
-            description='Region:',
-            width=widget_width
-        )
+        # self.region_widget = ipywidget_factory.get_text(
+        #     description='Region:',
+        #     width=widget_width
+        # )
 
-        self.region_dropdown = ipywidgets.Combobox(
-            description='Region:',
-            placeholder='Select a region',
-            options=get_regions(),
-            ensure_option=False
-        )
+        # self.region_dropdown = ipywidgets.Combobox(
+        #     description='Region:',
+        #     placeholder='Select a region',
+        #     options=get_regions(),
+        #     ensure_option=False
+        # )
 
-        self.filter_by_label = ipywidgets.Combobox(
-            placeholder=_NO_FILTERS_FOUND_MESSAGE,
-            options=[_NO_FILTERS_FOUND_HELP_MESSAGE],
-            disabled=True,
-            value=None,
-            description=u"Filter by label:"
-        )
+        # self.filter_by_label = ipywidgets.Combobox(
+        #     placeholder=_NO_FILTERS_FOUND_MESSAGE,
+        #     options=[_NO_FILTERS_FOUND_HELP_MESSAGE],
+        #     disabled=True,
+        #     value=None,
+        #     description=u"Filter by label:"
+        # )
 
-        self.google_credentials_widget = ipywidgets.Combobox(
-            options=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
-            value=None,
-            description=u"Account:",
-            ensure_option=True
-        )
+        # self.google_credentials_widget = ipywidgets.Combobox(
+        #     options=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
+        #     value=None,
+        #     description=u"Account:",
+        #     ensure_option=True
+        # )
+
         self.account_combobox = v.Combobox(
             class_='ma-2',
             placeholder='No accounts found',
             label='Account *',
             dense=True,
             color='primary',
-            persistent_hint=True,
             hide_selected=True,
             outlined=True,
+            v_model=self.active_credentials, 
             items=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
             auto_select_first=True,
+            # v_slots allows help message to be displayed if no accounts are found. 
             v_slots=[{
                 'name':
                 'no-data',
@@ -398,11 +398,10 @@ class GoogleAuth(Authenticator):
             deletable_chips=True,
             dense=True,
             color='primary',
-            persistent_hint=True,
             hide_selected=True,
             outlined=True,
             items=get_regions(),
-            v_model=[],
+            v_model=None,
         )
         
 
@@ -415,11 +414,11 @@ class GoogleAuth(Authenticator):
             dense=True,
             deletable_chips=True,
             color='primary',
-            persistent_hint=True,
             hide_selected=True,
             outlined=True,
             items=[],
             auto_select_first=True,
+            v_model=None,
             v_slots=[{
                 'name':
                 'no-data',
@@ -440,11 +439,11 @@ class GoogleAuth(Authenticator):
             deletable_chips=True,
             dense=True,
             color='primary',
-            persistent_hint=True,
             hide_selected=True,
             outlined=True,
             items=[],
             auto_select_first=True,
+            v_model=None,
             v_slots=[{
                 'name':
                 'no-data',
@@ -473,17 +472,13 @@ class GoogleAuth(Authenticator):
         #populate cluster dropdown when a region is selected
         #self.region_dropdown.observe(self._update_cluster_list)
         self.account_combobox.on_event('change', self._update_active_credentials)
-
         self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list)
         self.cluster_combobox.on_event('change', self._update_cluster_selection)
 
-
-    
-
-        if self.active_credentials is not None:
-            self.account_combobox.value = self.active_credentials
+        # if self.active_credentials is not None:
+        #     self.account_combobox.value = self.active_credentials
            
         # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         widgets = [self.account_combobox, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
@@ -500,7 +495,7 @@ class GoogleAuth(Authenticator):
     def _update_region_list(self, widget, event, data):
         print(get_regions())
         self.project = data
-        self._update_region_list.items = get_regions()
+        #self._update_region_list.items = get_regions()
     
     def _update_cluster_list(self, widget, event, data):
         print(data)
@@ -509,21 +504,24 @@ class GoogleAuth(Authenticator):
         if widget.label == 'Region *' and data is not '' and data is not None:
             #region = change['new']
             print(data)
-            self.region = data
             print(event)
             #what error if the region is not valid? 
-            self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
-                        client_options={
-                            "api_endpoint": f"{data}-dataproc.googleapis.com:443"
-                        }
-                    )
-            print(self.project_textfield.value)
+            try:
+                self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+                            client_options={
+                                "api_endpoint": f"{data}-dataproc.googleapis.com:443"
+                            }
+                        )
+            except Exception as caught_exc:
+                self.ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
+            f"due to an error: {str(caught_exc)}")
+            print(self.project_textfield.v_model)
             self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
             self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project, data, self.client)
+            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, self.client)
         if widget.label == 'Filter by label' and data is not '' and data is not None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-                _, self.cluster_combobox.items = get_cluster_pool(self.project.value, self.region, self.client, data)
+                _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
             
 
     
@@ -589,8 +587,8 @@ class GoogleAuth(Authenticator):
             try:
                 # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                 #     self.cluster_name_widget.value, self.credentials)
-                self.url = get_component_gateway_url(self.project, self.region, \
-                    self.cluster_selection, self.credentials)
+                self.url = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, \
+                    self.cluster_combobox.v_model, self.account_combobox.v_model)
             except:
                 raise
         else:

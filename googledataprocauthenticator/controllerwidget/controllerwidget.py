@@ -76,7 +76,7 @@ class ControllerWidget(AbstractMenuWidget):
         #     self.endpoints[endpoint.url] = endpoint
         
         stored_endpoints1 = self.get_stored_endpoints1()
-
+        #need to add name space to store endpoint region cluster etc. or pass this in addition to endpoints? or map url to additional info
         for endpoint in stored_endpoints1:
             args = Namespace(auth='Google', url=endpoint.get('url'), account=endpoint.get('account'))
             auth = initialize_auth(args)

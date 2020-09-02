@@ -57,6 +57,7 @@ class AddEndpointWidget(AbstractMenuWidget):
                 if  _class == self.auth_type.value:
                     widget.layout.display = 'flex'
                     self.auth = instance
+                    print(self.auth.__dict__)
                 else:
                     widget.layout.display = 'none'
                 self.all_widgets.append(widget)
@@ -168,6 +169,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         for widget in self.auth.widgets:
             widget.layout.display = 'none'
         self.auth = self.auth_instances.get(self.auth_type.value)
+
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
 
@@ -182,8 +184,8 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _generate_endpoint_values(self):
         endpoint_table_values = []
         for endpoint in self.endpoints.values():
-            endpoint_table_values.append({'name':endpoint.auth.cluster_selection, 'url':endpoint.url, 'project': endpoint.auth.project, \
-                'region':endpoint.auth.region})
+            endpoint_table_values.append({'name':endpoint.auth.cluster_combobox.v_model, 'url':endpoint.url, 'project': endpoint.auth.project_textfield.v_model, \
+                'region':endpoint.auth.region_combobox.v_model})
         return endpoint_table_values
 
     def get_stored_endpoints(self):
@@ -224,10 +226,11 @@ class AddEndpointWidget(AbstractMenuWidget):
 
 class SerializableEndpoint():
     def __init__(self, endpoint):
-        self.cluster = endpoint.auth.cluster_selection
+        
+        self.cluster = endpoint.auth.cluster_combobox.v_model
         self.url = endpoint.url
-        self.project = endpoint.auth.project
-        self.region = endpoint.auth.region
+        self.project = endpoint.auth.project_textfield.v_model
+        self.region = endpoint.auth.region_combobox.v_model
         self.account = endpoint.auth.active_credentials
 
 
