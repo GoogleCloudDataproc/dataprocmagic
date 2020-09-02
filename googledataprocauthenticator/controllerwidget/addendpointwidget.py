@@ -117,10 +117,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.endpoint_table])])
 
-        # self.children = [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.auth_type] + self.all_widgets \
-        # + [self.ipywidget_factory.get_html(value="<br/>", width=WIDGET_WIDTH), self.submit_widget]
         
-        # self.children = self.all_widgets.append(self.submit_widget)
 
         self.children = [self.flex_widget, self.toolbar_with_table]
         for child in self.children:
