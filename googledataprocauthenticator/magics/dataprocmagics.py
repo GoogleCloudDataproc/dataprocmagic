@@ -120,6 +120,7 @@ class DataprocMagics(SparkMagicBase):
             endpoint_tuple (tuple): a tuple of two strings in the format (url, account) where url is
             the endpoint url and account is the credentialed account used to authenticate
         """
+        print(self.spark_controller.get_managed_clients())
         args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
         auth = initialize_auth(args)
         endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
