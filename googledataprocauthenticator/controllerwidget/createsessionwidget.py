@@ -30,7 +30,6 @@ class CreateSessionWidget(AbstractMenuWidget):
         super(CreateSessionWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
         self.refresh_method = refresh_method
-        self.session_name = None
         self.properties = json.dumps(conf.session_configs())
         self.language = None
         self.endpoint = None
@@ -48,8 +47,8 @@ class CreateSessionWidget(AbstractMenuWidget):
             dense=True,
             color='primary',
             outlined=True,
+            v_model = None,
         )
-        self.name_textfield.on_event('change', self._set_name)
 
         self.endpoints_dropdown_widget = v.Combobox(
             class_='ma-2',
@@ -62,9 +61,8 @@ class CreateSessionWidget(AbstractMenuWidget):
             outlined=True,
             items=list(self.endpoints.keys()),
             auto_select_first=True,
+            v_model=None,
         )
-        
-        self.endpoints_dropdown_widget.on_event('change', self._set_endpoint)
         
         self.language_dropdown = v.Combobox(
             class_='ma-2',
@@ -76,10 +74,9 @@ class CreateSessionWidget(AbstractMenuWidget):
             outlined=True,
             items=[LANG_SCALA, LANG_PYTHON],
             auto_select_first=True,
+            v_model=None,
         )
     
-        self.language_dropdown.on_event('change', self._set_language)
-
 
         self.properties_textbox = v.TextField(
             class_='ma-2',
@@ -87,10 +84,10 @@ class CreateSessionWidget(AbstractMenuWidget):
             label='Properties',
             dense=True,
             color='primary',
-            outlined=True
+            outlined=True,
+            v_model=None,
         )
         
-        self.properties_textbox.on_event('change', self._set_properties)
 
         
         self.create_session = v.Btn(class_='ma-2', color='primary', children=['Create'])
@@ -201,9 +198,9 @@ class CreateSessionWidget(AbstractMenuWidget):
             self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
             return
 
-        endpoint = self.endpoints[self.endpoint]
-        language = self.language
-        alias = self.session_name
+        endpoint = self.endpoints[self.endpoints_dropdown_widget.v_model]
+        language = self.language_dropdown.v_model
+        alias = self.name_textfield.v_model
         skip = False
         properties = conf.get_session_properties(language)
         try:
@@ -226,18 +223,7 @@ due to error: '{}'""".format(alias, properties, e))
 
         self.refresh_method()
 
-    def _set_name(self, widget, event, data):
-        self.session_name = data
-    
-    def _set_properties(self, widget, event, data):
-        self.properties = data
-    
-    def _set_endpoint(self, widget, event, data):
-        self.endpoint = data
-    
-    def _set_language(self, widget, event, data):
-        self.language = data
-
+   
     def _on_new_session_click(self, widget, event, data):
         self.state = 'add'
         self._update_view()
@@ -255,16 +241,20 @@ due to error: '{}'""".format(alias, properties, e))
         print('generate sessions')
         print(self.spark_controller.get_managed_clients())
         #for name, session in self.spark_controller.get_managed_clients().items():
-        #need to reload before. 
+        #need to reload before.
+        print(self.endpoints)
         for endpoint in self.endpoints.values():
             self._load_sessions_for_endpoint(endpoint)
-        for name, session in self.spark_controller.get_managed_clients().items():
 
+        print(self.spark_controller.get_managed_clients())
+        for name, session in self.spark_controller.get_managed_clients().items():
+            print(name)
+            print(session)
             #need a way to list endpoint 
             #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
             #.format(self.id, self.get_app_id(), self.kind, self.status, self.get_spark_ui_url(), self.get_driver_log_url())
             session_table_values.append({'name':name, 'id':session.id, 'yarn': session.get_app_id(), 'spark': session.get_spark_ui_url(), \
-               'status':session.status,'kind':session.kind })
+               'status':session.status,'kind':session.kind})
         return session_table_values
 
     def _update_view(self):
@@ -304,6 +294,8 @@ due to error: '{}'""".format(alias, properties, e))
         endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
         #add each session to session manager.
         for session in endpoint_sessions:
+            print(session)
             name = session_id_to_name.get(session.id)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
+                print('added session')
