@@ -228,4 +228,6 @@ class SerializableEndpoint():
         self.url = endpoint.url
         self.project = endpoint.auth.project
         self.region = endpoint.auth.region
+        self.account = endpoint.auth.active_account
+        
 
