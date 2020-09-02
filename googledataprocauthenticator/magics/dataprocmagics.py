@@ -38,8 +38,16 @@ class DataprocMagics(SparkMagicBase):
         self.db = self.ip.db
         self.endpoints = {}
         stored_endpoints = self.get_stored_endpoints()
-        for endpoint_tuple in stored_endpoints:
-            self._load_sessions_for_endpoint(endpoint_tuple)
+        stored_endpoints1 = self.get_stored_endpoints1()
+        for endpoint in stored_endpoints1:
+            args = Namespace(auth='Google', url=endpoint.get('url'), account=endpoint.get('account'))
+            auth = initialize_auth(args)
+            endpoint = Endpoint(url=endpoint.get('url'), auth=auth)
+            self.endpoints[endpoint.url] = endpoint
+
+        # for endpoint_tuple in stored_endpoints:
+        #     self._load_sessions_for_endpoint(endpoint_tuple)
+        
         # update session_id_to_name to be all of the sessions now loaded into session_manager
         session_id_to_name = dict([(session.id, name) for name, session in self.spark_controller.get_managed_clients().items()])
         self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
@@ -68,6 +76,24 @@ class DataprocMagics(SparkMagicBase):
             self.db['autorestore/' + 'stored_endpoints'] = list()
             self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
             f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
+            return list()
+
+    def get_stored_endpoints1(self):
+        """Gets a list of endpoints that were added in previous notebook sessions
+
+        Returns:
+            stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+            (url, account) where url is an endpoint url and account is the credentialed
+            account used to authenticate the endpoint connection. If no endpoints can be
+            obtained from previous notebook sessions, an empty list is returned.
+        """
+        try:
+            stored_endpoints1 = self.db['autorestore/' + 'stored_endpoints1']
+            return stored_endpoints1
+        except Exception as caught_exc:
+            self.db['autorestore/' + 'stored_endpoints1'] = list()
+            self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints1.")
             return list()
 
     def get_session_id_to_name(self):
@@ -207,9 +233,13 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             # convert self.endpoints dict into list of (url, account) tuples
+            stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]        
+
             stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
             # stored updated stored_endpoints
             self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
+            self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints1
+
             skip = args.skip
             properties = conf.get_session_properties(language)
             self.spark_controller.add_session(name, endpoint, skip, properties)
@@ -241,3 +271,10 @@ class DataprocMagics(SparkMagicBase):
 def load_ipython_extension(ip):
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
+
+class SerializableEndpoint():
+    def __init__(self, endpoint):
+        self.cluster = endpoint.auth.cluster_selection
+        self.url = endpoint.url
+        self.project = endpoint.auth.project
+        self.region = endpoint.auth.region

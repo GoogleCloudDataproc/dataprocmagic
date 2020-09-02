@@ -66,13 +66,21 @@ class ControllerWidget(AbstractMenuWidget):
             options=self.endpoints
         )
 
-        stored_endpoints = self.get_stored_endpoints()
-        print(stored_endpoints)
-        for endpoint_tuple in stored_endpoints: 
-            print(endpoint_tuple)
-            args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
+        # stored_endpoints = self.get_stored_endpoints()
+        # print(stored_endpoints)
+        # for endpoint_tuple in stored_endpoints: 
+        #     print(endpoint_tuple)
+        #     args = Namespace(auth='Google', url=endpoint_tuple[0], account=endpoint_tuple[1])
+        #     auth = initialize_auth(args)
+        #     endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
+        #     self.endpoints[endpoint.url] = endpoint
+        
+        stored_endpoints1 = self.get_stored_endpoints1()
+
+        for endpoint in stored_endpoints1:
+            args = Namespace(auth='Google', url=endpoint.get('url'), account=endpoint.get('account'))
             auth = initialize_auth(args)
-            endpoint = Endpoint(url=endpoint_tuple[0], auth=auth)
+            endpoint = Endpoint(url=endpoint.get('url'), auth=auth)
             self.endpoints[endpoint.url] = endpoint
 
         print(self.endpoints)
@@ -128,3 +136,22 @@ class ControllerWidget(AbstractMenuWidget):
             self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
             f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
             return list()
+
+
+    def get_stored_endpoints1(self):
+            """Gets a list of endpoints that were added in previous notebook sessions
+
+            Returns:
+                stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+                (url, account) where url is an endpoint url and account is the credentialed
+                account used to authenticate the endpoint connection. If no endpoints can be
+                obtained from previous notebook sessions, an empty list is returned.
+            """
+            try:
+                stored_endpoints1 = self.db['autorestore/' + 'stored_endpoints1']
+                return stored_endpoints1
+            except Exception as caught_exc:
+                self.db['autorestore/' + 'stored_endpoints1'] = list()
+                self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+                f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints1.")
+                return list()
