@@ -267,6 +267,7 @@ due to error: '{}'""".format(alias, properties, e))
             print('load session')
             print(self.spark_controller.get_managed_clients())
             name = session_id_to_name.get(session.id)
+            print(name)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
                 print('added session')
