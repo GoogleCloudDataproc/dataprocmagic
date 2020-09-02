@@ -30,7 +30,6 @@ class AddEndpointWidget(AbstractMenuWidget):
         # This is nested
         super(AddEndpointWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
         self.endpoints = endpoints
-        self.endpoints_dropdown_widget = endpoints_dropdown_widget
         self.refresh_method = refresh_method
         self.state = state
         self.db = db
@@ -185,3 +184,20 @@ class AddEndpointWidget(AbstractMenuWidget):
                 'region':endpoint.auth.region})
         return endpoint_table_values
 
+    def get_stored_endpoints(self):
+        """Gets a list of endpoints that were added in previous notebook sessions
+
+        Returns:
+            stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+            (url, account) where url is an endpoint url and account is the credentialed
+            account used to authenticate the endpoint connection. If no endpoints can be
+            obtained from previous notebook sessions, an empty list is returned.
+        """
+        try:
+            stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
+            return stored_endpoints
+        except Exception as caught_exc:
+            self.db['autorestore/' + 'stored_endpoints'] = list()
+            self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
+            return list()
