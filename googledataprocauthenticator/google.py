@@ -24,6 +24,8 @@ import re
 import random
 import urllib3.util
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
+from hdijupyterutils.ipythondisplay import IpythonDisplay
+
 import ipywidgets
 import ipyvuetify as v
 from google.cloud import dataproc_v1beta2
@@ -34,6 +36,8 @@ from google.oauth2.credentials import Credentials
 from sparkmagic.auth.customauth import Authenticator
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.utils.constants import WIDGET_WIDTH
+
+ipython_display = IpythonDisplay()
 
 _ENTER_PROJECT_MESSAGE = "Enter a project ID"
 
