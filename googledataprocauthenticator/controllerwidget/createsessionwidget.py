@@ -250,6 +250,8 @@ due to error: '{}'""".format(alias, properties, e))
 
     def _generate_session_values(self):
         session_table_values = []
+        print('generate sessions')
+        print(self.spark_controller.get_managed_clients())
         for name, session in self.spark_controller.get_managed_clients().items():
             #need a way to list endpoint 
             #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
