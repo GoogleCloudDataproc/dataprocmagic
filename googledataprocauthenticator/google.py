@@ -386,7 +386,7 @@ class GoogleAuth(Authenticator):
             color='primary',
             hide_selected=True,
             outlined=True,
-            v_model=self.active_credentials, 
+            v_model=self.active_credentials,
             items=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
             auto_select_first=True,
             # v_slots allows help message to be displayed if no accounts are found. 
@@ -606,7 +606,7 @@ class GoogleAuth(Authenticator):
                 # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
                 #     self.cluster_name_widget.value, self.credentials)
                 self.url = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, \
-                    self.cluster_combobox.v_model, self.account_combobox.v_model)
+                    self.cluster_combobox.v_model, self.credentials)
             except:
                 raise
         else:
