@@ -491,7 +491,7 @@ class GoogleAuth(Authenticator):
         self.account_combobox.on_event('change', self._update_active_credentials)
         self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
-        self.filter_combobox.on_event('change', self._update_cluster_list)
+        self.filter_combobox.on_event('change', self._update_cluster_list_on_filter)
         self.cluster_combobox.on_event('change', self._update_cluster_selection)
 
         # if self.active_credentials is not None:
@@ -540,6 +540,26 @@ class GoogleAuth(Authenticator):
         if self.client is not None and widget.label == 'Filter by label' and data is not '' and data is not None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
                 _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
+            
+    def _update_cluster_list_on_filter(self, widget, event, data):
+        print(data)
+        
+        try:
+            self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+                        client_options={
+                            "api_endpoint": f"{data}-dataproc.googleapis.com:443"
+                        }
+                    )
+            print(self.project_textfield.v_model)
+            self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+            _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
+        except Exception as caught_exc:
+        #     ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
+        # f"due to an error: {str(caught_exc)}")
+            
+            pass
+    
+                #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
             
 
     
