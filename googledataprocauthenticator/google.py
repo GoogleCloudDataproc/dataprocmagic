@@ -512,14 +512,15 @@ class GoogleAuth(Authenticator):
                                 "api_endpoint": f"{data}-dataproc.googleapis.com:443"
                             }
                         )
+                print(self.project_textfield.v_model)
+                self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+                self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, self.client)
             except Exception as caught_exc:
                 self.ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
             f"due to an error: {str(caught_exc)}")
-            print(self.project_textfield.v_model)
-            self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
-            self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, self.client)
-        if widget.label == 'Filter by label' and data is not '' and data is not None:
+    
+        if self.client is not None and widget.label == 'Filter by label' and data is not '' and data is not None:
                 #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
                 _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
             
