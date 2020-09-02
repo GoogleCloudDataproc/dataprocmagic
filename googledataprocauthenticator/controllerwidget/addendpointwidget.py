@@ -62,6 +62,9 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         # Submit widget
         self.add_endpoint_widget = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
+        self.add_endpoint_widget.on_event('click', self._add_endpoint)
+        self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
+        self.cancel.on_event('click', self._on_cancel_click)
 
         backicon = v.Icon(children=['mdi-arrow-left'])
         backicon.on_event('click', self._on_back_click)
@@ -85,9 +88,8 @@ class AddEndpointWidget(AbstractMenuWidget):
                 v.Col( cols=3, children=[self.all_widgets[3]]),
                 v.Col( cols=3, children=[self.all_widgets[4]])
             ]),
-            v.Row(class_='ma-2', children=[self.add_endpoint_widget])])
+            v.Row(class_='ma-2', children=[self.add_endpoint_widget, self.cancel])])
 
-        self.add_endpoint_widget.on_event('click', self._add_endpoint)
 
         self.auth_type.on_trait_change(self._update_auth)
         
@@ -126,7 +128,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self._update_auth()
 
     def _add_endpoint(self, widget, event, data):
-        self.state = 'list'
+        self.state = 'endpoint_list'
         self.auth.update_with_widget_values()
         if self.auth_type.label == "None":
             endpoint = Endpoint(self.auth.url, None)
@@ -150,10 +152,10 @@ class AddEndpointWidget(AbstractMenuWidget):
             raise
 
     def _update_view(self):
-        if self.state == 'add':
+        if self.state == 'endpoint_add':
             self.toolbar_with_table.layout.display = 'none'
             self.flex_widget.layout.display = 'flex'
-        elif self.state == 'list':
+        elif self.state == 'endpoint_list':
             self.flex_widget.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
     
@@ -167,13 +169,17 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
-
+    
+    def _on_cancel_click(self, widget, event, data):
+        self.state = 'endpoint_list'
+        self._update_view()
+    
     def _on_back_click(self, widget, event, data):
-        self.state = 'list'
+        self.state = 'endpoint_list'
         self._update_view()
 
     def _on_new_endpoint_click(self, widget, event, data):
-        self.state = 'add'
+        self.state = 'endpoint_add'
         self._update_view()
 
     def _generate_endpoint_values(self):

@@ -115,8 +115,7 @@ class CreateSessionWidget(AbstractMenuWidget):
                 v.Col(children=[self.properties_textbox])
             ]),
             v.Row(class_='mx-auto', children=[
-                v.Col(children=[self.create_session]),
-                v.Col(children=[self.cancel])
+                v.Col(children=[self.create_session, cancel])
             ])
         ])
         
@@ -188,15 +187,11 @@ due to error: '{}'""".format(alias, properties, e))
 
    
     def _on_new_session_click(self, widget, event, data):
-        self.state = 'add'
-        self._update_view()
-    
-    def _on_cancel_click(self, widget, event, data):
-        self.state = 'list'
+        self.state = 'session_add'
         self._update_view()
     
     def _on_back_click(self, widget, event, data):
-        self.state = 'list'
+        self.state = 'session_list'
         self._update_view()
 
     def _generate_session_values(self):
@@ -221,10 +216,10 @@ due to error: '{}'""".format(alias, properties, e))
         return session_table_values
 
     def _update_view(self):
-        if self.state == 'add':
+        if self.state == 'session_add':
             self.toolbar_with_table.layout.display = 'none'
             self.create_session_container.layout.display = 'flex'
-        elif self.state == 'list':
+        elif self.state == 'session_list':
             self.create_session_container.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
 
