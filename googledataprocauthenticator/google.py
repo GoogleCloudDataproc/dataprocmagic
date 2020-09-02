@@ -218,8 +218,8 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
                         print(cluster.cluster_name)
                         cluster_pool.append(cluster.cluster_name)
                         print(cluster.labels)
-                        for _filter in cluster.labels:
-                            filter_set.add(_filter)
+                        for key,value in cluster.labels.items():
+                            filter_set.add(key + ' = ' + value)
                             print(filter_set)
         print(list(filter_set))
         print(cluster_pool)
