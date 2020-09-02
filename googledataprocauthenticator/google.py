@@ -521,7 +521,7 @@ class GoogleAuth(Authenticator):
                 self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
                 self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, self.client)
             except Exception as caught_exc:
-                self.ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
+                ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
             f"due to an error: {str(caught_exc)}")
     
         if self.client is not None and widget.label == 'Filter by label' and data is not '' and data is not None:
