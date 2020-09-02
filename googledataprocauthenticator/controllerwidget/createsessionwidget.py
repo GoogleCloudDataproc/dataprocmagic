@@ -184,8 +184,12 @@ due to error: '{}'""".format(alias, properties, e))
             return
 
         self.refresh_method()
-
    
+    def _on_cancel_click(self, widget, event, data):
+        self.state = 'session_list'
+        self._update_view()
+
+
     def _on_new_session_click(self, widget, event, data):
         self.state = 'session_add'
         self._update_view()
