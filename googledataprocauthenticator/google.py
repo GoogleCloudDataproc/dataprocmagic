@@ -167,7 +167,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         ValueError: If the parameters are invalid.
     """
     print('getting url')
-    print('region')
+    print(region)
     try: 
         client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
                         client_options={
@@ -175,16 +175,20 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                             }
                         )
     except: 
-        ('errored')
+        print('errored')
         raise
+    print('got client')
     try:
         #if they do not enter a cluster name, we get a random one for them.
         if cluster_name is None:
             cluster_name = random.choice(get_cluster_pool(project_id, region, client))
+        print('about to get cluster')
         response = client.get_cluster(project_id, region, cluster_name)
+        print(response)
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/" + "gateway/default/livy/v1"
+        print(endpoint_address)
         return endpoint_address
     except:
         raise
