@@ -182,6 +182,10 @@ class AddEndpointWidget(AbstractMenuWidget):
         print(table)
         print(event)
         print(row)
+        print(self.endpoint_table.items)
+        self.endpoint_table.items.remove(row)
+        print(self.endpoint_table.items)
+        
         # const index = this.desserts.indexOf(item)
         # confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
 
