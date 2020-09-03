@@ -178,9 +178,10 @@ class AddEndpointWidget(AbstractMenuWidget):
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
     
-    def _remove_row_from_table(self, item, data):
+    def _remove_row_from_table(self, item, data, another):
         print(item)
         print(data)
+        print(another)
 
 
          
