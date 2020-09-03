@@ -181,7 +181,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             widget.layout.display = 'flex'
     
     def _remove_row_from_table(self, table, event, row):
-        endpoint_url = row.url
+        endpoint_url = row.get('url')
         print(f"endpoint url {endpoint_url}")
         self.endpoints.remove(endpoint_url)
         
