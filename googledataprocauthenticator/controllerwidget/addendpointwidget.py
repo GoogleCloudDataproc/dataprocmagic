@@ -111,7 +111,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         delete_icon = v.Icon(children=['mdi-delete'])
         delete_icon.on_event('click', self._print_icon)
 
-        self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
+        self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='url', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
@@ -178,10 +178,13 @@ class AddEndpointWidget(AbstractMenuWidget):
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
     
-    def _remove_row_from_table(self, item, data, another):
-        print(item)
-        print(data)
-        print(another)
+    def _remove_row_from_table(self, table, event, row):
+        print(table)
+        print(event)
+        print(row)
+        # const index = this.desserts.indexOf(item)
+        # confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+
 
 
          
