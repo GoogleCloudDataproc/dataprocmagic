@@ -183,7 +183,7 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _remove_row_from_table(self, table, event, row):
         endpoint_url = row.get('url')
         print(f"endpoint url {endpoint_url}")
-        self.endpoints.remove(endpoint_url)
+        self.endpoints.pop(endpoint_url)
         
         stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
         # stored updated stored_endpoints
