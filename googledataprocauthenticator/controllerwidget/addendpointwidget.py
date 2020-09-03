@@ -108,8 +108,8 @@ class AddEndpointWidget(AbstractMenuWidget):
             app=True,  # If true, the other widgets float under on scroll
         )
         self.toolbar = v.Row(children=[no_back_toolbar, new_endpoint])
-        delete_icon = v.Icon(children=['mdi-delete'])
-        delete_icon.on_event('click', self._print_icon)
+        self.delete_icon = v.Icon(children=['mdi-delete'])
+        self.delete_icon.on_event('click', self._print_icon)
 
         self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='url', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -120,9 +120,11 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         ], items=endpoint_table_values, dense=False, fixedHeader=False, v_slots=[{
             'name': 'item.actions', 
-            'children' : [ delete_icon]
+            'children' : [ self.delete_icon]
         }, {'name': 'no-data', 'children': ['test']}])
         self.endpoint_table.on_event('click:row', self._remove_row_from_table)
+        
+        
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.endpoint_table])])
@@ -179,6 +181,26 @@ class AddEndpointWidget(AbstractMenuWidget):
             widget.layout.display = 'flex'
     
     def _remove_row_from_table(self, table, event, row):
+        endpoint_url = row.url
+        print(f"endpoint url {endpoint_url}")
+        self.endpoints.remove(endpoint_url)
+        
+        stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
+        # stored updated stored_endpoints
+        self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
+        new_endpoint_values = self._generate_endpoint_values()
+        self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='url', headers=[
+            {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
+            {'text': 'Project', 'sortable': False, 'value': 'project'},
+            {'text': 'Region', 'sortable': False, 'value': 'region'},
+            {'text': 'Url', 'sortable': False, 'value': 'url'},
+            {'text': 'Action', 'sortable': False, 'value': 'actions'},
+
+        ], items=new_endpoint_values, dense=False, fixedHeader=False, v_slots=[{
+            'name': 'item.actions', 
+            'children' : [ self.delete_icon]
+        }, {'name': 'no-data', 'children': ['test']}])
+
         print(table)
         print(event)
         print(row)
