@@ -108,6 +108,8 @@ class AddEndpointWidget(AbstractMenuWidget):
             app=True,  # If true, the other widgets float under on scroll
         )
         self.toolbar = v.Row(children=[no_back_toolbar, new_endpoint])
+        delete_icon = v.Icon(children=['mdi-delete'])
+        delete_icon.on_event('click', self._print_icon)
 
         self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -118,7 +120,7 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         ], items=endpoint_table_values, dense=False, fixedHeader=False, v_slots=[{
             'name': 'item.actions', 
-            'children' : [ v.Icon(children=['mdi-arrow-left'])]
+            'children' : [ delete_icon]
         }, {'name': 'no-data', 'children': ['test']}])
 
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
@@ -187,6 +189,9 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _on_new_endpoint_click(self, widget, event, data):
         self.state = 'add'
         self._update_view()
+    
+    def _print_icon(self, widget, event, data):
+        print('icon')
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []
