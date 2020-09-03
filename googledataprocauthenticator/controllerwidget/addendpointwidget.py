@@ -114,6 +114,8 @@ class AddEndpointWidget(AbstractMenuWidget):
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
             {'text': 'Url', 'sortable': False, 'value': 'url'},
+            {'text': 'Action', 'sortable': False, 'value': 'actions'},
+
         ], items=endpoint_table_values, dense=False, fixedHeader=False, v_slots=[{
             'name': 'item.actions', 
             'children' : [ v.Icon(children=['mdi-arrow-left'])]
