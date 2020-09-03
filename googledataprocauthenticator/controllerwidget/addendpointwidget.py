@@ -116,12 +116,12 @@ class AddEndpointWidget(AbstractMenuWidget):
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
             {'text': 'Url', 'sortable': False, 'value': 'url'},
-            {'text': 'Action', 'sortable': False, 'value': 'actions'},
+            {'text': '', 'sortable': False, 'value': 'actions'},
 
         ], items=endpoint_table_values, dense=False, fixedHeader=False, v_slots=[{
             'name': 'item.actions', 
             'children' : [ self.delete_icon]
-        }, {'name': 'no-data', 'children': ['test']}])
+        }, {'name': 'no-data', 'children': ['No endpoints']}])
         self.endpoint_table.on_event('click:row', self._remove_row_from_table)
         
         
@@ -188,26 +188,13 @@ class AddEndpointWidget(AbstractMenuWidget):
         stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
         # stored updated stored_endpoints
         self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
-        self.refresh_method()        
-        # self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='url', headers=[
-        #     {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
-        #     {'text': 'Project', 'sortable': False, 'value': 'project'},
-        #     {'text': 'Region', 'sortable': False, 'value': 'region'},
-        #     {'text': 'Url', 'sortable': False, 'value': 'url'},
-        #     {'text': 'Action', 'sortable': False, 'value': 'actions'},
-
-        # ], items=new_endpoint_values, dense=False, fixedHeader=False, v_slots=[{
-        #     'name': 'item.actions', 
-        #     'children' : [ self.delete_icon]
-        # }, {'name': 'no-data', 'children': ['test']}])
+        self.refresh_method(1)    
+        
 
         print(table)
         print(event)
         print(row)
         
-        
-        # const index = this.desserts.indexOf(item)
-        # confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
 
 
 

@@ -130,6 +130,8 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.toolbar = v.Row(children=[no_back_toolbar, new_session])
 
         session_table_values = self._generate_session_values()
+        self.delete_icon = v.Icon(children=['mdi-delete'])
+        self.delete_icon.on_event('click', self._print_icon)
 
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -138,7 +140,12 @@ class CreateSessionWidget(AbstractMenuWidget):
             {'text': 'Spark UI', 'sortable': False, 'value': 'spark'},
             {'text': 'Status', 'sortable': False, 'value': 'status'},
             {'text': 'Kind', 'sortable': False, 'value': 'kind'},
-        ], items=session_table_values, dense=False, fixedHeader=False)
+            {'text': '', 'sortable': False, 'value': 'actions'},
+        ], items=session_table_values, dense=False, fixedHeader=False, v_slots=[{
+            'name': 'item.actions', 
+            'children' : [ self.delete_icon]
+        }, {'name': 'no-data', 'children': ['No endpoints']}])
+        self.session_table.on_event('click:row', self._remove_row_from_table)
 
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[self.toolbar]),
@@ -184,6 +191,27 @@ due to error: '{}'""".format(alias, properties, e))
 
         self.refresh_method(0)
    
+    def _print_icon(self, widget, event, data):
+        print('icon')
+        print(widget)
+        print(event)
+        print(data)
+
+    def _remove_row_from_table(self, table, event, row):
+        endpoint_url = row.get('url')
+        print(f"endpoint url {endpoint_url}")
+        self.endpoints.pop(endpoint_url)
+        
+        stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
+        # stored updated stored_endpoints
+        self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
+        self.refresh_method(1)    
+        
+
+        print(table)
+        print(event)
+        print(row)
+
     def _on_cancel_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
@@ -258,3 +286,16 @@ due to error: '{}'""".format(alias, properties, e))
             name = session_id_to_name.get(session.id)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
+
+
+
+class SerializableEndpoint():
+    def __init__(self, endpoint):
+        
+        self.cluster = endpoint.auth.cluster_combobox.v_model
+        self.url = endpoint.url
+        self.project = endpoint.auth.project_textfield.v_model
+        self.region = endpoint.auth.region_combobox.v_model
+        self.account = endpoint.auth.active_credentials
+
+
