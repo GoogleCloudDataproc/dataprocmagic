@@ -122,7 +122,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             'name': 'item.actions', 
             'children' : [ delete_icon]
         }, {'name': 'no-data', 'children': ['test']}])
-
+        self.endpoint_table.on_event('click:row', self._remove_row_from_table)
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.endpoint_table])])
@@ -178,6 +178,12 @@ class AddEndpointWidget(AbstractMenuWidget):
         for widget in self.auth.widgets:
             widget.layout.display = 'flex'
     
+    def _remove_row_from_table(self, item, data):
+        print(item)
+        print(data)
+
+
+         
     def _on_cancel_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
@@ -192,6 +198,9 @@ class AddEndpointWidget(AbstractMenuWidget):
     
     def _print_icon(self, widget, event, data):
         print('icon')
+        print(widget)
+        print(event)
+        print(data)
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []
