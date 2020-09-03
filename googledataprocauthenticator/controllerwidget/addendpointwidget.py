@@ -114,7 +114,11 @@ class AddEndpointWidget(AbstractMenuWidget):
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
             {'text': 'Url', 'sortable': False, 'value': 'url'},
-        ], items=endpoint_table_values, dense=False, fixedHeader=False)
+        ], items=endpoint_table_values, dense=False, fixedHeader=False, v_slots=[{
+            'name': 'items.actions', 
+            'children' : [  v.Icon(children=['mdi-arrow-left'])
+]
+        }, {'name': 'no-data', 'children': ['test']}])
 
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
             v.Row(class_='mx-auto', children=[self.toolbar]),
