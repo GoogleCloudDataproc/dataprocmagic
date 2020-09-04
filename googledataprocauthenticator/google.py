@@ -449,7 +449,7 @@ class GoogleAuth(Authenticator):
             print(data)
             self.active_credentials = data
             self.initialize_credentials_with_auth_account_selection(self.active_credentials)
-            if self.project_textfield.v_model != self.project:
+            if self.project_textfield.v_model != self.project and self.project is not None:
                 self.project_textfield.v_model = self.project
             #we need to update filters and clusters now
             if self.region_combobox.v_model is not None:
@@ -459,12 +459,17 @@ class GoogleAuth(Authenticator):
                                     "api_endpoint": f"{self.region_combobox.v_model}-dataproc.googleapis.com:443"
                                 }
                             )
-                    #if its successful, we update the placeholder to be select to indicate there are some to choose 
-                    self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
-                    self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
                     #we update with cluster dropdown and filter dropdown
-                    self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, 
-                    self.region_combobox.v_model, client)
+                    self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, client)
+                    #if its successful, we update the placeholder to be select to indicate there are some to choose 
+                    if len(self.cluster_combobox.items) != 0: 
+                        self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+                    else: 
+                        self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+                    if len(self.filter_combobox.items) != 0: 
+                        self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                    else: 
+                        self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
                 except Exception as caught_exc:
                     self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
                     self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
@@ -473,96 +478,62 @@ class GoogleAuth(Authenticator):
             
 
     def _update_cluster_list(self, widget, event, data):
-        print(data)
-        
-
-        #if a region is selected. 
-        if widget.label == 'Region *' and data is not '' and data is not None:
-            #region = change['new']
-            print(data)
-            print(event)
-            #what error if the region is not valid? 
-            try:
-                self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
-                            client_options={
-                                "api_endpoint": f"{data}-dataproc.googleapis.com:443"
-                            }
-                        )
-                print(self.project_textfield.v_model)
-                self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
-                self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-                self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, self.client)
-            except Exception as caught_exc:
-                ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
-            f"due to an error: {str(caught_exc)}")
-    
-        if self.client is not None and widget.label == 'Filter by label' and data is not '' and data is not None:
-                #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-                _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
-            
-    def _update_cluster_list_on_filter(self, widget, event, data):
-        print(data)
-        
+        self.initialize_credentials_with_auth_account_selection(self.account_combobox.v_model)
+        if self.project_textfield.v_model != self.project and self.project is not None:
+            self.project_textfield.v_model = self.project
+        #we need to update filters and clusters now
         try:
-            self.client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+            client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
                         client_options={
                             "api_endpoint": f"{data}-dataproc.googleapis.com:443"
                         }
                     )
-            print(self.project_textfield.v_model)
-            self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
-            _, self.cluster_combobox.items = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, self.client, data)
+            #we update with cluster dropdown and filter dropdown
+            self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, data, client)
+            if len(self.cluster_combobox.items) != 0: 
+                self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+            else: 
+                self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+            if len(self.filter_combobox.items) != 0: 
+                self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+            else: 
+                self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
         except Exception as caught_exc:
-        #     ipython_display.send_error(f"Failed to create a client with the api_endpoint: {data}-dataproc.googleapis.com:443"\
-        # f"due to an error: {str(caught_exc)}")
-            
-            pass
-    
-                #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-            
+            self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+            self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+            ipython_display.send_error(f"Failed to create a client with the api_endpoint: "\
+                f"{data}-dataproc.googleapis.com:443 due to an error: {str(caught_exc)}")
 
-    
-    # def _update_cluster_list(self, change):
-    #     if change['type'] == 'change' and change['name'] == 'value':
-    #         region = change['new']
-    #         print(region)
-    #         #what error if the region is not valid? 
-    #         client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
-    #                     client_options={
-    #                         "api_endpoint": f"{region}-dataproc.googleapis.com:443"
-    #                     }
-    #                 )
-    #         print(self.project_widget.value)
-    #         #is
-    #         #self.cluster_dropdown.placeholder = _SELECT_CLUSTER_MESSAGE
-    #         self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
-    #         self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
-    #         #self.filter_by_label.placeholder = _SELECT_FILTER_MESSAGE
-    #         #
-    #         #print(get_cluster_pool(self.project_widget.value, region, client))
-    #         if self.filter_by_label.value is not None:
-    #             #self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
-    #             self.cluster_combobox.options, self.filter_combobox.options = get_cluster_pool(self.project_widget.value, region, client)
-
-    #         else:
-    #             _, self.cluster_combobox.options = get_cluster_pool(self.project_widget.value, region, client, self.filter_combobox.value)
             
-
-
-    # def _update_filter_list(self, change):
-    #     if change['type'] == 'change' and change['name'] == 'value':
-    #         region = change['new']
-    #         print(region)
-    #         #what error if the region is not valid? 
-    #         client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
-    #                     client_options={
-    #                         "api_endpoint": f"{region}-dataproc.googleapis.com:443"
-    #                     }
-    #                 )
-    #         print(self.project_widget.value)
-    #         print(get_cluster_pool(self.project_widget.value, region, client))
-            
-    #         self.cluster_dropdown.options, self.filter_by_label.options = get_cluster_pool(self.project_widget.value, region, client)
+    def _update_cluster_list_on_filter(self, widget, event, data):
+        print(data)
+        self.initialize_credentials_with_auth_account_selection(self.account_combobox.v_model)
+        if self.project_textfield.v_model != self.project and self.project is not None:
+            self.project_textfield.v_model = self.project
+        #we need to update filters and clusters now
+        if self.region_combobox.v_model is not None:
+            try:
+                client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+                            client_options={
+                                "api_endpoint": f"{self.region_combobox.v_model}-dataproc.googleapis.com:443"
+                            }
+                        )
+                #we update cluster dropdown 
+                self.cluster_combobox.items, _ = get_cluster_pool(self.project_textfield.v_model, self.region_combobox.v_model, client, data)
+                if len(self.cluster_combobox.items) != 0: 
+                    self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+                else: 
+                    self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+                if len(self.filter_combobox.items) != 0: 
+                    self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                else: 
+                    self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+            except Exception as caught_exc:
+                self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+                self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+                ipython_display.send_error(f"Failed to create a client with the api_endpoint: "\
+                    f"{self.region_combobox.v_model}-dataproc.googleapis.com:443 due to an error: {str(caught_exc)}")
+        
             
     def initialize_credentials_with_auth_account_selection(self, account):
         """Initializes self.credentials with the accound selected from the auth dropdown widget"""
@@ -582,15 +553,13 @@ class GoogleAuth(Authenticator):
             "credentials to use for Application Default Credentials.")
         if self.credentials is not None:
             try:
-                # self.url = get_component_gateway_url(self.project_widget.value, self.region_widget.value, \
-                #     self.cluster_name_widget.value, self.credentials)
-                self.url, self.cluster_combobox.v_model = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, \
-                    self.cluster_combobox.v_model, self.credentials)
+                self.initialize_credentials_with_auth_account_selection(self.account_combobox.v_model)
+                self.url, self.cluster_combobox.v_model = get_component_gateway_url(self.project_textfield.v_model, self.region_combobox.v_model, self.cluster_combobox.v_model, self.credentials)
             except:
                 raise
         else:
             raise no_credentials_exception
-        self.initialize_credentials_with_auth_account_selection(self.active_credentials)
+        
 
     def __call__(self, request):
         if not self.credentials.valid:
