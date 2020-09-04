@@ -78,7 +78,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             app=True,  # If true, the other widgets float under on scroll
         )
         
-        self.flex_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='ma-2', children=[
+        self.create_endpoint_widget = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='ma-2', children=[
             back_toolbar,
             v.Row(class_='ma-2', children=[
                 v.Col(children=[self.all_widgets[0]]),
@@ -133,9 +133,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             v.Row(class_='mx-auto', children=[self.toolbar]),
             v.Row(class_='mx-auto', children=[self.endpoint_table])])
 
-        
-
-        self.children = [self.flex_widget, self.toolbar_with_table]
+        self.children = [self.create_endpoint_widget, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
         self._update_view()
@@ -168,9 +166,9 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _update_view(self):
         if self.state == 'add':
             self.toolbar_with_table.layout.display = 'none'
-            self.flex_widget.layout.display = 'flex'
+            self.create_endpoint_widget.layout.display = 'flex'
         elif self.state == 'list':
-            self.flex_widget.layout.display = 'none'
+            self.create_endpoint_widget.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
     
     def _update_auth(self):
@@ -200,10 +198,6 @@ class AddEndpointWidget(AbstractMenuWidget):
                     f"{str(caught_exc)}")
     
         
-
-
-
-         
     def _on_cancel_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
@@ -230,23 +224,7 @@ class AddEndpointWidget(AbstractMenuWidget):
                 'region':endpoint.get('region'),'account':endpoint.get('account') })
         return endpoint_table_values
 
-    # def get_stored_endpoints(self):
-    #     """Gets a list of endpoints that were added in previous notebook sessions
 
-    #     Returns:
-    #         stored_endpoints (Sequence[tuple]): A list of tuples with two str values
-    #         (url, account) where url is an endpoint url and account is the credentialed
-    #         account used to authenticate the endpoint connection. If no endpoints can be
-    #         obtained from previous notebook sessions, an empty list is returned.
-    #     """
-    #     try:
-    #         stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
-    #         return stored_endpoints
-    #     except Exception as caught_exc:
-    #         self.db['autorestore/' + 'stored_endpoints'] = list()
-    #         self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
-    #         f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
-    #         return list()
 
     def get_stored_endpoints1(self):
         """Gets a list of endpoints that were added in previous notebook sessions

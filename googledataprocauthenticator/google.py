@@ -203,7 +203,6 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
     filters = ['status.state = ACTIVE']
     if selected_filters is not None:
         filters.extend(selected_filters)
-    #filter format: status.state = ACTIVE AND clusterName = mycluster AND labels.env = staging AND labels.starred = \*
     filter_str = ' AND '.join(filters)
     print(filter_str)
     try:
@@ -327,16 +326,9 @@ class GoogleAuth(Authenticator):
         Returns:
             Sequence[hdijupyterutils.ipywidgetfactory.IpyWidgetFactory]: list of widgets
         """
-        ipywidget_factory = IpyWidgetFactory()
-
-        # self.project_widget = ipywidget_factory.get_text(
-        #     description='Project:',
-        #     width=widget_width
-        # )
 
         self.project_textfield = v.TextField(
             class_='ma-2',
-            
             placeholder=_ENTER_PROJECT_MESSAGE,
             label='Project *',
             dense=True,
@@ -344,41 +336,6 @@ class GoogleAuth(Authenticator):
             color='primary',
             outlined=True,
         )
-
-        # if self.project is not None:
-        #     self.project_textfield.v_model = self.project
-
-        # self.cluster_name_widget = ipywidget_factory.get_text(
-        #     description='Cluster:',
-        #     width=widget_width
-        # )
-
-        # self.region_widget = ipywidget_factory.get_text(
-        #     description='Region:',
-        #     width=widget_width
-        # )
-
-        # self.region_dropdown = ipywidgets.Combobox(
-        #     description='Region:',
-        #     placeholder='Select a region',
-        #     options=get_regions(),
-        #     ensure_option=False
-        # )
-
-        # self.filter_by_label = ipywidgets.Combobox(
-        #     placeholder=_NO_FILTERS_FOUND_MESSAGE,
-        #     options=[_NO_FILTERS_FOUND_HELP_MESSAGE],
-        #     disabled=True,
-        #     value=None,
-        #     description=u"Filter by label:"
-        # )
-
-        # self.google_credentials_widget = ipywidgets.Combobox(
-        #     options=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
-        #     value=None,
-        #     description=u"Account:",
-        #     ensure_option=True
-        # )
 
         self.account_combobox = v.Combobox(
             class_='ma-2',
@@ -405,11 +362,7 @@ class GoogleAuth(Authenticator):
             }],
         )
 
-        # self.google_credentials_widget = ipywidget_factory.get_dropdown(
-        #     options=list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured),
-        #     value=None,
-        #     description=u"Account:"
-        # )
+
         self.region_combobox = v.Combobox(
             class_='ma-2',
             placeholder=_SELECT_REGION_MESSAGE,
@@ -476,22 +429,8 @@ class GoogleAuth(Authenticator):
             }],
         )
 
-        # self.cluster_dropdown = ipywidgets.Combobox(
-        #     placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
-        #     options=[_NO_CLUSTERS_FOUND_HELP_MESSAGE],
-        #     description='Cluster:',
-        #     ensure_option=True, 
-        #     disabled=True
-        # )
-        
-        #can comment this then say like uncomment it to populate based on project? 
-        #populate region dropdown when a project is entered  
-
-        #self.project_widget.observe(self._update_region_list)
-        #populate cluster dropdown when a region is selected
-        #self.region_dropdown.observe(self._update_cluster_list)
         self.account_combobox.on_event('change', self._update_active_credentials)
-        self.project_textfield.on_event('change', self._update_region_list)
+        #self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list_on_filter)
         self.cluster_combobox.on_event('change', self._update_cluster_selection)
@@ -499,7 +438,6 @@ class GoogleAuth(Authenticator):
         # if self.active_credentials is not None:
         #     self.account_combobox.value = self.active_credentials
            
-        # widgets = [self.project_widget, self.region_widget, self.cluster_name_widget, self.region_dropdown, self.cluster_dropdown, self.google_credentials_widget]
         widgets = [self.account_combobox, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
         return widgets
 
@@ -510,15 +448,34 @@ class GoogleAuth(Authenticator):
     def _update_active_credentials(self, widget, event, data):
             print(data)
             self.active_credentials = data
+            self.initialize_credentials_with_auth_account_selection(active_credentials)
+            if self.project_textfield.v_model != self.project:
+                self.project_textfield.v_model = self.project
+            #we need to update filters and clusters now
+            if self.region_combobox.v_model is not None:
+                try:
+                    client = dataproc_v1beta2.ClusterControllerClient(credentials=self.credentials,
+                                client_options={
+                                    "api_endpoint": f"{self.region_combobox.v_model}-dataproc.googleapis.com:443"
+                                }
+                            )
+                    #if its successful, we update the placeholder to be select to indicate there are some to choose 
+                    self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
+                    self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                    #we update with cluster dropdown and filter dropdown
+                    self.cluster_combobox.items, self.filter_combobox.items = get_cluster_pool(self.project_textfield.v_model, 
+                    self.region_combobox.v_model, client)
+                except Exception as caught_exc:
+                    self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
+                    self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+                    ipython_display.send_error(f"Failed to create a client with the api_endpoint: "\
+                        f"{self.region_combobox.v_model}-dataproc.googleapis.com:443 due to an error: {str(caught_exc)}")
+            
 
-    def _update_region_list(self, widget, event, data):
-        print(get_regions())
-        self.project = data
-        #self._update_region_list.items = get_regions()
-    
     def _update_cluster_list(self, widget, event, data):
         print(data)
         
+
         #if a region is selected. 
         if widget.label == 'Region *' and data is not '' and data is not None:
             #region = change['new']

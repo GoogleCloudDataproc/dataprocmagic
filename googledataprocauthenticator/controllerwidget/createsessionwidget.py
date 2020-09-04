@@ -54,7 +54,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             v_model = None,
         )
 
-        self.endpoints_dropdown_widget = v.Combobox(
+        self.endpoints_dropdown_widget = v.Select(
             class_='ma-2',
             placeholder='Select an endpoint',
             label='Endpoint',
@@ -68,13 +68,14 @@ class CreateSessionWidget(AbstractMenuWidget):
             v_model=None,
         )
         
-        self.language_dropdown = v.Combobox(
+        self.language_dropdown = v.Select(
             class_='ma-2',
             label='Language',
+            placeholder='Select a language',
             dense=True,
             color='primary',
             persistent_hint=True,
-            hide_selected=True,
+            hide_selected=False,
             outlined=True,
             items=[LANG_SCALA, LANG_PYTHON],
             auto_select_first=True,
