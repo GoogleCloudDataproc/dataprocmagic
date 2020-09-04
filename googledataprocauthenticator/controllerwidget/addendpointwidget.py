@@ -113,8 +113,11 @@ class AddEndpointWidget(AbstractMenuWidget):
 
         self.endpoint_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text = 'No endpoints', hide_default_footer=True, disable_pagination=True, item_key='url', headers=[
             {'text': 'Cluster', 'align': 'start', 'sortable': False, 'value': 'name'},
+
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
+            {'text': 'Account', 'value': 'account'},
+
             {'text': 'Url', 'sortable': False, 'value': 'url'},
             {'text': '', 'sortable': False, 'value': 'actions'},
 
@@ -221,7 +224,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         endpoint_table_values = []
         for endpoint in self.get_stored_endpoints1():
             endpoint_table_values.append({'name':endpoint.get('cluster'), 'url':endpoint.get('url'), 'project': endpoint.get('project'), \
-                'region':endpoint.get('region')})
+                'region':endpoint.get('region'),'account':endpoint.get('account') })
         return endpoint_table_values
 
     def get_stored_endpoints(self):

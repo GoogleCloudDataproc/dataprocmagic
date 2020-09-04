@@ -158,11 +158,11 @@ class DataprocMagics(SparkMagicBase):
         self.manage_dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.db, self.endpoints)
         return self.manage_dataproc_widget
     
-    @line_magic
-    def manage_spark(self, line, local_ns=None):
-        """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
-        Then, create a session. You'll be able to select the session created from the %%spark magic."""
-        return self.__remotesparkmagics.manage_widget
+    # @line_magic
+    # def manage_spark(self, line, local_ns=None):
+    #     """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
+    #     Then, create a session. You'll be able to select the session created from the %%spark magic."""
+    #     return self.__remotesparkmagics.manage_widget
     
     @magic_arguments()
     @argument("-c", "--context", type=str, default=CONTEXT_NAME_SPARK,
@@ -250,7 +250,7 @@ class DataprocMagics(SparkMagicBase):
             endpoint = Endpoint(args.url, initialize_auth(args))
             self.endpoints[args.url] = endpoint
             # convert self.endpoints dict into list of (url, account) tuples
-            stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]      
+            stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]     
 
             stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
             # stored updated stored_endpoints

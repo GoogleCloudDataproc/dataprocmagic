@@ -136,8 +136,6 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
             {'text': 'ID', 'sortable': False, 'value': 'id'},
-            {'text': 'Yarn ID', 'sortable': False, 'value': 'yarn'},
-            {'text': 'Spark UI', 'sortable': False, 'value': 'spark'},
             {'text': 'Status', 'sortable': False, 'value': 'status'},
             {'text': 'Kind', 'sortable': False, 'value': 'kind'},
             {'text': '', 'sortable': False, 'value': 'actions'},
@@ -243,7 +241,7 @@ due to error: '{}'""".format(alias, properties, e))
             #need a way to list endpoint 
             #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
             #.format(self.id, self.get_app_id(), self.kind, self.status, self.get_spark_ui_url(), self.get_driver_log_url())
-            session_table_values.append({'name':name, 'id':session.id, 'yarn': session.get_app_id(), 'spark': session.get_spark_ui_url(), \
+            session_table_values.append({'name':name, 'id':session.id, \
                'status':session.status,'kind':session.kind})
         return session_table_values
 
