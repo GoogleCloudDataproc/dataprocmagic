@@ -200,7 +200,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
 def get_cluster_pool(project_id, region, client, selected_filters=None):
     cluster_pool = list()
     filter_set = set()
-    filters = ['status.state = ACTIVE']
+    filters = ['status.state=ACTIVE']
     if selected_filters is not None:
         filters.extend(selected_filters)
     filter_str = ' AND '.join(filters)
@@ -219,7 +219,7 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
                         cluster_pool.append(cluster.cluster_name)
                         print(cluster.labels)
                         for key,value in cluster.labels.items():
-                            filter_set.add(key + ' = ' + value)
+                            filter_set.add('labels.' + key + '=' + value)
                             print(filter_set)
         print(list(filter_set))
         print(cluster_pool)
@@ -467,9 +467,9 @@ class GoogleAuth(Authenticator):
                     else: 
                         self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
                     if len(self.filter_combobox.items) != 0: 
-                        self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                        self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
                     else: 
-                        self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+                        self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
                 except Exception as caught_exc:
                     self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
                     self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
@@ -494,10 +494,10 @@ class GoogleAuth(Authenticator):
                 self.cluster_combobox.placeholder = _SELECT_CLUSTER_MESSAGE
             else: 
                 self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
-            if len(self.filter_combobox.items) != 0: 
-                self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+            if len(self.filter_combobox.items) != 0:
+                self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
             else: 
-                self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+                self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
         except Exception as caught_exc:
             self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
             self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
@@ -525,9 +525,9 @@ class GoogleAuth(Authenticator):
                 else: 
                     self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
                 if len(self.filter_combobox.items) != 0: 
-                    self.cluster_combobox.placeholder = _SELECT_FILTER_MESSAGE
+                    self.filter_combobox.placeholder = _SELECT_FILTER_MESSAGE
                 else: 
-                    self.cluster_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
+                    self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
             except Exception as caught_exc:
                 self.cluster_combobox.placeholder = _NO_CLUSTERS_FOUND_MESSAGE
                 self.filter_combobox.placeholder = _NO_FILTERS_FOUND_MESSAGE
