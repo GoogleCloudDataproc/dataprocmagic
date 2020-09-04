@@ -15,6 +15,7 @@
 import importlib
 import ipyvuetify as v
 
+from googledataprocauthenticator.magics.dataprocmagics import SerializableEndpoint
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import WIDGET_WIDTH
@@ -265,14 +266,3 @@ class AddEndpointWidget(AbstractMenuWidget):
             self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
             f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints1.")
             return list()
-
-class SerializableEndpoint():
-    def __init__(self, endpoint):
-        
-        self.cluster = endpoint.auth.cluster_combobox.v_model
-        self.url = endpoint.url
-        self.project = endpoint.auth.project_textfield.v_model
-        self.region = endpoint.auth.region_combobox.v_model
-        self.account = endpoint.auth.active_credentials
-
-

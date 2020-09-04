@@ -16,7 +16,7 @@
 # Distributed under the terms of the Modified BSD License.
 import json
 import ipyvuetify as v
-
+from googledataprocauthenticator.magics.dataprocmagics import SerializableEndpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_SCALA, LANG_PYTHON
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
@@ -287,16 +287,4 @@ due to error: '{}'""".format(alias, properties, e))
             name = session_id_to_name.get(session.id)
             if name is not None and name not in self.spark_controller.get_managed_clients():
                 self.spark_controller.session_manager.add_session(name, session)
-
-
-
-class SerializableEndpoint():
-    def __init__(self, endpoint):
-        
-        self.cluster = endpoint.auth.cluster_combobox.v_model
-        self.url = endpoint.url
-        self.project = endpoint.auth.project_textfield.v_model
-        self.region = endpoint.auth.region_combobox.v_model
-        self.account = endpoint.auth.active_credentials
-
 

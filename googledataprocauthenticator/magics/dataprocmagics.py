@@ -158,12 +158,6 @@ class DataprocMagics(SparkMagicBase):
         self.manage_dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.db, self.endpoints)
         return self.manage_dataproc_widget
     
-    # @line_magic
-    # def manage_spark(self, line, local_ns=None):
-    #     """Magic to manage Spark endpoints and sessions. First, add an endpoint via the 'Add Endpoint' tab.
-    #     Then, create a session. You'll be able to select the session created from the %%spark magic."""
-    #     return self.__remotesparkmagics.manage_widget
-    
     @magic_arguments()
     @argument("-c", "--context", type=str, default=CONTEXT_NAME_SPARK,
               help="Context to use: '{}' for spark and '{}' for sql queries. "
@@ -290,6 +284,7 @@ def load_ipython_extension(ip):
     ip.register_magics(DataprocMagics)
 
 class SerializableEndpoint():
+    """ A class that serializes an endpoint object for storing and restoring endpoints"""  
     def __init__(self, endpoint):
         self.cluster = endpoint.auth.cluster_combobox.v_model
         self.url = endpoint.url
