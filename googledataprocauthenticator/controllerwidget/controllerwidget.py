@@ -89,14 +89,14 @@ class ControllerWidget(AbstractMenuWidget):
         print(f"refreshed sessions in controller widget. Sessions are now: {self.spark_controller.get_managed_clients()}")
 
 
-        self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                                  self._refresh)
+        # self.manage_session = ManageSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
+        #                                           self._refresh)
         self.create_session = CreateSessionWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                                   self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state, self.db)
         self.add_endpoint = AddEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
                                               self.endpoints, self.endpoints_dropdown_widget, self._refresh, self.state, self.db)
-        self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
-                                                    self.endpoints, self._refresh)
+        # self.manage_endpoint = ManageEndpointWidget(self.spark_controller, self.ipywidget_factory, self.ipython_display,
+        #                                             self.endpoints, self._refresh)
 
         session_tab = [v.Tab(children=['Sessions']), v.TabItem(style_='border: 1px solid lightgrey', children=[self.create_session])]
         #if there is no endpoints, we hide table. If there is endpoints, we only show table.
@@ -121,23 +121,23 @@ class ControllerWidget(AbstractMenuWidget):
         for child in self.children:
             child.parent_widget = self
 
-    def get_stored_endpoints(self):
-        """Gets a list of endpoints that were added in previous notebook sessions
+    # def get_stored_endpoints(self):
+    #     """Gets a list of endpoints that were added in previous notebook sessions
 
-        Returns:
-            stored_endpoints (Sequence[tuple]): A list of tuples with two str values
-            (url, account) where url is an endpoint url and account is the credentialed
-            account used to authenticate the endpoint connection. If no endpoints can be
-            obtained from previous notebook sessions, an empty list is returned.
-        """
-        try:
-            stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
-            return stored_endpoints
-        except Exception as caught_exc:
-            self.db['autorestore/' + 'stored_endpoints'] = list()
-            self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
-            return list()
+    #     Returns:
+    #         stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+    #         (url, account) where url is an endpoint url and account is the credentialed
+    #         account used to authenticate the endpoint connection. If no endpoints can be
+    #         obtained from previous notebook sessions, an empty list is returned.
+    #     """
+    #     try:
+    #         stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
+    #         return stored_endpoints
+    #     except Exception as caught_exc:
+    #         self.db['autorestore/' + 'stored_endpoints'] = list()
+    #         self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+    #         f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
+    #         return list()
 
 
     def get_stored_endpoints1(self):

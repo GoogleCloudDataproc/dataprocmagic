@@ -38,7 +38,7 @@ class DataprocMagics(SparkMagicBase):
         self.ip = self.shell
         self.db = self.ip.db
         self.endpoints = {}
-        stored_endpoints = self.get_stored_endpoints()
+        #stored_endpoints = self.get_stored_endpoints()
         stored_endpoints1 = self.get_stored_endpoints1()
         for serialized_endpoint in stored_endpoints1:
             args = Namespace(auth='Google', url=serialized_endpoint.get('url'), account=serialized_endpoint.get('account'))
@@ -52,7 +52,9 @@ class DataprocMagics(SparkMagicBase):
         # update session_id_to_name to be all of the sessions now loaded into session_manager
         session_id_to_name = dict([(session.id, name) for name, session in self.spark_controller.get_managed_clients().items()])
         self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
-        if len(stored_endpoints) == 0:
+        # if len(stored_endpoints) == 0:
+        #     self.endpoints = None
+        if len(stored_endpoints1) == 0:
             self.endpoints = None
         dataproc_widget = ControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.db, self.endpoints)
         widget = MagicsControllerWidget(self.spark_controller, IpyWidgetFactory(), self.ipython_display, self.endpoints)
@@ -61,23 +63,23 @@ class DataprocMagics(SparkMagicBase):
         self.manage_dataproc_widget = dataproc_widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
 
-    def get_stored_endpoints(self):
-        """Gets a list of endpoints that were added in previous notebook sessions
+    # def get_stored_endpoints(self):
+    #     """Gets a list of endpoints that were added in previous notebook sessions
 
-        Returns:
-            stored_endpoints (Sequence[tuple]): A list of tuples with two str values
-            (url, account) where url is an endpoint url and account is the credentialed
-            account used to authenticate the endpoint connection. If no endpoints can be
-            obtained from previous notebook sessions, an empty list is returned.
-        """
-        try:
-            stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
-            return stored_endpoints
-        except Exception as caught_exc:
-            self.db['autorestore/' + 'stored_endpoints'] = list()
-            self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
-            return list()
+    #     Returns:
+    #         stored_endpoints (Sequence[tuple]): A list of tuples with two str values
+    #         (url, account) where url is an endpoint url and account is the credentialed
+    #         account used to authenticate the endpoint connection. If no endpoints can be
+    #         obtained from previous notebook sessions, an empty list is returned.
+    #     """
+    #     try:
+    #         stored_endpoints = self.db['autorestore/' + 'stored_endpoints']
+    #         return stored_endpoints
+    #     except Exception as caught_exc:
+    #         self.db['autorestore/' + 'stored_endpoints'] = list()
+    #         self.ipython_display.send_error("Failed to restore stored_endpoints from a previous "\
+    #         f"notebook session due to an error: {str(caught_exc)}. Cleared stored_endpoints.")
+    #         return list()
 
     def get_stored_endpoints1(self):
         """Gets a list of endpoints that were added in previous notebook sessions
@@ -245,9 +247,9 @@ class DataprocMagics(SparkMagicBase):
             # convert self.endpoints dict into list of (url, account) tuples
             stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]     
 
-            stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
+            #stored_endpoints = [(url, endpoint.auth.active_credentials) for url, endpoint in self.endpoints.items()]
             # stored updated stored_endpoints
-            self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
+            #self.db['autorestore/' + 'stored_endpoints'] = stored_endpoints
             self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
 
             skip = args.skip
