@@ -131,7 +131,7 @@ class CreateSessionWidget(AbstractMenuWidget):
 
         session_table_values = self._generate_session_values()
         self.delete_icon = v.Icon(children=['mdi-delete'])
-        self.delete_icon.on_event('click', self._print_icon)
+        self.delete_icon.on_event('click', self._on_delete_icon_pressed)
 
         self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
             {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
@@ -189,22 +189,28 @@ due to error: '{}'""".format(alias, properties, e))
 
         self.refresh_method(0)
    
-    def _print_icon(self, widget, event, data):
+    def _on_delete_icon_pressed(self, widget, event, data):
         print('icon')
+        self.delete_pressed = True
+
         print(widget)
         print(event)
         print(data)
 
     def _remove_row_from_table(self, table, event, row):
-        session_name = row.get('name')
-        session_id = row.get('id')
-        print(f"session name {session_name}")
-        self.spark_controller.delete_session_by_name(session_name)
-        session_id_to_name = self.get_session_id_to_name()
-        session_id_to_name.pop(session_id)
-        self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
-
-        self.refresh_method(0)    
+        if self.delete_pressed: 
+            session_name = row.get('name')
+            session_id = row.get('id')
+            try:
+                print(f"session name {session_name}")
+                self.spark_controller.delete_session_by_name(session_name)
+                session_id_to_name = self.get_session_id_to_name()
+                session_id_to_name.pop(session_id)
+                self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
+                self.refresh_method(0)    
+            except Exception as caught_exc: 
+                self.ipython_display.send_error("Failed delete session due to the following error: "\
+                    f"{str(caught_exc)}")
         
 
         print(table)
