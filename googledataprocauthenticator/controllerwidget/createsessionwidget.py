@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Copyright (c) 2015  aggftw@gmail.com
-# Distributed under the terms of the Modified BSD License.
 import json
 import ipyvuetify as v
 from googledataprocauthenticator.utils.serializeableendpoint import SerializableEndpoint

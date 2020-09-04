@@ -261,7 +261,8 @@ class DataprocMagics(SparkMagicBase):
             # add session id -> name to session_id_to_name dict
             session_id_to_name[self.spark_controller.session_manager.get_session(name).id] = name
             self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
-        elif subcommand == "sessions":
+        #elif subcommand == "sessions":
+        elif args.auth == "Google" and subcommand == "info":
             if args.url is not None and args.id is not None:
                 endpoint = Endpoint(args.url, initialize_auth(args))
                 info_sessions = self.spark_controller.get_all_sessions_endpoint_info(endpoint)
