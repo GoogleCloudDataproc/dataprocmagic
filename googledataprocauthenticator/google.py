@@ -448,7 +448,7 @@ class GoogleAuth(Authenticator):
     def _update_active_credentials(self, widget, event, data):
             print(data)
             self.active_credentials = data
-            self.initialize_credentials_with_auth_account_selection(active_credentials)
+            self.initialize_credentials_with_auth_account_selection(self.active_credentials)
             if self.project_textfield.v_model != self.project:
                 self.project_textfield.v_model = self.project
             #we need to update filters and clusters now
