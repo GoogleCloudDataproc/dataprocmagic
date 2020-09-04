@@ -31,6 +31,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.endpoints = endpoints
         self.refresh_method = refresh_method
         self.state = state
+        self.delete_pressed = False
         self.db = db
             
         #map auth class path string to the instance of the class.
