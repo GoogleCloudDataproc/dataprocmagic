@@ -144,7 +144,7 @@ class CreateSessionWidget(AbstractMenuWidget):
         ], items=session_table_values, dense=False, fixedHeader=False, v_slots=[{
             'name': 'item.actions', 
             'children' : [ self.delete_icon]
-        }, {'name': 'no-data', 'children': ['No endpoints']}])
+        }, {'name': 'no-data', 'children': ['No sessions']}])
         self.session_table.on_event('click:row', self._remove_row_from_table)
 
         self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
