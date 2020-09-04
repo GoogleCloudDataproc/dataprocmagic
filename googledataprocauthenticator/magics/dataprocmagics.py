@@ -27,6 +27,7 @@ from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerW
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, LANG_SCALA, LANG_R
 from googledataprocauthenticator.controllerwidget.controllerwidget import ControllerWidget
+from googledataprocauthenticator.utils.serializeableendpoint import SerializableEndpoint
 
 
 @magics_class
@@ -283,11 +284,3 @@ def load_ipython_extension(ip):
     ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
 
-class SerializableEndpoint():
-    """ A class that serializes an endpoint object for storing and restoring endpoints"""  
-    def __init__(self, endpoint):
-        self.cluster = endpoint.auth.cluster_combobox.v_model
-        self.url = endpoint.url
-        self.project = endpoint.auth.project_textfield.v_model
-        self.region = endpoint.auth.region_combobox.v_model
-        self.account = endpoint.auth.active_credentials

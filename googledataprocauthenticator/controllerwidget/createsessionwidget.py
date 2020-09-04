@@ -16,7 +16,7 @@
 # Distributed under the terms of the Modified BSD License.
 import json
 import ipyvuetify as v
-from googledataprocauthenticator.magics.dataprocmagics import SerializableEndpoint
+from googledataprocauthenticator.utils.serializeableendpoint import SerializableEndpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_SCALA, LANG_PYTHON
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget

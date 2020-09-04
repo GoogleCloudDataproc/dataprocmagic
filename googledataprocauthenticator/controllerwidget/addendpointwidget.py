@@ -14,8 +14,7 @@
 
 import importlib
 import ipyvuetify as v
-
-from googledataprocauthenticator.magics.dataprocmagics import SerializableEndpoint
+from googledataprocauthenticator.utils.serializeableendpoint import SerializableEndpoint
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import WIDGET_WIDTH
