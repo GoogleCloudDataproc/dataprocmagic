@@ -289,13 +289,13 @@ class GoogleAuth(Authenticator):
             outlined=True,
         )
 
-        self.account_combobox = v.Combobox(
+        self.account_combobox = v.Select(
             class_='ma-2',
             placeholder='No accounts found',
             label='Account *',
             dense=True,
             color='primary',
-            hide_selected=True,
+            hide_selected=False,
             outlined=True,
             v_model=self.active_credentials,
             items=list((list_accounts_pairs(self.credentialed_accounts, self.default_credentials_configured)).keys()),
