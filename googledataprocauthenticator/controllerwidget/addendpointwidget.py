@@ -117,7 +117,7 @@ class AddEndpointWidget(AbstractMenuWidget):
 
             {'text': 'Project', 'sortable': False, 'value': 'project'},
             {'text': 'Region', 'sortable': False, 'value': 'region'},
-            {'text': 'Account', 'value': 'account'},
+            {'text': 'Account', 'sortable': False, 'value': 'account'},
 
             {'text': 'Url', 'sortable': False, 'value': 'url'},
             {'text': '', 'sortable': False, 'value': 'actions'},
