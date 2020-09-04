@@ -166,11 +166,6 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         google.api_core.exceptions.RetryError: If the request failed due to a retryable error and retry attempts failed.
         ValueError: If the parameters are invalid.
     """
-    print('getting url')
-    print(region)
-    print(project_id)
-    print(credentials)
-    print(cluster_name)
     try: 
         client = dataproc_v1beta2.ClusterControllerClient(credentials=credentials,
                         client_options={
@@ -178,21 +173,16 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
                             }
                         )
     except: 
-        print('errored')
         raise
-    print('got client')
     try:
         #if they do not enter a cluster name, we get a random one for them.
         if cluster_name is None:
             cluster_pool, _ = get_cluster_pool(project_id, region, client)
             cluster_name = random.choice(cluster_pool)
-        print('about to get cluster')
         response = client.get_cluster(project_id, region, cluster_name)
-        print(response)
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/" + "gateway/default/livy/v1"
-        print(endpoint_address)
         return endpoint_address, cluster_name
     except:
         raise
@@ -204,49 +194,23 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
     if selected_filters is not None:
         filters.extend(selected_filters)
     filter_str = ' AND '.join(filters)
-    print(filter_str)
     try:
         for cluster in client.list_clusters(project_id, region, filter_str):
             #check component gateway is enabled
-            if (len(cluster.config.endpoint_config.http_ports.values()) != 0):
+            if len(cluster.config.endpoint_config.http_ports.values()) != 0:
                 action_list = list()
                 for action in cluster.config.initialization_actions:
                     #check if action is livy init action with a region with regex pattern [a-z0-9-]+
                     is_livy_action = re.search("gs://goog-dataproc-initialization-actions-[a-z0-9-]+/livy/livy.sh", action.executable_file) is not None
                     if is_livy_action:
                         action_list.append(action.executable_file)
-                        print(cluster.cluster_name)
                         cluster_pool.append(cluster.cluster_name)
-                        print(cluster.labels)
                         for key,value in cluster.labels.items():
                             filter_set.add('labels.' + key + '=' + value)
-                            print(filter_set)
-        print(list(filter_set))
-        print(cluster_pool)
         return cluster_pool, list(filter_set)
     except: 
         raise
 
-# def get_filter_labels(project_id, region, client, filters=None):
-#     if os.name == "nt":
-#         command = _CLOUD_SDK_WINDOWS_COMMAND
-#     else:
-#         command = _CLOUD_SDK_POSIX_COMMAND
-#     try:
-#         output = subprocess.check_output(
-#             [command, "dataproc", "clusters", "list", f"--project={project_id}", f"--region={region}" "--format=json"]
-#         )
-#         print(output)
-#         print(type(output))
-#         print(dir(output))
-#         data = json.loads(output.decode("utf-8"))
-#         #returns list of region names
-#         labels_list = [_["labels"] for _ in data]
-#         clusters_list = [_["labels"] for _ in data]
-#         return set(labels_list)
-#     except Exception:
-#         return set()
-    
 
 def get_regions(project=None):
     regions = ['asia-east1', 'asia-east2', 'asia-northeast1', 'asia-northeast2', 'asia-northeast3',
@@ -255,19 +219,7 @@ def get_regions(project=None):
     'northamerica-northeast1', 'southamerica-east1', 'us-central1', 'us-central2', 'us-east1', 
     'us-east2', 'us-east4', 'us-west1', 'us-west2', 'us-west3', 'us-west4']
     return regions
-    # if os.name == "nt":
-    #     command = _CLOUD_SDK_WINDOWS_COMMAND
-    # else:
-    #     command = _CLOUD_SDK_POSIX_COMMAND
-    # try:
-    #     output = subprocess.check_output(
-    #         [command, "compute", "regions", "list", "--project", project, "--format=json"]
-    #     )
-    #     data = json.loads(output.decode("utf-8"))
-    #     #returns list of region names
-    #     return [_["name"] for _ in data]
-    # except Exception:
-    #     return []
+
 
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
@@ -362,12 +314,10 @@ class GoogleAuth(Authenticator):
             }],
         )
 
-
         self.region_combobox = v.Combobox(
             class_='ma-2',
             placeholder=_SELECT_REGION_MESSAGE,
             label='Region *',
-            deletable_chips=True,
             dense=True,
             color='primary',
             hide_selected=True,
@@ -376,7 +326,6 @@ class GoogleAuth(Authenticator):
             v_model=None,
         )
         
-
         self.filter_combobox = v.Combobox(
             class_='ma-2',
             placeholder=_NO_FILTERS_FOUND_MESSAGE,
@@ -408,7 +357,6 @@ class GoogleAuth(Authenticator):
             class_='ma-2',
             placeholder=_NO_CLUSTERS_FOUND_MESSAGE,
             label='Cluster',
-            deletable_chips=True,
             dense=True,
             color='primary',
             hide_selected=True,
@@ -430,23 +378,16 @@ class GoogleAuth(Authenticator):
         )
 
         self.account_combobox.on_event('change', self._update_active_credentials)
-        #self.project_textfield.on_event('change', self._update_region_list)
         self.region_combobox.on_event('change', self._update_cluster_list)
         self.filter_combobox.on_event('change', self._update_cluster_list_on_filter)
         self.cluster_combobox.on_event('change', self._update_cluster_selection)
-
-        # if self.active_credentials is not None:
-        #     self.account_combobox.value = self.active_credentials
-           
         widgets = [self.account_combobox, self.project_textfield, self.region_combobox, self.cluster_combobox, self.filter_combobox]
         return widgets
 
     def _update_cluster_selection(self, widget, event, data):
-            print(data)
             self.cluster_selection = data
     
     def _update_active_credentials(self, widget, event, data):
-            print(data)
             self.active_credentials = data
             self.initialize_credentials_with_auth_account_selection(self.active_credentials)
             if self.project_textfield.v_model != self.project and self.project is not None:
@@ -506,7 +447,6 @@ class GoogleAuth(Authenticator):
 
             
     def _update_cluster_list_on_filter(self, widget, event, data):
-        print(data)
         self.initialize_credentials_with_auth_account_selection(self.account_combobox.v_model)
         if self.project_textfield.v_model != self.project and self.project is not None:
             self.project_textfield.v_model = self.project

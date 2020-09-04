@@ -185,19 +185,13 @@ due to error: '{}'""".format(alias, properties, e))
         self.refresh_method(0)
    
     def _on_delete_icon_pressed(self, widget, event, data):
-        print('icon')
         self.delete_pressed = True
-
-        print(widget)
-        print(event)
-        print(data)
 
     def _remove_row_from_table(self, table, event, row):
         if self.delete_pressed: 
             session_name = row.get('name')
             session_id = row.get('id')
             try:
-                print(f"session name {session_name}")
                 self.spark_controller.delete_session_by_name(session_name)
                 session_id_to_name = self.get_session_id_to_name()
                 session_id_to_name.pop(session_id)
@@ -206,16 +200,10 @@ due to error: '{}'""".format(alias, properties, e))
             except Exception as caught_exc: 
                 self.ipython_display.send_error("Failed delete session due to the following error: "\
                     f"{str(caught_exc)}")
-        
-
-        print(table)
-        print(event)
-        print(row)
 
     def _on_cancel_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
-
 
     def _on_new_session_click(self, widget, event, data):
         self.state = 'add'
@@ -227,21 +215,7 @@ due to error: '{}'""".format(alias, properties, e))
 
     def _generate_session_values(self):
         session_table_values = []
-        #print('generate sessions')
-        #print(self.spark_controller.get_managed_clients())
-        #for name, session in self.spark_controller.get_managed_clients().items():
-        #need to reload before.
-        #print(self.endpoints)
-        # for endpoint in self.endpoints.values():
-        #     self._load_sessions_for_endpoint(endpoint)
-
-        # print(self.spark_controller.get_managed_clients())
-        print(f"generating table values with sparkcontroller.get_managed_clients: {self.spark_controller.get_managed_clients()}")
         for name, session in self.spark_controller.get_managed_clients().items():
-            
-            #need a way to list endpoint 
-            #return u"Session id: {}\tYARN id: {}\tKind: {}\tState: {}\n\tSpark UI: {}\n\tDriver Log: {}"\
-            #.format(self.id, self.get_app_id(), self.kind, self.status, self.get_spark_ui_url(), self.get_driver_log_url())
             session_table_values.append({'name':name, 'id':session.id, \
                'status':session.status,'kind':session.kind})
         return session_table_values

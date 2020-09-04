@@ -114,7 +114,6 @@ def test_active_account_returns_valid_active_account():
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
         _, active_account = sparkmagic.auth.google.list_credentialed_accounts()
-        print(active_account)
         assert_equals(active_account, 'account@google.com')
 
 def test_dropdown_options_with_default_credentials_configured():
@@ -161,7 +160,6 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
     expiry, grant_response)), \
     patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
-        print(google_auth_class.list_credentialed_accounts)
         assert_equals(google_auth.active_credentials, 'account@google.com')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
         google.auth.default.assert_called_once_with(scopes=google_auth.scopes)

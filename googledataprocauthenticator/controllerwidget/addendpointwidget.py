@@ -185,10 +185,8 @@ class AddEndpointWidget(AbstractMenuWidget):
     def _remove_row_from_table(self, table, event, row):
         if self.delete_pressed:
             endpoint_url = row.get('url')
-            print(f"endpoint url {endpoint_url}")
             try: 
                 self.endpoints.pop(endpoint_url)
-            
                 stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
                 # stored updated stored_endpoints
                 self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
@@ -196,8 +194,7 @@ class AddEndpointWidget(AbstractMenuWidget):
             except Exception as caught_exc: 
                 self.ipython_display.send_error("Failed delete session due to the following error: "\
                     f"{str(caught_exc)}")
-    
-        
+           
     def _on_cancel_click(self, widget, event, data):
         self.state = 'list'
         self._update_view()
@@ -211,11 +208,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self._update_view()
     
     def _on_delete_icon_pressed(self, widget, event, data):
-        print('icon')
         self.delete_pressed = True
-        print(widget)
-        print(event)
-        print(data)
 
     def _generate_endpoint_values(self):
         endpoint_table_values = []
