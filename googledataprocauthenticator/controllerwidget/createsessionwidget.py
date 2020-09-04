@@ -198,14 +198,15 @@ due to error: '{}'""".format(alias, properties, e))
         print(data)
 
     def _remove_row_from_table(self, table, event, row):
-        endpoint_url = row.get('url')
-        print(f"endpoint url {endpoint_url}")
-        self.endpoints.pop(endpoint_url)
-        
-        stored_endpoints1 = [SerializableEndpoint(endpoint).__dict__ for endpoint in self.endpoints.values()]
-        # stored updated stored_endpoints
-        self.db['autorestore/' + 'stored_endpoints1'] = stored_endpoints1
-        self.refresh_method(1)    
+        session_name = row.get('name')
+        session_id = row.get('id')
+        print(f"session name {session_name}")
+        self.spark_controller.delete_session_by_name(session_name)
+        session_id_to_name = self.get_session_id_to_name()
+        session_id_to_name.pop(session_id)
+        self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
+
+        self.refresh_method(0)    
         
 
         print(table)
