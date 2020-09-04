@@ -291,8 +291,8 @@ def load_ipython_extension(ip):
 
 class SerializableEndpoint():
     def __init__(self, endpoint):
-        self.cluster = endpoint.auth.cluster_selection
+        self.cluster = endpoint.auth.cluster_combobox.v_model
         self.url = endpoint.url
-        self.project = endpoint.auth.project
-        self.region = endpoint.auth.region
+        self.project = endpoint.auth.project_textfield.v_model
+        self.region = endpoint.auth.region_combobox.v_model
         self.account = endpoint.auth.active_credentials
