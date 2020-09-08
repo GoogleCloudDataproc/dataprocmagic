@@ -186,7 +186,7 @@ class DataprocMagics(SparkMagicBase):
             else:
                 self._print_local_info()
         else:
-            self.__remotesparkmagics.spark(line, cell="", local_ns=None)
+            self.__remotesparkmagics.spark(line, cell, local_ns=None)
 
     def _print_local_info(self):
         sessions_info = [
@@ -200,5 +200,5 @@ class DataprocMagics(SparkMagicBase):
 """.format("\n".join(sessions_info), conf.session_configs()))
 
 def load_ipython_extension(ip):
-    ip.register_magics(RemoteSparkMagics)
+    #ip.register_magics(RemoteSparkMagics)
     ip.register_magics(DataprocMagics)
