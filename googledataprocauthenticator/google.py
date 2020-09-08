@@ -414,7 +414,10 @@ class GoogleAuth(Authenticator):
                     self.project_widget.v_model, self.region_widget.v_model, client
                 )
                 self._update_widgets_placeholder_text()
-            except:
+            except IndexError:
+                self.project_widget.error = False
+                pass
+            except Exception:
                 self.project_widget.error = True
                 ipython_display.send_error("Please make sure you have entered a correct Project "\
                     "ID and Region.")
@@ -452,6 +455,9 @@ class GoogleAuth(Authenticator):
                     self.credentials.quota_project_id, data, client
                 )
                 self._update_widgets_placeholder_text()
+            except IndexError:
+                self.region_widget.error = False
+                pass
             except:
                 self.region_widget.error = True
                 ipython_display.send_error("Please make sure you have entered a correct Project "\
