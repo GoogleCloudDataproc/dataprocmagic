@@ -288,11 +288,10 @@ class GoogleAuth(Authenticator):
         Returns:
             Sequence[hdijupyterutils.ipywidgetfactory.IpyWidgetFactory]: list of widgets
         """
-
         self.project_widget = v.TextField(
             class_='ma-2',
             placeholder=constants.ENTER_PROJECT_MESSAGE,
-            label='Project *',
+            label='Project ID *',
             dense=True,
             v_model=self.project, #will be none if no project can be determined from credentials
             color='primary',
@@ -417,8 +416,8 @@ class GoogleAuth(Authenticator):
                 self._update_widgets_placeholder_text()
             except:
                 self.project_widget.error = True
-                ipython_display.send_error("Please make sure you have entered a correct project "\
-                    "and region.")
+                ipython_display.send_error("Please make sure you have entered a correct Project "\
+                    "ID and Region.")
                 self.cluster_widget.placeholder = constants.NO_CLUSTERS_FOUND_MESSAGE
                 self.filter_widget.placeholder = constants.NO_FILTERS_FOUND_MESSAGE
                 self.cluster_widget.items = []
@@ -455,8 +454,8 @@ class GoogleAuth(Authenticator):
                 self._update_widgets_placeholder_text()
             except:
                 self.region_widget.error = True
-                ipython_display.send_error("Please make sure you have entered a correct project "\
-                    "and region.")
+                ipython_display.send_error("Please make sure you have entered a correct Project "\
+                    "ID and Region.")
                 self.cluster_widget.placeholder = constants.NO_CLUSTERS_FOUND_MESSAGE
                 self.filter_widget.placeholder = constants.NO_FILTERS_FOUND_MESSAGE
                 self.cluster_widget.items = []
