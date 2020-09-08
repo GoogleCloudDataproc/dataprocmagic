@@ -12,30 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+"""Creates the widget under the Sessions tab within the ``%manage_dataproc widget``"""
+
 import json
 import ipyvuetify as v
-from googledataprocauthenticator.utils.serializeableendpoint import SerializableEndpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.utils.constants import LANG_SCALA, LANG_PYTHON
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
-from sparkmagic.utils.constants import WIDGET_WIDTH
-
-
+from googledataprocauthenticator.utils.utils import get_session_id_to_name
+from googledataprocauthenticator.utils.constants import WIDGET_WIDTH
 
 class CreateSessionWidget(AbstractMenuWidget):
-    def __init__(self, spark_controller, ipywidget_factory, ipython_display, endpoints, endpoints_dropdown_widget, refresh_method, state, db):
-        # This is nested
-        super(CreateSessionWidget, self).__init__(spark_controller, ipywidget_factory, ipython_display, True)
+    def __init__(self, spark_controller, ipywidget_factory, ipython_display,
+                 endpoints, refresh_method, state, db):
+        super(CreateSessionWidget, self).__init__(spark_controller, ipywidget_factory,
+                                                  ipython_display, True)
         self.endpoints = endpoints
         self.refresh_method = refresh_method
         self.properties = json.dumps(conf.session_configs())
-     
+
         self.state = state
         self.db = db
         self.delete_pressed = False
         backicon = v.Icon(children=['mdi-arrow-left'])
         backicon.on_event('click', self._on_back_click)
-        back_toolbar = v.Toolbar(elevation="0",
+        back_toolbar = v.Toolbar(
+            elevation="0",
             children=[
                 v.ToolbarItems(children=[backicon]),
                 v.ToolbarTitle(children=['Create new session']),
@@ -51,7 +54,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             dense=True,
             color='primary',
             outlined=True,
-            v_model = None,
+            v_model=None,
         )
 
         self.endpoints_dropdown_widget = v.Select(
@@ -67,7 +70,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             auto_select_first=True,
             v_model=None,
         )
-        
+
         self.language_dropdown = v.Select(
             class_='ma-2',
             label='Language',
@@ -81,7 +84,7 @@ class CreateSessionWidget(AbstractMenuWidget):
             auto_select_first=True,
             v_model=None,
         )
-    
+
         self.properties_textbox = v.TextField(
             class_='ma-2',
             label='Properties',
@@ -95,27 +98,34 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.cancel = v.Btn(class_='ma-2', color='primary', children=['Cancel'])
         self.cancel.on_event('click', self._on_cancel_click)
 
-        self.create_session_container = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='ma-2', children=[
-            back_toolbar,
-            v.Row(class_='ma-2', children=[
-                v.Col(children=[self.name_textfield])
-            ]),
-            v.Row(class_='ma-2', children=[
-                v.Col(children=[self.endpoints_dropdown_widget])
-            ]),
-            v.Row(class_='ma-2', children=[
-                v.Col(children=[self.language_dropdown])
-            ]),
-            v.Row(class_='ma-2', children=[
-                v.Col(children=[self.properties_textbox])
-            ]),
-            v.Row(class_='ma-2', children=[self.create_session,self.cancel]),
-        ])
-        
-        
-        no_back_toolbar = v.Toolbar(elevation="0",
+        self.create_session_container = v.Container(
+            style_=f'width: {WIDGET_WIDTH};', class_='ma-2',
             children=[
-                v.ToolbarTitle(titleMarginStart='12dp',contentInsetStartWithNavigation="56dp", children=['Sessions']),
+                back_toolbar,
+                v.Row(class_='ma-2', children=[
+                    v.Col(children=[self.name_textfield])
+                ]),
+                v.Row(class_='ma-2', children=[
+                    v.Col(children=[self.endpoints_dropdown_widget])
+                ]),
+                v.Row(class_='ma-2', children=[
+                    v.Col(children=[self.language_dropdown])
+                ]),
+                v.Row(class_='ma-2', children=[
+                    v.Col(children=[self.properties_textbox])
+                ]),
+                v.Row(class_='ma-2', children=[self.create_session, self.cancel]),
+            ]
+        )
+
+        no_back_toolbar = v.Toolbar(
+            elevation="0",
+            children=[
+                v.ToolbarTitle(
+                    titleMarginStart='12dp',
+                    contentInsetStartWithNavigation="56dp",
+                    children=['Sessions']
+                ),
                 v.Spacer()
             ],
             app=True,  # If true, the other widgets float under on scroll
@@ -128,34 +138,49 @@ class CreateSessionWidget(AbstractMenuWidget):
         self.delete_icon = v.Icon(children=['mdi-delete'])
         self.delete_icon.on_event('click', self._on_delete_icon_pressed)
 
-        self.session_table = v.DataTable(style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True, disable_pagination=True, item_key='name', headers=[
-            {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
-            {'text': 'ID', 'sortable': False, 'value': 'id'},
-            {'text': 'Status', 'sortable': False, 'value': 'status'},
-            {'text': 'Kind', 'sortable': False, 'value': 'kind'},
-            {'text': '', 'sortable': False, 'value': 'actions'},
-        ], items=session_table_values, dense=False, fixedHeader=False, v_slots=[{
-            'name': 'item.actions', 
-            'children' : [ self.delete_icon]
-        }, {'name': 'no-data', 'children': ['No sessions']}])
+        self.session_table = v.DataTable(
+            style_=f'width: {WIDGET_WIDTH};', no_data_text='No sessions', hide_default_footer=True,
+            disable_pagination=True, item_key='name', headers=[
+                {'text': 'Session', 'align': 'start', 'sortable': False, 'value': 'name'},
+                {'text': 'ID', 'sortable': False, 'value': 'id'},
+                {'text': 'Status', 'sortable': False, 'value': 'status'},
+                {'text': 'Kind', 'sortable': False, 'value': 'kind'},
+                {'text': '', 'sortable': False, 'value': 'actions'},
+            ],
+            items=session_table_values, dense=False, fixedHeader=False, v_slots=[
+                {'name': 'item.actions', 'children' : [self.delete_icon]},
+                {'name': 'no-data', 'children': ['No sessions']}
+            ]
+        )
         self.session_table.on_event('click:row', self._remove_row_from_table)
 
-        self.toolbar_with_table = v.Container(style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
-            v.Row(class_='mx-auto', children=[self.toolbar]),
-            v.Row(class_='mx-auto', children=[self.session_table])])
+        self.toolbar_with_table = v.Container(
+            style_=f'width: {WIDGET_WIDTH};', class_='mx-auto', children=[
+                v.Row(class_='mx-auto', children=[self.toolbar]),
+                v.Row(class_='mx-auto', children=[self.session_table])
+            ]
+        )
 
         self.children = [self.create_session_container, self.toolbar_with_table]
         for child in self.children:
             child.parent_widget = self
         self._update_view()
-        
-    def _on_create_click(self, widget, event, data):
+
+    def run(self):
+        pass
+
+    def _on_create_click(self, _widget, _event, _data):
         try:
             properties_json = self.properties_textbox.v_model
             if properties_json.strip() != "":
-                conf.override(conf.session_configs.__name__, json.loads(self.properties_textbox.v_model))
-        except ValueError as e:
-            self.ipython_display.send_error("Session properties must be a valid JSON string. Error:\n{}".format(e))
+                conf.override(
+                    conf.session_configs.__name__,
+                    json.loads(self.properties_textbox.v_model)
+                )
+        except ValueError as caught_exc:
+            self.ipython_display.send_error(
+                "Session properties must be a valid JSON string. Error:\n{}".format(caught_exc)
+            )
             return
 
         endpoint = self.endpoints[self.endpoints_dropdown_widget.v_model]
@@ -167,49 +192,49 @@ class CreateSessionWidget(AbstractMenuWidget):
             self.spark_controller.add_session(alias, endpoint, skip, properties)
             # session_id_to_name dict is necessary to restore session name across notebook sessions
             # since the livy server does not store the name.
-            session_id_to_name = self.get_session_id_to_name()
+            session_id_to_name = get_session_id_to_name(self.db, self.ipython_display)
             # add session id -> name to session_id_to_name dict
 
             session_id_to_name[self.spark_controller.session_manager.get_session(alias).id] = alias
-            self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
-        except ValueError as e:
+            self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
+        except ValueError as caught_exc:
             self.ipython_display.send_error("""Could not add session with
 name:
     {}
 properties:
     {}
 
-due to error: '{}'""".format(alias, properties, e))
+due to error: '{}'""".format(alias, properties, caught_exc))
             return
 
         self.refresh_method(0)
-   
-    def _on_delete_icon_pressed(self, widget, event, data):
+
+    def _on_delete_icon_pressed(self, _widget, _event, _data):
         self.delete_pressed = True
 
-    def _remove_row_from_table(self, table, event, row):
-        if self.delete_pressed: 
+    def _remove_row_from_table(self, _table, _event, row):
+        if self.delete_pressed:
             session_name = row.get('name')
             session_id = row.get('id')
             try:
                 self.spark_controller.delete_session_by_name(session_name)
-                session_id_to_name = self.get_session_id_to_name()
+                session_id_to_name = get_session_id_to_name(self.db, self.ipython_display)
                 session_id_to_name.pop(session_id)
-                self.db[ 'autorestore/' + 'session_id_to_name'] = session_id_to_name
-                self.refresh_method(0)    
-            except Exception as caught_exc: 
-                self.ipython_display.send_error("Failed delete session due to the following error: "\
-                    f"{str(caught_exc)}")
+                self.db['autorestore/' + 'session_id_to_name'] = session_id_to_name
+                self.refresh_method(0)
+            except Exception as caught_exc:
+                self.ipython_display.send_error("Failed delete session due to the following "\
+                    f"error: {str(caught_exc)}")
 
-    def _on_cancel_click(self, widget, event, data):
+    def _on_cancel_click(self, _widget, _event, _data):
         self.state = 'list'
         self._update_view()
 
-    def _on_new_session_click(self, widget, event, data):
+    def _on_new_session_click(self, _widget, _event, _data):
         self.state = 'add'
         self._update_view()
-    
-    def _on_back_click(self, widget, event, data):
+
+    def _on_back_click(self, _widget, _event, _data):
         self.state = 'list'
         self._update_view()
 
@@ -217,7 +242,7 @@ due to error: '{}'""".format(alias, properties, e))
         session_table_values = []
         for name, session in self.spark_controller.get_managed_clients().items():
             session_table_values.append({'name':name, 'id':session.id, \
-               'status':session.status,'kind':session.kind})
+               'status':session.status, 'kind':session.kind})
         return session_table_values
 
     def _update_view(self):
@@ -227,37 +252,3 @@ due to error: '{}'""".format(alias, properties, e))
         elif self.state == 'list':
             self.create_session_container.layout.display = 'none'
             self.toolbar_with_table.layout.display = 'flex'
-
-    def get_session_id_to_name(self):
-        """Gets a dictionary that maps currently running livy session id's to their names
-
-        Returns:
-            session_id_to_name (dict): a dictionary mapping session.id -> name
-            If no sessions can be obtained from previous notebook sessions, an
-            empty dict is returned.
-        """
-        try:
-            session_id_to_name = self.db['autorestore/' + 'session_id_to_name']
-            return session_id_to_name
-        except Exception as caught_exc:
-            self.db['autorestore/' + 'session_id_to_name'] = dict()
-            self.ipython_display.send_error("Failed to restore session_id_to_name from a previous "\
-            f"notebook session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
-            return dict()
-
-    def _load_sessions_for_endpoint(self, endpoint):
-        """Loads all of the running livy sessions of an endpoint
-
-        Args:
-            endpoint (sparkmagic.livyclientlib.Endpoint): a tuple of two strings in the format (url, account) where url is
-            the endpoint url and account is the credentialed account used to authenticate
-        """
-        session_id_to_name = self.get_session_id_to_name()
-        #get all sessions running on that endpoint
-        endpoint_sessions = self.spark_controller.get_all_sessions_endpoint(endpoint)
-        #add each session to session manager.
-        for session in endpoint_sessions:
-            name = session_id_to_name.get(session.id)
-            if name is not None and name not in self.spark_controller.get_managed_clients():
-                self.spark_controller.session_manager.add_session(name, session)
-

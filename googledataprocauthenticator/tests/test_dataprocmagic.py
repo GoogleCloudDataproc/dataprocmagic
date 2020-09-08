@@ -102,7 +102,7 @@ def test_add_sessions_command_parses_google_default_credentials():
         args = parse_argstring_or_throw(DataprocMagics.spark, line)
         auth_instance = initialize_auth(args)
         add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
-                                                False, {"kind": "pyspark"})
+                                                  False, {"kind": "pyspark"})
         assert_equals(auth_instance.url, "http://url.com")
         isinstance(auth_instance, GoogleAuth)
         assert_equals(auth_instance.active_credentials, 'default-credentials')
@@ -132,7 +132,7 @@ def test_add_sessions_command_parses_google_user_credentials():
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_parses_session_already_exists():
     spark_controller.get_all_sessions_endpoint = MagicMock(return_value=sessions_list_mock)
-    get_managed_clients_mock = MagicMock(return_value = sessions_mock)
+    get_managed_clients_mock = MagicMock(return_value=sessions_mock)
     spark_controller.get_managed_clients = get_managed_clients_mock
     add_sessions_mock = MagicMock()
     spark_controller.session_manager.add_session = add_sessions_mock
@@ -145,7 +145,7 @@ def test_add_sessions_command_parses_session_already_exists():
     assert_equals(magic.db['autorestore/stored_endpoints'], stored_endpoints)
     assert_equals(magic.db['autorestore/get_session_id_to_name'], get_session_id_to_name)
     add_sessions_mock.assert_not_called()
-    
+
 @raises(BadUserConfigurationException)
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_raises_google_no_account():
@@ -167,7 +167,7 @@ def test_restore_endpoints():
     with patch('google.auth.default', return_value=(creds, 'project'),\
     autospec=True):
         assert_equals(magic.endpoints, stored_endpoints)
-        
+
 @with_setup(_setup, _teardown)
 def test_restore_sessions():
     with patch('google.auth.default', return_value=(creds, 'project'),\

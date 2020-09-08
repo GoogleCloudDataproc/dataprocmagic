@@ -104,7 +104,7 @@ def test_default_credentials_not_configured_account_pairs_contains_no_default():
 
 def test_default_credentials_configured_account_pairs_contains_default():
     """Tests default-credentials is in google credentials dropdown if if default credentials
-    are configured""" 
+    are configured"""
     with patch('google.auth.default', return_value=(MOCK_CREDENTIALS, 'project'), \
     autospec=True):
         assert_true('default-credentials' in GoogleAuth().google_credentials_widget.options)
@@ -242,7 +242,7 @@ def test_initialize_credentials_with_no_default_credentials_configured():
         assert_equals(google_auth.credentials.client_secret, 'secret')
         assert_equals(google_auth.credentials.token, None)
 
-def test_call_default_credentials_no_dropdown_change(): 
+def test_call_default_credentials_no_dropdown_change():
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', return_value=(not_refreshed_credentials(), 'project')), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
@@ -255,7 +255,7 @@ def test_call_default_credentials_no_dropdown_change():
         assert_true('Authorization' in request.headers)
         assert_equals(request.headers['Authorization'], 'Bearer {}'.format(google_auth.credentials.token))
 
-def test_call_user_credentials_no_dropdown_change(): 
+def test_call_user_credentials_no_dropdown_change():
     with patch('subprocess.check_output', return_value=AUTH_DESCRIBE_USER), \
     patch('google.auth.default', return_value=(DefaultCredentialsError, 'project')), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
