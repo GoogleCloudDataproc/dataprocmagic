@@ -56,6 +56,7 @@ class DataprocMagics(SparkMagicBase):
             self.endpoints = {}
         self.manage_dataproc_widget = dataproc_widget
         self.__remotesparkmagics = RemoteSparkMagics(shell, widget)
+        self.__remotesparkmagics.spark_controller = self.spark_controller
 
     @line_magic
     def manage_dataproc(self, _line, _local_ns=None):
