@@ -228,11 +228,9 @@ def get_regions():
 
 def application_default_credentials_configured():
     """Checks if google application-default credentials are configured"""
-    callable_request = google.auth.transport.requests.Request()
     try:
         credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/' \
         'cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'])
-        credentials.refresh(callable_request)
     except:
         return False
     return credentials is not None
