@@ -432,6 +432,9 @@ class GoogleAuth(Authenticator):
         if self.project_widget.v_model != self.project:
             self.project_widget.v_model = self.project
         self.region_widget.v_model = None
+        self.cluster_widget.items = []
+        self.filter_widget.items = []
+        self._update_widgets_placeholder_text()
 
     def _update_cluster_list_on_region(self, _widget, _event, data):
         if self.account_widget.v_model is not None and self.project_widget.v_model is not None:
