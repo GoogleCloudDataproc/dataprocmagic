@@ -455,7 +455,7 @@ class GoogleAuth(Authenticator):
                     }
                     )
                 self.cluster_widget.items, self.filter_widget.items = get_cluster_pool(
-                    self.credentials.quota_project_id, data, client
+                    self.project_widget.v_model, data, client
                 )
                 self._update_widgets_placeholder_text()
             except IndexError:
