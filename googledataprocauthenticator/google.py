@@ -255,8 +255,9 @@ class GoogleAuth(Authenticator):
                 self.default_credentials_configured:
                     self.credentials, self.project = google.auth.default(scopes=self.scopes)
                 else:
-                    self.credentials, self.project = get_credentials_for_account(\
-                        self.active_credentials, self.scopes)
+                    self.credentials, self.project = get_credentials_for_account(
+                        self.active_credentials, self.scopes
+                    )
             else:
                 new_exc = BadUserConfigurationException(
                     f"{parsed_attributes.account} is not a credentialed account. Run `gcloud "\
@@ -272,7 +273,8 @@ class GoogleAuth(Authenticator):
                 self.active_credentials = 'default-credentials'
             elif active_user_account is not None:
                 self.credentials, self.project = get_credentials_for_account(
-                    active_user_account, self.scopes)
+                    active_user_account, self.scopes
+                )
                 self.active_credentials = active_user_account
             else:
                 self.credentials, self.project = None, None
@@ -440,6 +442,7 @@ class GoogleAuth(Authenticator):
 
     def _update_cluster_list_on_region(self, _widget, _event, data):
         if self.account_widget.v_model is not None and self.project_widget.v_model is not None:
+            self.initialize_credentials_with_auth_account_selection(self.account_widget.v_model)
             try:
                 _, _ = get_component_gateway_url(self.project_widget.v_model, data, None,
                                                  self.credentials)
