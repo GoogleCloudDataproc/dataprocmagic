@@ -165,7 +165,7 @@ def get_component_gateway_url(project_id, region, cluster_name, credentials):
         if cluster_name is None:
             cluster_pool, _ = get_cluster_pool(project_id, region, client)
             cluster_name = random.choice(cluster_pool)
-        response = client.get_cluster(project_id, region, cluster_name)
+        response = client.get_cluster(project_id=project_id, region=region, cluster_name=cluster_name)
         url = response.config.endpoint_config.http_ports.popitem()[1]
         parsed_uri = urllib3.util.parse_url(url)
         endpoint_address = f"{parsed_uri.scheme}://{parsed_uri.netloc}/gateway/default/livy/v1"
@@ -200,7 +200,9 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
         filters.extend(selected_filters)
     filter_str = ' AND '.join(filters)
     try:
-        for cluster in client.list_clusters(project_id, region, filter_str):
+        #for cluster in client.list_clusters(project_id, region, filter_str):
+
+        for cluster in client.list_clusters(request={'project_id' : project_id, 'region' : region, 'filter': filter_str}):
             #check component gateway is enabled
             if len(cluster.config.endpoint_config.http_ports.values()) != 0:
                 action_list = list()
