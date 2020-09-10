@@ -204,8 +204,6 @@ def get_cluster_pool(project_id, region, client, selected_filters=None):
         filters.extend(selected_filters)
     filter_str = ' AND '.join(filters)
     try:
-        #for cluster in client.list_clusters(project_id, region, filter_str):
-
         for cluster in client.list_clusters(request={'project_id' : project_id, 'region' : region, 'filter': filter_str}):
             #check component gateway is enabled
             if len(cluster.config.endpoint_config.http_ports.values()) != 0:
