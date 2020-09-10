@@ -27,9 +27,9 @@ import google
 import google.auth
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import GoogleAPICallError, RetryError
-import sparkmagic
-import sparkmagic.auth.google as google_auth_class
-from sparkmagic.auth.google import GoogleAuth
+import googledataprocauthenticator
+import googledataprocauthenticator.google as google_auth_class
+from googledataprocauthenticator.google import GoogleAuth
 from sparkmagic.livyclientlib.endpoint import Endpoint
 from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 from sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
@@ -68,8 +68,8 @@ def make_credentials():
 
 creds = make_credentials()
 AUTH_LIST = '[{"account": "account@google.com","status": "ACTIVE"}]'
-mock_credentialed_accounts_no_accounts = (set(), None)
-mock_credentialed_accounts_valid_accounts = ({'account@google.com'}, 'account@google.com')
+mock_credentialed_accounts_no_accounts = (list(), None)
+mock_credentialed_accounts_valid_accounts = (['account@google.com'], 'account@google.com')
 
 def test_default_credentials_configured_credentials_is_not_none():
     """Tests GoogleAuth.credentials gets initialized when default credentials are configured"""
@@ -82,7 +82,7 @@ def test_default_credentials_not_configured_and_no_active_account_credentials_is
     """Tests GoogleAuth.credentials gets initialized to None when default credentials are
     not configured and the user has no credentialed accounts"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
-    autospec=True), patch('sparkmagic.auth.google.list_credentialed_accounts',\
+    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_accounts',\
     return_value=mock_credentialed_accounts_no_accounts):
         assert_equals(GoogleAuth().credentials, None)
 
@@ -90,7 +90,7 @@ def test_default_credentials_not_configured_credentials_and_active_account_is_no
     """Tests GoogleAuth.credentials gets initialized with active credentialed user account
     when one is available"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
-    autospec=True), patch('sparkmagic.auth.google.list_credentialed_accounts', \
+    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_accounts', \
     return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output', \
     return_value=AUTH_DESCRIBE_USER):
         assert_is_not_none(GoogleAuth().credentials)
@@ -100,28 +100,27 @@ def test_default_credentials_not_configured_account_pairs_contains_no_default():
     are not configured"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
     autospec=True):
-        assert_false('default-credentials' in GoogleAuth().google_credentials_widget.options)
+        assert_false('default-credentials' in GoogleAuth().account_widget.items)
 
 def test_default_credentials_configured_account_pairs_contains_default():
     """Tests default-credentials is in google credentials dropdown if if default credentials
     are configured"""
     with patch('google.auth.default', return_value=(MOCK_CREDENTIALS, 'project'), \
     autospec=True):
-        assert_true('default-credentials' in GoogleAuth().google_credentials_widget.options)
+        assert_true('default-credentials' in GoogleAuth().account_widget.items)
 
 def test_active_account_returns_valid_active_account():
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
-        _, active_account = sparkmagic.auth.google.list_credentialed_accounts()
+        _, active_account = googledataprocauthenticator.google.list_credentialed_accounts()
         assert_equals(active_account, 'account@google.com')
 
-def test_dropdown_options_with_default_credentials_configured():
+def test_dropdown_items_with_default_credentials_configured():
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
         patch('google.auth.default', return_value=(MOCK_CREDENTIALS, 'project')), \
         patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
-        assert_equals(GoogleAuth().google_credentials_widget.options, {'account@google.com':'account@google.com', \
-            'default-credentials':'default-credentials'})
+        assert_equals(GoogleAuth().account_widget.items, ['account@google.com', 'default-credentials'])
 
 def not_refreshed_credentials():
     return credentials.Credentials(
@@ -143,7 +142,7 @@ def test_initialize_credentials_with_auth_dropdown_default_credentials_to_defaul
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'default-credentials')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
@@ -158,23 +157,11 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'account@google.com')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
         google.auth.default.assert_called_once_with(scopes=google_auth.scopes)
-
-@raises(RetryError)
-def test_generate_component_gateway_url_raises_retry_error():
-    with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
-        side_effect=RetryError('error message', 'cause')):
-        google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
-
-@raises(GoogleAPICallError)
-def test_generate_component_gateway_url_raises_google_api_error():
-    with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
-        side_effect=GoogleAPICallError('error message')):
-        google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
 
 def make_credentials_my():
     return credentials.Credentials(
@@ -192,6 +179,18 @@ def make_cluster():
     cluster = dataproc_v1beta2.types.Cluster(project_id="project", cluster_name="cluster", config=cluster_config)
     return cluster
 
+@raises(RetryError)
+def test_generate_component_gateway_url_raises_retry_error():
+    with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
+        side_effect=RetryError('error message', 'cause')):
+        google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
+
+@raises(GoogleAPICallError)
+def test_generate_component_gateway_url_raises_google_api_error():
+    with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', \
+        side_effect=GoogleAPICallError('error message')):
+        google_auth_class.get_component_gateway_url('project', 'region', 'cluster', make_credentials())
+
 def test_generate_component_gateway_url_successful_get_cluster_request():
     with patch('google.cloud.dataproc_v1beta2.ClusterControllerClient.get_cluster', return_value=make_cluster()):
         url = google_auth_class.get_component_gateway_url("project", "region", "cluster", make_credentials())
@@ -207,7 +206,7 @@ def test_no_credenntials_raises_bad_user_configuration_error():
     google_auth = GoogleAuth()
     google_auth.project_widget.value = 'project_id'
     google_auth.region_widget.value = 'region'
-    google_auth.cluster_name_widget.value = 'cluster_name'
+    google_auth.cluster_widget.value = 'cluster_name'
     google_auth.credentials = None
     assert_raises(google_auth.update_with_widget_values(), no_credentials_exception)
 
@@ -232,11 +231,11 @@ AUTH_DESCRIBE_USER = '{"client_id": "client_id", \
 def test_initialize_credentials_with_no_default_credentials_configured():
     with patch('subprocess.check_output', return_value=AUTH_DESCRIBE_USER), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=AUTH_LIST), \
+    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=AUTH_LIST), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'account@google.com')
         assert_equals(google_auth.credentials.client_secret, 'secret')
@@ -261,7 +260,7 @@ def test_call_user_credentials_no_dropdown_change():
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('sparkmagic.auth.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         google_auth.initialize_credentials_with_auth_account_selection('account@google.com')
         request = requests.Request(url="http://www.example.org")

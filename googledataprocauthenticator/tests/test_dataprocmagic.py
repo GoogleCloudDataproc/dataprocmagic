@@ -19,6 +19,7 @@
 from mock import patch, MagicMock, PropertyMock
 from nose.tools import raises, assert_equals, with_setup
 from google.oauth2 import credentials
+import googledataprocauthenticator
 from googledataprocauthenticator.google import GoogleAuth
 from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
 from sparkmagic.livyclientlib.endpoint import Endpoint
@@ -36,7 +37,7 @@ ipython_display = None
 
 
 def _setup():
-    with patch('googledataprocauthenticator.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
+    with patch('googledataprocauthenticator.magics.dataprocmagics.DataprocMagics.db', new_callable=PropertyMock,
            return_value=mocked_db):
         global magic, spark_controller, shell, ipython_display
         magic = DataprocMagics(shell=None, widget=MagicMock())
