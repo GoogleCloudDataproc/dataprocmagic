@@ -36,7 +36,7 @@ import googledataprocauthenticator.utils.constants as constants
 
 ipython_display = IpythonDisplay()
 
-def list_credentialed_accounts():
+def list_credentialed_user_accounts():
     """Load all of user's credentialed accounts with ``gcloud auth list`` command.
 
     Returns:
@@ -60,13 +60,17 @@ def list_credentialed_accounts():
         #convert account dictionaries with status and account keys to a list of accounts
         for account in account_objects:
             try:
+                # if the account does not have an access token we don't add it to the account
+                # dropdown
                 _cloud_sdk.get_auth_access_token(account['account'])
+                # service accounts will be added later with 'default-credentials'
+                get_credentials_for_account(account['account'])
                 if account['status'] == 'ACTIVE':
                     active_account = account['account']
                 credentialed_accounts.append(account['account'])
             # when`gcloud auth print-access-token --account=account` fails we don't add it to
-            # credentialed_accounts dict that populates account dropdown widget
-            except UserAccessTokenError:
+            # credentialed_accounts list that populates account dropdown widget
+            except:
                 pass
         return credentialed_accounts, active_account
     except Exception as caught_exc:
@@ -97,7 +101,7 @@ def get_project_id(account):
     except Exception:
         return None
 
-def get_credentials_for_account(account, scopes_list):
+def get_credentials_for_account(account, scopes_list=None):
     """Load all of user's credentialed accounts with ``gcloud auth describe ACCOUNT`` command.
 
     Args:
@@ -245,7 +249,7 @@ class GoogleAuth(Authenticator):
         self.callable_request = google.auth.transport.requests.Request()
         self.scopes = ['https://www.googleapis.com/auth/cloud-platform',
                        'https://www.googleapis.com/auth/userinfo.email']
-        self.credentialed_accounts, active_user_account = list_credentialed_accounts()
+        self.credentialed_accounts, active_user_account = list_credentialed_user_accounts()
         self.default_credentials_configured = application_default_credentials_configured()
         if self.default_credentials_configured:
             self.credentialed_accounts.append('default-credentials')

@@ -110,7 +110,7 @@ def test_add_sessions_command_parses_google_default_credentials():
 
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_parses_google_user_credentials():
-    with patch('sparkmagic.auth.google.list_credentialed_accounts', \
+    with patch('sparkmagic.auth.google.list_credentialed_user_accounts', \
     return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output',\
     return_value=AUTH_DESCRIBE_USER):
         add_sessions_mock = MagicMock()

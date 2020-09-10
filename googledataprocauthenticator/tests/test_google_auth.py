@@ -82,7 +82,7 @@ def test_default_credentials_not_configured_and_no_active_account_credentials_is
     """Tests GoogleAuth.credentials gets initialized to None when default credentials are
     not configured and the user has no credentialed accounts"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
-    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_accounts',\
+    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_user_accounts',\
     return_value=mock_credentialed_accounts_no_accounts):
         assert_equals(GoogleAuth().credentials, None)
 
@@ -90,7 +90,7 @@ def test_default_credentials_not_configured_credentials_and_active_account_is_no
     """Tests GoogleAuth.credentials gets initialized with active credentialed user account
     when one is available"""
     with patch('google.auth.default', side_effect=DefaultCredentialsError, \
-    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_accounts', \
+    autospec=True), patch('googledataprocauthenticator.google.list_credentialed_user_accounts', \
     return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output', \
     return_value=AUTH_DESCRIBE_USER):
         assert_is_not_none(GoogleAuth().credentials)
@@ -113,7 +113,7 @@ def test_active_account_returns_valid_active_account():
     with patch('subprocess.check_output', return_value=AUTH_LIST), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'):
-        _, active_account = googledataprocauthenticator.google.list_credentialed_accounts()
+        _, active_account = googledataprocauthenticator.google.list_credentialed_user_accounts()
         assert_equals(active_account, 'account@google.com')
 
 def test_dropdown_items_with_default_credentials_configured():
@@ -142,7 +142,7 @@ def test_initialize_credentials_with_auth_dropdown_default_credentials_to_defaul
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_user_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'default-credentials')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
@@ -157,7 +157,7 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_user_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'account@google.com')
         google_auth.initialize_credentials_with_auth_account_selection(google_auth.active_credentials)
@@ -231,11 +231,11 @@ AUTH_DESCRIBE_USER = '{"client_id": "client_id", \
 def test_initialize_credentials_with_no_default_credentials_configured():
     with patch('subprocess.check_output', return_value=AUTH_DESCRIBE_USER), \
     patch('google.auth.default', side_effect=DefaultCredentialsError), \
-    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=AUTH_LIST), \
+    patch('googledataprocauthenticator.google.list_credentialed_user_accounts', return_value=AUTH_LIST), \
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_user_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         assert_equals(google_auth.active_credentials, 'account@google.com')
         assert_equals(google_auth.credentials.client_secret, 'secret')
@@ -260,7 +260,7 @@ def test_call_user_credentials_no_dropdown_change():
     patch('google.auth._cloud_sdk.get_auth_access_token', return_value='token'), \
     patch('google.oauth2._client.refresh_grant', return_value=('token', 'refresh', \
     expiry, grant_response)), \
-    patch('googledataprocauthenticator.google.list_credentialed_accounts', return_value=mock_credentialed_accounts_valid_accounts):
+    patch('googledataprocauthenticator.google.list_credentialed_user_accounts', return_value=mock_credentialed_accounts_valid_accounts):
         google_auth = GoogleAuth()
         google_auth.initialize_credentials_with_auth_account_selection('account@google.com')
         request = requests.Request(url="http://www.example.org")
