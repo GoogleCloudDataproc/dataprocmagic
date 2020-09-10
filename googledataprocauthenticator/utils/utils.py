@@ -45,6 +45,9 @@ def get_stored_endpoints(db, ipython_display):
     try:
         stored_endpoints = db['autorestore/' + 'stored_endpoints']
         return stored_endpoints
+    except KeyError:
+        db['autorestore/' + 'stored_endpoints'] = list()
+        return list()
     except Exception as caught_exc:
         db['autorestore/' + 'stored_endpoints'] = list()
         ipython_display.writeln("Failed to restore stored_endpoints from a previous notebook "\
@@ -67,8 +70,9 @@ def get_session_id_to_name(db, ipython_display):
     try:
         session_id_to_name = db['autorestore/' + 'session_id_to_name']
         return session_id_to_name
-    except KeyError as caught_exc:
+    except KeyError:
         db['autorestore/' + 'session_id_to_name'] = dict()
+        return dict()
     except Exception as caught_exc:
         ipython_display.writeln("Failed to restore session_id_to_name from a previous notebook "\
                         f"session due to an error: {str(caught_exc)}. Cleared session_id_to_name.")
@@ -93,6 +97,7 @@ def _restore_endpoints_and_sessions(db, ipython_display, spark_controller, endpo
             auth = initialize_auth(args)
             endpoint = Endpoint(url=serialized_endpoint.get('url'), auth=auth)
             endpoints[endpoint.url] = endpoint
+
     # If a user revokes the credentials used for stored endpoints and sessions,
     # all of the stored endpoints and sessions are cleared.
     except BadUserConfigurationException as caught_exc:
