@@ -37,7 +37,7 @@ ipython_display = None
 
 
 def _setup():
-    with patch('googledataprocauthenticator.magics.dataprocmagics.DataprocMagics.db', new_callable=PropertyMock,
+    with patch('googledataprocauthenticator.magics.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
            return_value=mocked_db):
         global magic, spark_controller, shell, ipython_display
         magic = DataprocMagics(shell=None, widget=MagicMock())
