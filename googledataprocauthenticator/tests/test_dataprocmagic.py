@@ -19,6 +19,7 @@
 from mock import patch, MagicMock, PropertyMock
 from nose.tools import raises, assert_equals, with_setup
 from google.oauth2 import credentials
+import googledataprocauthenticator
 from googledataprocauthenticator.google import GoogleAuth
 from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
 from sparkmagic.livyclientlib.endpoint import Endpoint
@@ -36,7 +37,7 @@ ipython_display = None
 
 
 def _setup():
-    with patch('googledataprocauthenticator.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
+    with patch('googledataprocauthenticator.magics.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
            return_value=mocked_db):
         global magic, spark_controller, shell, ipython_display
         magic = DataprocMagics(shell=None, widget=MagicMock())
@@ -102,14 +103,14 @@ def test_add_sessions_command_parses_google_default_credentials():
         args = parse_argstring_or_throw(DataprocMagics.spark, line)
         auth_instance = initialize_auth(args)
         add_sessions_mock.assert_called_once_with("name", Endpoint("http://url.com", initialize_auth(args)),
-                                                False, {"kind": "pyspark"})
+                                                  False, {"kind": "pyspark"})
         assert_equals(auth_instance.url, "http://url.com")
         isinstance(auth_instance, GoogleAuth)
         assert_equals(auth_instance.active_credentials, 'default-credentials')
 
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_parses_google_user_credentials():
-    with patch('sparkmagic.auth.google.list_credentialed_accounts', \
+    with patch('sparkmagic.auth.google.list_credentialed_user_accounts', \
     return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output',\
     return_value=AUTH_DESCRIBE_USER):
         add_sessions_mock = MagicMock()
@@ -132,7 +133,7 @@ def test_add_sessions_command_parses_google_user_credentials():
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_parses_session_already_exists():
     spark_controller.get_all_sessions_endpoint = MagicMock(return_value=sessions_list_mock)
-    get_managed_clients_mock = MagicMock(return_value = sessions_mock)
+    get_managed_clients_mock = MagicMock(return_value=sessions_mock)
     spark_controller.get_managed_clients = get_managed_clients_mock
     add_sessions_mock = MagicMock()
     spark_controller.session_manager.add_session = add_sessions_mock
