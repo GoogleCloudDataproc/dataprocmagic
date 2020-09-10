@@ -15,11 +15,12 @@
 
 """Creates the widget under the Sessions tab within the ``%manage_dataproc widget``"""
 
-import importlib
+
 from sparkmagic.livyclientlib.endpoint import Endpoint
 import sparkmagic.utils.configuration as conf
 from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 import ipyvuetify as v
+from googledataprocauthenticator.google import GoogleAuth
 from googledataprocauthenticator.utils.utils import SerializableEndpoint, get_stored_endpoints
 from googledataprocauthenticator.utils.constants import WIDGET_WIDTH
 
@@ -35,12 +36,7 @@ class AddEndpointWidget(AbstractMenuWidget):
         self.state = state
         self.delete_pressed = False
         self.db = db
-
-        auth = conf.authenticators().get("Google")
-        module, class_name = (auth).rsplit('.', 1)
-        events_handler_module = importlib.import_module(module)
-        auth_class = getattr(events_handler_module, class_name)
-        self.auth = auth_class()
+        self.auth = GoogleAuth()
 
         add_endpoint_button = v.Btn(class_='ma-2', color='primary', children=['Add Endpoint'])
         add_endpoint_button.on_event('click', self._add_endpoint)
