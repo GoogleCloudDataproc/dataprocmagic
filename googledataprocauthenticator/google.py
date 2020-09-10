@@ -34,6 +34,7 @@ from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
 import googledataprocauthenticator.utils.constants as constants
 
 
+
 ipython_display = IpythonDisplay()
 
 def list_credentialed_user_accounts():

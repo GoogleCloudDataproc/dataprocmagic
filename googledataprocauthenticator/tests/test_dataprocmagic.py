@@ -146,7 +146,7 @@ def test_add_sessions_command_parses_session_already_exists():
     assert_equals(magic.db['autorestore/stored_endpoints'], stored_endpoints)
     assert_equals(magic.db['autorestore/get_session_id_to_name'], get_session_id_to_name)
     add_sessions_mock.assert_not_called()
-
+    
 @raises(BadUserConfigurationException)
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_raises_google_no_account():
@@ -168,7 +168,7 @@ def test_restore_endpoints():
     with patch('google.auth.default', return_value=(creds, 'project'),\
     autospec=True):
         assert_equals(magic.endpoints, stored_endpoints)
-
+        
 @with_setup(_setup, _teardown)
 def test_restore_sessions():
     with patch('google.auth.default', return_value=(creds, 'project'),\
