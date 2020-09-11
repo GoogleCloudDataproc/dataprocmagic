@@ -101,12 +101,12 @@ default-credentials from the account dropdown to use them. Otherwise, select one
 to authenticate with a user account. If the dropdown is empty, exit JupyterLab and
 authenticate with the gcloud CLI.
 
-To authenticate with a user account, run
+To authenticate with a user account:
 ```bash
 gcloud auth login
 ```
 
-To authenticate with application default credentials, run
+To authenticate with application default credentials:
 ```bash
 gcloud auth application-default login
 ```
@@ -133,7 +133,7 @@ from a pool of clusters defined with one or more cluster labels from the filter 
 
 ### %spark magic command
 
-To see all %spark magic subcommands run
+To see all %spark magic subcommands:
 ```bash
 %spark?
 ```
@@ -147,18 +147,16 @@ gcloud auth list
 For example: `%spark add -s test-session -l python -u https://sparkcluster.net/livy -t Google -g default-credentials`
 
 #### Deleting a session
-To delete a session named test-session, run
+To delete a session named test-session:
 ```bash
 %spark delete -s defaultlivy
 ```
 
 #### Listing sessions
-To list running sessions run
+To list running sessions:
 ```bash
 %spark info
 ```
-
-
 
 
 ## Installation Troubleshooting
@@ -172,3 +170,5 @@ insure you have gssapi extensions installed
     sudo apt-get install -y libkrb5-dev
     ```
 
+[cloud_sdk_install]: https://cloud.google.com/sdk/install
+[cloud_sdk_initialize]: https://cloud.google.com/sdk/docs/initializing
