@@ -140,11 +140,11 @@ To see all %spark magic subcommands:
 #### Create a session
 To create a session with the %spark magic, you need to use the add subcommand and pass
 the following flags: a session name (-s), language (-l), endpoint url (-u), auth type (-t),
-and credentialed account (-g). To see all credentialed accounts, run
+and credentialed account (-g). To see all credentialed accounts `gcloud auth list`.
+An example, to add a session:
 ```bash
-gcloud auth list
-```
-For example: `%spark add -s test-session -l python -u https://sparkcluster.net/livy -t Google -g default-credentials`
+ `%spark add -s test-session -l python -u https://sparkcluster.net/livy -t Google -g default-credentials
+ ```
 
 #### Deleting a session
 To delete a session named test-session:
@@ -157,7 +157,6 @@ To list running sessions:
 ```bash
 %spark info
 ```
-
 
 ## Installation Troubleshooting
 
