@@ -15,15 +15,15 @@
 
 """Creates the ``%manage_dataproc widget``"""
 
-
-from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
-from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.utils.constants import LANGS_SUPPORTED
-import sparkmagic.utils.configuration as conf
-from sparkmagic.utils.utils import Namespace, initialize_auth
 import ipyvuetify as v
+
+import googledataprocauthenticator.sparkmagic.utils.configuration as conf
 from googledataprocauthenticator.controllerwidget.addendpointwidget import AddEndpointWidget
 from googledataprocauthenticator.controllerwidget.createsessionwidget import CreateSessionWidget
+from googledataprocauthenticator.sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
+from googledataprocauthenticator.sparkmagic.utils.constants import LANGS_SUPPORTED
+from googledataprocauthenticator.sparkmagic.utils.utils import Namespace, initialize_auth
 from googledataprocauthenticator.utils.utils import _restore_endpoints_and_sessions
 
 

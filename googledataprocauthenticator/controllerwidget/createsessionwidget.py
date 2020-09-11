@@ -17,9 +17,10 @@
 
 import json
 import ipyvuetify as v
-import sparkmagic.utils.configuration as conf
-from sparkmagic.utils.constants import LANG_SCALA, LANG_PYTHON
-from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
+
+import googledataprocauthenticator.sparkmagic.utils.configuration as conf
+from googledataprocauthenticator.sparkmagic.utils.constants import LANG_SCALA, LANG_PYTHON
+from googledataprocauthenticator.sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 from googledataprocauthenticator.utils.utils import get_session_id_to_name
 from googledataprocauthenticator.utils.constants import WIDGET_WIDTH
 

@@ -16,17 +16,18 @@
 """Tests the `%manage_dataproc` and `%spark` magics"""
 
 
+from collections import namedtuple
 from mock import patch, MagicMock, PropertyMock
 from nose.tools import raises, assert_equals, with_setup
 from google.oauth2 import credentials
 import googledataprocauthenticator
 from googledataprocauthenticator.google import GoogleAuth
 from googledataprocauthenticator.magics.dataprocmagics import DataprocMagics
-from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.livyclientlib.livysession import LivySession
-from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
-from sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
-from sparkmagic.utils.constants import SESSION_KIND_SPARK
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
+from googledataprocauthenticator.sparkmagic.livyclientlib.livysession import LivySession
+from googledataprocauthenticator.sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
+from googledataprocauthenticator.sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
+from googledataprocauthenticator.sparkmagic.utils.constants import SESSION_KIND_SPARK
 
 
 
@@ -37,13 +38,11 @@ ipython_display = None
 
 
 def _setup():
-    with patch('googledataprocauthenticator.magics.dataprocmagics.DataprocMagics.self.db', new_callable=PropertyMock,
-           return_value=mocked_db):
-        global magic, spark_controller, shell, ipython_display
-        magic = DataprocMagics(shell=None, widget=MagicMock())
-        magic.shell = shell = MagicMock()
-        magic.ipython_display = ipython_display = MagicMock()
-        magic.spark_controller = spark_controller = MagicMock()
+    global magic, spark_controller, shell, ipython_display
+    magic = DataprocMagics(shell=namedtuple('Shell', ['db'])(db=mocked_db), widget=MagicMock())
+    magic.shell = shell = MagicMock()
+    magic.ipython_display = ipython_display = MagicMock()
+    magic.spark_controller = spark_controller = MagicMock()
 
 def _teardown():
     pass
@@ -110,7 +109,7 @@ def test_add_sessions_command_parses_google_default_credentials():
 
 @with_setup(_setup, _teardown)
 def test_add_sessions_command_parses_google_user_credentials():
-    with patch('sparkmagic.auth.google.list_credentialed_user_accounts', \
+    with patch('googledataprocauthenticator.sparkmagic.auth.google.list_credentialed_user_accounts', \
     return_value=mock_credentialed_accounts_valid_accounts), patch('subprocess.check_output',\
     return_value=AUTH_DESCRIBE_USER):
         add_sessions_mock = MagicMock()

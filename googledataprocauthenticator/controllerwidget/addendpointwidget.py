@@ -16,11 +16,11 @@
 """Creates the widget under the Sessions tab within the ``%manage_dataproc widget``"""
 
 
-from sparkmagic.livyclientlib.endpoint import Endpoint
-import sparkmagic.utils.configuration as conf
-from sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
 import ipyvuetify as v
+
 from googledataprocauthenticator.google import GoogleAuth
+from googledataprocauthenticator.sparkmagic.controllerwidget.abstractmenuwidget import AbstractMenuWidget
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
 from googledataprocauthenticator.utils.utils import SerializableEndpoint, get_stored_endpoints
 from googledataprocauthenticator.utils.constants import WIDGET_WIDTH
 

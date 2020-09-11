@@ -17,23 +17,24 @@
 
 
 import datetime
+import requests
 from unittest.mock import call
 from mock import patch, Mock
 from nose.tools import raises, assert_equals, assert_is_not_none, assert_false, assert_true, assert_raises
-import requests
-from google.oauth2 import credentials
-from google.cloud import dataproc_v1beta2
+
 import google
 import google.auth
+from google.oauth2 import credentials
+from google.cloud import dataproc_v1beta2
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 import googledataprocauthenticator
 import googledataprocauthenticator.google as google_auth_class
 from googledataprocauthenticator.google import GoogleAuth
-from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
-from sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
-from sparkmagic.livyclientlib.reliablehttpclient import ReliableHttpClient
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
+from googledataprocauthenticator.sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
+from googledataprocauthenticator.sparkmagic.livyclientlib.linearretrypolicy import LinearRetryPolicy
+from googledataprocauthenticator.sparkmagic.livyclientlib.reliablehttpclient import ReliableHttpClient
 
 
 def test_get_google():
@@ -165,11 +166,11 @@ def test_initialize_credentials_with_auth_dropdown_user_credentials_to_user_cred
 
 def make_credentials_my():
     return credentials.Credentials(
-        token='ya29.a0AfH6SMA_XZN9uqR6ShnPdAHXgoNxXzblmw7rqfZYS_2cxB6Q5ylcF6t1atfUkrmZbJ2dcHehwDJShan83WkNLIkNOIhhuMi1zUSDgXnWfWqSHrqJoSoKv7r5KZLesNyPl5QSmeLx7uXuTXx66QaFhLkH4UOWga9ZdQfOSMp35xYx',
-        refresh_token='1//06DpNb1ABrvveCgYIARAAGAYSNwF-L9IrNeIMPi0fmyBNP_O_C3epXaaiqLKWmZ5pK9rs8oYHM__-8A4yaLQc_igCvH268v6q6C8',
+        token='ya99.foo-token',
+        refresh_token='1//foo-token',
         token_uri='https://www.googleapis.com/oauth2/v4/token',
-        client_id='32555940559.apps.googleusercontent.com',
-        client_secret='ZmssLNjJy2998hD4CTg2ejr2',
+        client_id='12345.apps.googleusercontent.com',
+        client_secret='AAAAAAAAAAAA',
     )
 
 def make_cluster():

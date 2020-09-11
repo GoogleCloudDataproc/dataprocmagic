@@ -18,18 +18,18 @@ Provides the %spark and %manage_dataproc magics."""
 from IPython.core.magic import magics_class, line_cell_magic, needs_local_scope, line_magic
 from IPython.core.magic_arguments import argument, magic_arguments
 from hdijupyterutils.ipywidgetfactory import IpyWidgetFactory
-from sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
-from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.livyclientlib.exceptions import handle_expected_exceptions
-from sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
-from sparkmagic.magics.sparkmagicsbase import SparkMagicBase
-from sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
-import sparkmagic.utils.configuration as conf
-from sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, \
-                                       LANG_SCALA, LANG_R
 from googledataprocauthenticator.controllerwidget.controllerwidget import ControllerWidget
+from googledataprocauthenticator.sparkmagic.utils.utils import parse_argstring_or_throw, initialize_auth
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
+from googledataprocauthenticator.sparkmagic.livyclientlib.exceptions import handle_expected_exceptions
+from googledataprocauthenticator.sparkmagic.magics.remotesparkmagics import RemoteSparkMagics
+from googledataprocauthenticator.sparkmagic.magics.sparkmagicsbase import SparkMagicBase
+from googledataprocauthenticator.sparkmagic.controllerwidget.magicscontrollerwidget import MagicsControllerWidget
+from googledataprocauthenticator.sparkmagic.utils.constants import LANG_PYTHON, CONTEXT_NAME_SPARK, CONTEXT_NAME_SQL, \
+                                                                   LANG_SCALA, LANG_R
 from googledataprocauthenticator.utils.utils import SerializableEndpoint, get_session_id_to_name, \
                                                     _restore_endpoints_and_sessions
+import googledataprocauthenticator.sparkmagic.utils.configuration as conf
 
 
 @magics_class

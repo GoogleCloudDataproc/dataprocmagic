@@ -16,9 +16,9 @@
 """Helper functions for commonly used utilities."""
 
 
-from sparkmagic.livyclientlib.endpoint import Endpoint
-from sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
-from sparkmagic.utils.utils import initialize_auth, Namespace
+from googledataprocauthenticator.sparkmagic.livyclientlib.endpoint import Endpoint
+from googledataprocauthenticator.sparkmagic.livyclientlib.exceptions import BadUserConfigurationException
+from googledataprocauthenticator.sparkmagic.utils.utils import initialize_auth, Namespace
 
 class SerializableEndpoint():
     """ A class that serializes an endpoint object for storing and restoring endpoints"""
